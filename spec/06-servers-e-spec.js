@@ -2,11 +2,9 @@
 // Here we test various kinds of unavailability with a fake UserAgent.
 
 var CodeGradX = require('../index.js');
-
-var _    = require('lodash');
-var when = require('when');
-var rest = require('rest');
-var interceptor = require('rest/interceptor');
+const when = CodeGradX.when;
+const _ = CodeGradX._;
+_.findIndex = require('lodash/findIndex');
 
 describe('CodeGradX', function () {
   it('should be loaded', function () {
@@ -17,6 +15,7 @@ describe('CodeGradX', function () {
       state.servers = {
           domain: '.localdomain',
           names: ['e', 'e', 'x', 's'],
+          protocol: 'http',
           a: {
               suffix: '/alive',
               0: {
@@ -70,16 +69,16 @@ describe('CodeGradX', function () {
         var item = history[i];
         history.splice(i, 1);
         if ( item.status > 0 ) {
-          return when({
+          return Promise.resolve({
             status: { code: item.status },
             headers: {}
           }).delay(100 * Math.random());
         } else {
-          return when.reject("Non responding server " + options.path);
+          return Promise.reject("Non responding server " + options.path);
         }
       } else {
         // History was probably incomplete:
-        return when.reject("Unexpected URL " + options.path);
+        return Promise.reject("Unexpected URL " + options.path);
       }
     };
     return fakeUserAgent;

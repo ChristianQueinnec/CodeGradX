@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-05 17:42:47 queinnec"
+// Time-stamp: "2019-04-06 10:29:02 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -49,6 +49,7 @@ const _ = (function () {
 // and add them to native Promises.
 //const when = require('when');
 const when = {
+    // wait for all promises to be success or failure:
     settle: function (promises) {
         let done = new Array(promises.length);
         return new Promise((resolve, reject) => {
@@ -71,6 +72,27 @@ const when = {
                 });
         });
     },
+    // Succeeds if all promises succeed:
+    join: function (...promises) {
+        let values = new Array(promises.length);
+        return new Promise((resolve, reject) => {
+            const newpromises = 
+                  promises.map((promise, index) => {
+                      return promise.then((value) => {
+                          values[index] = value;
+                          //console.log(`Success promise[${index}] with ${value}`);
+                      }).catch((reason) => {
+                          reject(reason);
+                      });
+                  });
+            return Promise.all(newpromises)
+                .then(() => {
+                    //console.log(`success with `, values);
+                    resolve(values);
+                });
+        });
+    },
+    // Succeed as soon as one of promises is a success:
     any: function (promises) {
         let count = promises.length;
         let done = new Array(promises.length);
@@ -150,6 +172,15 @@ registry.register('application/octet-stream', {
     }
 });
 
+/* Are we running under Node.js */
+CodeGradX.isNode = _.memoize(
+    // See http://stackoverflow.com/questions/17575790/environment-detection-node-js-or-browser
+    function _checkIsNode () {
+        /*jshint -W054 */
+        const code = "try {return this===global;}catch(e){return false;}";
+        const f = new Function(code);
+        return f();
+    });
 
 
 // ******************** General utilities *********************
@@ -1005,6 +1036,24 @@ function (login, password) {
   });
 };
 
+/** Get current user (if defined). This is particularly useful when
+    the user is not authenticated via getAuthenticatedUser() (for
+    instance, via GoogleOpenId).
+
+    @return {Promise<User>} yields {User}
+
+*/
+
+CodeGradX.getCurrentUser = function (force) {
+    const state = CodeGradX.getCurrentState();
+    if ( !force && state.currentUser ) {
+        return Promise.resolve(state.currentUser);
+    }
+    state.debug('getCurrentUser1');
+    return state.getAuthenticatedUser('', '')
+        .catch((reason) => undefined);
+};
+
 /** Disconnect the user.
 
     @returns {Promise<>} yields undefined
@@ -1272,9 +1321,10 @@ CodeGradX.initializeAutoloads = function (autoloads) {
     for ( let klass in autoloads ) {
         for ( let name in autoloads[klass] ) {
             let file = autoloads[klass][name];
+            //console.log(`Autoload CodeGradX.${klass}.prototype.${name}`);
             CodeGradX[klass].prototype[name] = function (...args) {
                 const self = this;
-                state.debug('initializeAutoloads1', klass, name);
+                state.debug('initializeAutoloads1', klass, name, self, args);
                 return state.sendAXServer({
                     path: `/constellation/scripts/${file}.js`,
                     method: 'GET',
@@ -1283,11 +1333,11 @@ CodeGradX.initializeAutoloads = function (autoloads) {
                     }
                 }).then(function (response) {
                     state.debug('initializeAutoloads2', klass, name, response);
-                    eval(response.entity);
+                    (eval(response.entity))(CodeGradX);
                     return CodeGradX[klass].prototype[name].apply(self, args);
                 }).catch(function (exc) {
-                    state.debug('initializeAutoloads3', exc);
-                });
+                        state.debug('initializeAutoloads3', exc);
+                    });
             };
         }
     }
@@ -1299,10 +1349,19 @@ CodeGradX.initializeAutoloads({
         userEnroll:  'userEnroll.js'
     },
     User: {
+        getCampaigns: 'campaign.js',
+        getCampaign: 'campaign.js',
+        getCurrentCampaign: 'campaign.js',
     },
     Campaign: {
+        getExercisesSet: 'exercisesSet.js',
+        getExercise: 'exercisesSet.js',
+        getExerciseByName: 'exercisesSet.js',
+        getExerciseByIndex: 'exercisesSet.js'
     },
     Exercise: {
+        getDescription: 'exercise.js'
+        
     },
     ExercisesSet: {
     },
