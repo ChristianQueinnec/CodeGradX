@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-06 10:29:02 queinnec"
+// Time-stamp: "2019-04-06 17:20:51 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -1318,32 +1318,40 @@ CodeGradX.Batch = function (js) {
 
 CodeGradX.initializeAutoloads = function (autoloads) {
     const state = CodeGradX.getCurrentState();
+    function load (file) {
+        
+    }
     for ( let klass in autoloads ) {
-        for ( let name in autoloads[klass] ) {
-            let file = autoloads[klass][name];
-            //console.log(`Autoload CodeGradX.${klass}.prototype.${name}`);
-            CodeGradX[klass].prototype[name] = function (...args) {
-                const self = this;
-                state.debug('initializeAutoloads1', klass, name, self, args);
-                return state.sendAXServer({
-                    path: `/constellation/scripts/${file}.js`,
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                }).then(function (response) {
-                    state.debug('initializeAutoloads2', klass, name, response);
-                    (eval(response.entity))(CodeGradX);
-                    return CodeGradX[klass].prototype[name].apply(self, args);
-                }).catch(function (exc) {
+        if ( typeof autoloads[klass] === 'string' ) {
+            let file = autoloads[klass];
+            //console.log(`Autoload CodeGradX.${klass}`);
+            CodeGradX[klass] = function (...args) {
+                load(file)(CodeGradX);
+            };
+        } else {
+            for ( let name in autoloads[klass] ) {
+                let file = autoloads[klass][name];
+                //console.log(`Autoload CodeGradX.${klass}.prototype.${name}`);
+                CodeGradX[klass].prototype[name] = function (...args) {
+                    const self = this;
+                    state.debug('initializeAutoloads1', klass, name, self, args);
+                    return tobedone
+                      .then(function (response) {
+                        state.debug('initializeAutoloads2', klass, name, response);
+                        (eval(response.entity))(CodeGradX);
+                        return CodeGradX[klass].prototype[name].apply(self, args);
+                    }).catch(function (exc) {
                         state.debug('initializeAutoloads3', exc);
                     });
-            };
+                };
+            }
         }
     }
 };
 
 CodeGradX.initializeAutoloads({
+    xml2html: 'xml2html.js',
+    parsexml: 'parsexml.js',
     State: {
         userGetLink: 'userGetLink.js',
         userEnroll:  'userEnroll.js'
@@ -1352,22 +1360,46 @@ CodeGradX.initializeAutoloads({
         getCampaigns: 'campaign.js',
         getCampaign: 'campaign.js',
         getCurrentCampaign: 'campaign.js',
+        getProgress: 'userlib.js',
+        getAllJobs: 'userlib.js',
+        getAllExercises: 'userlib.js'
     },
     Campaign: {
-        getExercisesSet: 'exercisesSet.js',
-        getExercise: 'exercisesSet.js',
-        getExerciseByName: 'exercisesSet.js',
-        getExerciseByIndex: 'exercisesSet.js'
+        getExercisesSet: 'campaignlib.js',
+        getExercise: 'campaignlib.js',
+        getExercises: 'campaignlib.js',
+        getJobs: 'campaignlib.js',
+        getSkills: 'campaignlib.js',
+        getBatches: 'campaignlib.js',
+        getCampaignStudentJobs: 'campaignlib.js'
     },
     Exercise: {
-        getDescription: 'exercise.js'
-        
+        getDescription: 'exercise.js',
+        getEquipmentFile: 'exercise.js',
+        sendStringAnswer: 'exercise.js',
+        sendFileFromDOM: 'exercise.js',
+        sendBatchFromDOM: 'exercise.js',
+        getExerciseReport: 'exercise.js',
+        getBaseURL: 'exercise.js',
+        getExerciseReportURL: 'exercise.js',
+        getTgzURL: 'exercise.js'
     },
     ExercisesSet: {
+        getExercise: 'exercisesSet.js',
+        getExerciseByName: 'exercisesSet.js',
+        getExerciseByIndex: 'exercisesSet.js',
     },
     Job: {
+        getReport: "job.js",
+        getProblemReport: "job.js",
+        getReportURL: "job.js",
+        getProblemReportURL: "job.js",
+        getTgzURL: "job.js"
     },
     Batch: {
+        getReport: 'batch.js',
+        getFinalReport: 'batch.js',
+        getReportURL: 'batch.js'
     }
 });
 

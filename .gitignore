@@ -1,0 +1,4 @@
+*~
+node_modules
+spec/*auth*.json
+spec/*auth*.js

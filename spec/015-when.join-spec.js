@@ -82,7 +82,7 @@ describe("when.join", function () {
                   delayedSuccess(100, 44) )
             .then(faildone)
             .catch((reason) => {
-                expect(Date.now() - t0).toBeGreaterThan(199);
+                expect(Date.now() - t0).toBeGreaterThan(198);
                 expect(reason).toBe(42);
                 done();
             });
