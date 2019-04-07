@@ -1,4 +1,4 @@
-# Time-stamp: "2019-04-04 20:21:18 queinnec"
+# Time-stamp: "2019-04-07 10:13:17 queinnec"
 
 work : nothing 
 clean :: cleanMakefile
@@ -10,6 +10,9 @@ tests : test.with.real.servers
 test.with.real.servers :
 	node_modules/.bin/jasmine --random=false \
 		spec/[0-8]*.js 2>&1 | tee /tmp/spec.log
+
+publish : lint
+
 
 
 # end of Makefile

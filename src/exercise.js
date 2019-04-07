@@ -1,8 +1,10 @@
 // exercise.js
-// Time-stamp: "2019-04-06 17:08:49 queinnec"
+// Time-stamp: "2019-04-07 10:27:34 queinnec"
+/* eslint no-control-regex: "off" */
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
+    const xml2js = require('xml2js');
     const when = CodeGradX.when;
     
 /** Get the XML descriptor of the Exercise.
@@ -55,7 +57,7 @@ CodeGradX.Exercise.prototype.getDescription = function () {
     const promise3 = promise.then(function (response) {
         // Extract stem
         state.debug("getDescription4", response);
-        const contentRegExp = new RegExp("^(.|\n)*(<\s*content\s*>(.|\n)*</content\s*>)(.|\n)*$");
+        const contentRegExp = new RegExp("^(.|\n)*(<\\s*content\\s*>(.|\n)*</content\\s*>)(.|\n)*$");
         const content = response.entity.replace(contentRegExp, "$2");
         exercise.XMLcontent = content;
         exercise.stem = CodeGradX.xml2html(content, { exercise });
@@ -70,7 +72,7 @@ CodeGradX.Exercise.prototype.getDescription = function () {
         // If only one question expecting only one file, retrieve its name:
         state.debug('getDescription5c');
         const expectationsRegExp =
-            new RegExp("<\s*expectations\s*>((.|\n)*?)</expectations\s*>", "g");
+            new RegExp("<\\s*expectations\\s*>((.|\n)*?)</expectations\\s*>", "g");
         function concat (s1, s2) {
             return s1 + s2;
         }
@@ -126,7 +128,7 @@ CodeGradX.Exercise.prototype.getEquipmentFile = function (file) {
         }
     });
     return promise.catch(function (reason) {
-        console.log(reason);
+        //console.log(reason);
         return Promise.reject(reason);
     });
 };
@@ -143,9 +145,9 @@ CodeGradX.Exercise.prototype.getEquipmentFile = function (file) {
 */
 
 const identificationRegExp =
-  new RegExp("^(.|\n)*(<\s*identification +(.|\n)*</identification\s*>)(.|\n)*$");
+  new RegExp("^(.|\n)*(<\\s*identification +(.|\n)*</identification\\s*>)(.|\n)*$");
 const summaryRegExp =
-  new RegExp("^(.|\n)*(<\s*summary.*?>(.|\n)*</summary\s*>)(.|\n)*$");
+  new RegExp("^(.|\n)*(<\\s*summary.*?>(.|\n)*</summary\\s*>)(.|\n)*$");
 
 function extractIdentification (exercise, s) {
     const content = s.replace(identificationRegExp, "$2");
@@ -220,7 +222,7 @@ function extractExpectations (exercice, s) {
 function extractEquipment (exercise, s) {
     exercise.equipment = [];
     const equipmentRegExp = new RegExp(
-        "^(.|\n)*(<equipment>\s*(.|\n)*?\s*</equipment>)(.|\n)*$");
+        "^(.|\n)*(<equipment>\\s*(.|\n)*?\\s*</equipment>)(.|\n)*$");
     const content = s.replace(equipmentRegExp, "$2");
     if ( s.length === content.length ) {
         // No equipment!
@@ -347,7 +349,8 @@ element. This code only runs in a browser providing the FormData class.
 CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
     const exercise = this;
     const state = CodeGradX.getCurrentState();
-    state.debug('sendZipFileAnswer1', FW4EX.currentFileName);
+    //state.debug('sendZipFileAnswer1', FW4EX.currentFileName); // FIXME
+    state.debug('sendZipFileAnswer1', state.currentFileName); // FIXME
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
@@ -361,7 +364,8 @@ CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
             exercise.uuid = js.exercise.$.exerciseid;
             const job = new CodeGradX.Job({
                 exercise: exercise,
-                content: FW4EX.currentFileName,
+                //content: FW4EX.currentFileName, // FIXME
+                content: state.currentFileName,
                 responseXML: response.entity,
                 response: js,
                 personid: CodeGradX._str2num(js.person.$.personid),
@@ -372,7 +376,8 @@ CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
             return Promise.resolve(job);
         });
     }
-    const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), '');
+    //const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), ''); // FIXME
+    const basefilename = state.currentFileName.replace(new RegExp("^.*/"), '');
     const headers = {
         "Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),
@@ -427,7 +432,8 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM = function (form) {
             return Promise.resolve(batch);
         });
     }
-    const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), '');
+    //const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), '');
+    const basefilename = state.currentFileName.replace(new RegExp("^.*/"), ''); // FIXME
     const headers = {
         "Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),

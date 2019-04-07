@@ -1,9 +1,8 @@
 // campaign.js
-// Time-stamp: "2019-04-05 19:14:55 queinnec"
+// Time-stamp: "2019-04-07 10:30:26 queinnec"
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
-    const when = CodeGradX.when;
 
 /** Get the campaigns where the current user is enrolled.
 
@@ -119,11 +118,13 @@ function isCurrentCampaignDefined () {
 
 CodeGradX.User.prototype.getCurrentCampaign = function () {
     const user = this;
+    const state = CodeGradX.getCurrentState();
     const currentCampaignName = isCurrentCampaignDefined();
     if ( currentCampaignName ) {
         return user.getCampaign(currentCampaignName)
             .then(function (campaign) {
-                FW4EX.currentCampaign = campaign;
+                //FW4EX.currentCampaign = campaign; // FIXME
+                state.currentCampaign = campaign;
                 return Promise.resolve(campaign);
             });
     } else {
@@ -138,11 +139,15 @@ CodeGradX.User.prototype.getCurrentCampaign = function () {
                 }
                 campaigns = hash2array(campaigns);
                 if ( campaigns.length === 1 ) {
-                    FW4EX.currentCampaignName = campaigns[0].name;
-                    FW4EX.currentCampaign = campaigns[0];
+                    //FW4EX.currentCampaignName = campaigns[0].name;// FIXME
+                    state.currentCampaignName = campaigns[0].name;
+                    //FW4EX.currentCampaign = campaigns[0]; // FIXME
+                    state.currentCampaign = campaigns[0];
                     return Promise.resolve(campaigns[0]);
-                } else if ( FW4EX.currentCampaign ) {
-                    return Promise.resolve(FW4EX.currentCampaign);
+                    //} else if ( FW4EX.currentCampaign ) { // FIXME
+                    } else if ( state.currentCampaign ) { // FIXME
+                      //return Promise.resolve(FW4EX.currentCampaign);//FIXME
+                      return Promise.resolve(state.currentCampaign);
                 } else {
                     const msg = "Cannot determine current campaign";
                     return Promise.reject(new Error(msg));

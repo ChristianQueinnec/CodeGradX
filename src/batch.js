@@ -1,8 +1,7 @@
 // batch.js
-// Time-stamp: "2019-04-06 17:19:59 queinnec"
+// Time-stamp: "2019-04-07 10:30:39 queinnec"
 
 module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
 
 /** Get the current state of the Batch report that is, always fetch
     it. See also `getFinalReport()` to get the final report of the

@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-06 17:20:51 queinnec"
+// Time-stamp: "2019-04-07 10:32:12 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -52,7 +52,7 @@ const when = {
     // wait for all promises to be success or failure:
     settle: function (promises) {
         let done = new Array(promises.length);
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve /*, reject */) => {
             const newpromises = 
                   promises.map((promise, index) => {
                       return promise.then((value) => {
@@ -330,7 +330,9 @@ CodeGradX.Log.prototype.show = function (items) {
     // avoid displaying a later version of the log.
     items = items || this.items.slice(0);
     for ( let item of items ) {
+        /* eslint-disable no-console */
         console.log(item);
+        /* eslint-enable no-console */
     }
     return this;
 };
@@ -1051,7 +1053,10 @@ CodeGradX.getCurrentUser = function (force) {
     }
     state.debug('getCurrentUser1');
     return state.getAuthenticatedUser('', '')
-        .catch((reason) => undefined);
+        .catch((reason) => {
+            state.debug('getCurrentUser2', reason);
+            return undefined;
+        });
 };
 
 /** Disconnect the user.
@@ -1319,14 +1324,14 @@ CodeGradX.Batch = function (js) {
 CodeGradX.initializeAutoloads = function (autoloads) {
     const state = CodeGradX.getCurrentState();
     function load (file) {
-        
+        file;
     }
     for ( let klass in autoloads ) {
         if ( typeof autoloads[klass] === 'string' ) {
             let file = autoloads[klass];
             //console.log(`Autoload CodeGradX.${klass}`);
             CodeGradX[klass] = function (...args) {
-                load(file)(CodeGradX);
+                load(file)(CodeGradX)(args);
             };
         } else {
             for ( let name in autoloads[klass] ) {
@@ -1335,7 +1340,7 @@ CodeGradX.initializeAutoloads = function (autoloads) {
                 CodeGradX[klass].prototype[name] = function (...args) {
                     const self = this;
                     state.debug('initializeAutoloads1', klass, name, self, args);
-                    return tobedone
+                    return true(file,args) /////////////////////////
                       .then(function (response) {
                         state.debug('initializeAutoloads2', klass, name, response);
                         (eval(response.entity))(CodeGradX);

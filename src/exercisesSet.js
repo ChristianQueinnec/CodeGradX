@@ -1,9 +1,8 @@
 // exercisesSet.js
-// Time-stamp: "2019-04-06 17:14:10 queinnec"
+// Time-stamp: "2019-04-07 10:21:55 queinnec"
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
-    const when = CodeGradX.when;
 
 /** Find an exercise by its name in an ExercisesSet that is,
     a tree of Exercises.

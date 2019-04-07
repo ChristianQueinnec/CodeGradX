@@ -1,8 +1,7 @@
 // parsexml.js
-// Time-stamp: "2019-04-06 17:06:55 queinnec"
+// Time-stamp: "2019-04-07 10:18:08 queinnec"
 
 module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
     const xml2js = require('xml2js');
 
 /** Promisify an XML to Javascript converter.

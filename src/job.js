@@ -1,8 +1,7 @@
 // job.js
-// Time-stamp: "2019-04-06 11:10:39 queinnec"
+// Time-stamp: "2019-04-07 10:20:35 queinnec"
 
 module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
     const when = CodeGradX.when;
 
 /** Get the marking report of that Job. The marking report will be stored
@@ -60,6 +59,7 @@ CodeGradX.Job.prototype.getReport = function (parameters) {
   const promise2 = promise.then(function (response) {
     // Fill archived, started, ended, finished, mark and totalMark
     state.debug('getJobReport3', job);
+    /* eslint no-control-regex: "off" */
     const markingRegExp = new RegExp("^(.|\n)*(<marking (.|\n)*?>)(.|\n)*$");
     let marking = response.entity.replace(markingRegExp, "$2");
     state.debug('getJobReport3 marking', marking);

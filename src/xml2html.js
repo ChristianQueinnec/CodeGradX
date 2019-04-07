@@ -1,9 +1,10 @@
 // xml2html.js
-// Time-stamp: "2019-04-06 14:34:49 queinnec"
+// Time-stamp: "2019-04-07 10:21:37 queinnec"
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
     const sax = require('sax');
+    const he = require('he');
 
 /** Conversion of texts (stems, reports) from XML to HTML.
     This function may be modified to accommodate your own desires.
@@ -127,7 +128,7 @@ CodeGradX.xml2html = function (s, options) {
       } else if ( tagname.match(htmlTagsRegExp) ) {
         result += '</' + tagname + '>';
       } else if ( tagname.match(specialTagRegExp) ) {
-        result = result;
+        /* result = result; */
       } else if ( tagname.match(spanTagsRegExp) ) {
         result += '</span>';
       } else if ( tagname.match(divTagsRegExp) ) {
