@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-04-07 10:27:34 queinnec"
+// Time-stamp: "2019-04-08 09:39:35 queinnec"
 /* eslint no-control-regex: "off" */
 
 module.exports = function (CodeGradX) {
@@ -338,7 +338,8 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
 /** Send the content of a file selected by an input:file widget in the
  * browser. Returns a Job on which you may invoke the `getReport` method.
 
-      @param {DOM} form DOM element
+      @param {DOM} form - DOM element
+      @param {String} currentFileName - file name
       @returns {Promise<Job>} yields {Job}
 
 The form DOM element must contain an <input type='file' name='content'>
@@ -346,11 +347,12 @@ element. This code only runs in a browser providing the FormData class.
 
 */
 
-CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
+CodeGradX.Exercise.prototype.sendFileFromDOM =
+  function (form, currentFileName) {
     const exercise = this;
     const state = CodeGradX.getCurrentState();
-    //state.debug('sendZipFileAnswer1', FW4EX.currentFileName); // FIXME
-    state.debug('sendZipFileAnswer1', state.currentFileName); // FIXME
+    currentFileName = currentFileName || state.currentFileName;
+    state.debug('sendZipFileAnswer1', currentFileName);
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
@@ -364,8 +366,7 @@ CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
             exercise.uuid = js.exercise.$.exerciseid;
             const job = new CodeGradX.Job({
                 exercise: exercise,
-                //content: FW4EX.currentFileName, // FIXME
-                content: state.currentFileName,
+                content: currentFileName,
                 responseXML: response.entity,
                 response: js,
                 personid: CodeGradX._str2num(js.person.$.personid),
@@ -376,8 +377,7 @@ CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
             return Promise.resolve(job);
         });
     }
-    //const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), ''); // FIXME
-    const basefilename = state.currentFileName.replace(new RegExp("^.*/"), '');
+    const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
     const headers = {
         "Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),
@@ -397,6 +397,7 @@ CodeGradX.Exercise.prototype.sendFileFromDOM = function (form) {
     widget in the browser.
 
     @param {DOMform} form - the input:file widget
+    @param {String} currentFileName - file name
     @returns {Promise<Batch>} yielding a Batch.
 
 The form DOM element must contain an <input type='file' name='content'>
@@ -404,10 +405,12 @@ element. This code only runs in a browser providing the FormData class.
 
 */
 
-CodeGradX.Exercise.prototype.sendBatchFromDOM = function (form) {
+CodeGradX.Exercise.prototype.sendBatchFromDOM = 
+  function (form, currentFileName) {
     const exercise = this;
     const state = CodeGradX.getCurrentState();
-    state.debug('sendBatchFile1');
+    currentFileName = currentFileName || state.currentFileName;
+    state.debug('sendBatchFile1', currentFileName);
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
@@ -432,8 +435,7 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM = function (form) {
             return Promise.resolve(batch);
         });
     }
-    //const basefilename = FW4EX.currentFileName.replace(new RegExp("^.*/"), '');
-    const basefilename = state.currentFileName.replace(new RegExp("^.*/"), ''); // FIXME
+    const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
     const headers = {
         "Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),

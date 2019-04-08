@@ -1,5 +1,5 @@
 // userlib.js
-// Time-stamp: "2019-04-07 10:17:58 queinnec"
+// Time-stamp: "2019-04-08 09:41:55 queinnec"
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
@@ -45,8 +45,6 @@ CodeGradX.User.prototype.getAllExercises = function () {
         .then(function (user) {
             return user.getCurrentCampaign();
         }).then(function (campaign) {
-            //FW4EX.fillCampaignCharacteristics(campaign);
-            CodeGradX.fillCampaignCharacteristics(campaign); // FIXME
             let url = `/exercises/person/${user.personid}`;
             let d = campaign.starttime.toISOString().replace(/T.*$/, '');
             url += `?after=${encodeURI(d)}`;

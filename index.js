@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-07 10:32:12 queinnec"
+// Time-stamp: "2019-04-07 13:30:39 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -442,6 +442,9 @@ CodeGradX.State = function (initializer) {
     // Current values
     this.currentUser = null;
     this.currentCookie = null;
+    this.currentCampaign = null;
+    this.currentCampaignName = undefined;
+    this.currentFileName = undefined;
     // Post-initialization
     let state = this;
     // Cache for jobs useful when processing batches:
