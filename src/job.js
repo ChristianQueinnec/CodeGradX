@@ -1,8 +1,7 @@
 // job.js
-// Time-stamp: "2019-04-12 09:57:42 queinnec"
+// Time-stamp: "2019-04-12 10:22:59 queinnec"
 
 module.exports = function (CodeGradX) {
-    const when = CodeGradX.when;
 
 /** Get the marking report of that Job. The marking report will be stored
     in the `XMLreport` and `HTMLreport` properties.
@@ -52,6 +51,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
     job.XMLreport = response.entity;
     //state.log.show();
     
+    /* eslint no-control-regex: 0 */
     const markingRegExp = new RegExp("^(.|\n)*(<marking (.|\n)*?>)(.|\n)*$");
     let marking = response.entity.replace(markingRegExp, "$2");
     state.debug('getJobReport3 marking', marking);
@@ -71,6 +71,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
     // machine, partial marks TO BE DONE
     //state.log.show();
 
+    /* eslint no-control-regex: 0 */
     const exerciseRegExp = new RegExp("^(.|\n)*(<exercise (.|\n)*?>)(.|\n)*$");
     const exercise = response.entity.replace(exerciseRegExp, "$2");
     if ( exercise.length === response.entity.length ) {

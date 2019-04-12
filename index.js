@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-11 19:14:31 queinnec"
+// Time-stamp: "2019-04-12 10:24:02 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -1410,6 +1410,7 @@ CodeGradX.initializeAutoloads = function (autoloads) {
             let result;
             try {
                 result = new Function ('require', 'module', js);
+                /* eslint no-inner-declarations: 0 */
                 function newrequire (word) {
                     if ( word === 'codegradx' ) {
                         return CodeGradX;
@@ -1443,7 +1444,7 @@ CodeGradX.initializeAutoloads = function (autoloads) {
                 const self = this;
                 state.debug('Autoload1', klass, self, args);
                 return load(file).then(() => {
-                    state.debug('Autoload2', klass, self, args)
+                    state.debug('Autoload2', klass, self, args);
                     const newfunction = CodeGradX[klass];
                     if ( newfunction !== loader ) {
                         try {
