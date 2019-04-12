@@ -80,7 +80,7 @@ describe("when.any", function () {
                 expect(reasons[0]).toBe(33);
                 expect(reasons[1]).toBe(32);
                 expect(reasons[2]).toBe(34);
-                expect(Date.now() - t0).toBeGreaterThan(999);
+                expect(Date.now() - t0).toBeGreaterThan(998);
                 expect(Date.now() - t0).toBeLessThan(1100);
                 done();
             });
@@ -109,7 +109,7 @@ describe("when.any", function () {
                   Promise.reject(52) ])
             .then((value) => {
                 expect(value).toBe(51);
-                expect(Date.now() - t0).toBeGreaterThan(999);
+                expect(Date.now() - t0).toBeGreaterThan(998);
                 expect(Date.now() - t0).toBeLessThan(1100);
                 done();
             }).catch(faildone);

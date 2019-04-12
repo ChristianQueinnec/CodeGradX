@@ -1,7 +1,7 @@
 // userEnroll.js
-// Time-stamp: "2019-04-03 17:11:33 queinnec"
+// Time-stamp: "2019-04-11 16:54:41 queinnec"
 
-const CodeGradX = require('codegradx');
+module.exports = function (CodeGradX) {
 
 /** Enroll a new user. 
 
@@ -31,6 +31,8 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
         state.currentUser = new CodeGradX.User(response.entity);
         return Promise.resolve(state.currentUser);
     });
+};
+
 };
 
 // end of userEnroll.js

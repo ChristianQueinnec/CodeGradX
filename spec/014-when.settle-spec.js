@@ -58,7 +58,7 @@ describe("when.settle", function () {
                 expect(results[1].value).toBe(22);
                 expect(results[2].state).toBe('fulfilled');
                 expect(results[2].value).toBe(23);
-                expect(Date.now() - t0).toBeGreaterThan(999);
+                expect(Date.now() - t0).toBeGreaterThan(998);
                 expect(Date.now() - t0).toBeLessThan(1100);
                 done();
             }).catch(faildone);
@@ -90,7 +90,7 @@ describe("when.settle", function () {
                 expect(results[1].reason).toBe(42);
                 expect(results[2].state).toBe('rejected');
                 expect(results[2].reason).toBe(43);
-                expect(Date.now() - t0).toBeGreaterThan(999);
+                expect(Date.now() - t0).toBeGreaterThan(998);
                 expect(Date.now() - t0).toBeLessThan(1100);
                 done();
             }).catch(faildone);

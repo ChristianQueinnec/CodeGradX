@@ -72,7 +72,7 @@ describe("when.timeout", function () {
             .then(faildone)
             .catch((reason) => {
                 expect(reason).toMatch(/Duration 100 exhausted/);
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 expect(Date.now() - t0).toBeLessThan(1000);
                 done();
             });

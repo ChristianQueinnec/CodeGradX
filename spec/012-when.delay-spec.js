@@ -37,7 +37,7 @@ describe("when.delay", function () {
         when.delay(Promise.resolve(11), 100)
             .then((value) => {
                 expect(value).toBe(11);
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 done();
             }).catch(faildone);
     });
@@ -49,7 +49,7 @@ describe("when.delay", function () {
             .then(faildone)
             .catch((reason) => {
                 expect(reason).toBe(21);
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 done();
             });
     });
@@ -61,7 +61,7 @@ describe("when.delay", function () {
             .then(faildone)
             .catch((reason) => {
                 expect(reason).toMatch(/exhausted/);
-                expect(Date.now() - t0).toBeGreaterThan(199);
+                expect(Date.now() - t0).toBeGreaterThan(198);
                 expect(Date.now() - t0).toBeLessThan(1000);
                 done();
             });
@@ -74,7 +74,7 @@ describe("when.delay", function () {
             .then(faildone)
             .catch((reason) => {
                 expect(reason).toMatch(/exhausted/);
-                expect(Date.now() - t0).toBeGreaterThan(199);
+                expect(Date.now() - t0).toBeGreaterThan(198);
                 expect(Date.now() - t0).toBeLessThan(1000);
                 done();
             });
@@ -87,7 +87,7 @@ describe("when.delay", function () {
             .then(faildone)
             .catch((reason) => {
                 expect(reason).toBe(51);
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 done();
             });
     });

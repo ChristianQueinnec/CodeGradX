@@ -1,5 +1,5 @@
 // xml2html.js
-// Time-stamp: "2019-04-07 10:21:37 queinnec"
+// Time-stamp: "2019-04-12 09:25:45 queinnec"
 
 module.exports = function (CodeGradX) {
     const _ = CodeGradX._;
@@ -171,7 +171,7 @@ CodeGradX.xml2html = function (s, options) {
           '<div class=.fw4ex_question_title. [^>]*>.*?</div>');
       result = result.replace(questionTitleRegExp, '');
   }
-  return result;
+  return Promise.resolve(result);
 };
 CodeGradX.xml2html.default = {
   markFactor:  100

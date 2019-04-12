@@ -53,8 +53,7 @@ describe('CodeGradX bad authentication', function () {
             })
             .catch(function (reason) {
                 //console.log(reason);
-                expect(reason.message)
-                    .toEqual(jasmine.stringMatching(/e152-a/));
+                expect(reason.message).toMatch(/e162/);
                 done();
             });
     });
@@ -69,8 +68,7 @@ describe('CodeGradX bad authentication', function () {
             .catch(function (reason) {
                 //console.log(reason);
                 //state.log.show();
-                expect(reason.message)
-                    .toEqual(jasmine.stringMatching(/e152-b/));
+                expect(reason.message).toMatch(/e162/);
                 done();
             });
     });

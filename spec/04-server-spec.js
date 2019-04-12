@@ -1,6 +1,8 @@
 // Jasmine tests for servers availability related methods.
 
 var CodeGradX = require('../index.js');
+// Some of these tests require at least two servers:
+var otherServers = require('./otherServers.json');
 
 describe('CodeGradX', function () {
   it('should be loaded', function () {
@@ -23,6 +25,7 @@ describe('CodeGradX', function () {
       done();
     }
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     var promise = state.checkServer('a', 0);
     promise.then(function (response) {
       //console.log(response.entity);
@@ -39,6 +42,7 @@ describe('CodeGradX', function () {
       done();
     }
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     var promise = state.checkServer('a', 1);
     promise.then(function (response) {
       //console.log(response.entity);
@@ -55,6 +59,7 @@ describe('CodeGradX', function () {
       done();
     }
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     var promise = state.checkServer('a', 17);
     promise.then(function (response) {
       fail("should not happen!");
@@ -74,6 +79,7 @@ describe('CodeGradX', function () {
       done();
     }
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     var promise = state.checkServers('a');
     promise.then(function (descriptions) {
       //console.log(responses);
@@ -91,6 +97,7 @@ describe('CodeGradX', function () {
       done();
     }
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     // Check a0, a1 and try unavailable a2:
     var promise1 = state.checkServers('a');
     promise1.then(function (responses1) {

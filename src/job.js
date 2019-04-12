@@ -1,65 +1,57 @@
 // job.js
-// Time-stamp: "2019-04-07 10:20:35 queinnec"
+// Time-stamp: "2019-04-12 09:57:42 queinnec"
 
 module.exports = function (CodeGradX) {
     const when = CodeGradX.when;
 
 /** Get the marking report of that Job. The marking report will be stored
-    in the `XMLreport` and `report` properties.
+    in the `XMLreport` and `HTMLreport` properties.
 
   @param {Object} parameters - for repetition see sendRepeatedlyESServer.default
   @returns {Promise} yields {Job}
 
   */
 
-CodeGradX.Job.prototype.getReport = function (parameters) {
-  parameters = parameters || {};
-  const job = this;
-  const state = CodeGradX.getCurrentState();
-  state.debug('getJobReport1', job);
-  if ( job.XMLreport ) {
-    return Promise.resolve(job);
-  }
-  const path = job.getReportURL();
-  const promise = state.sendRepeatedlyESServer('s', parameters, {
-    path: path,
-    method: 'GET',
-    headers: {
-      "Accept": "text/xml"
+CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
+    const job = this;
+    const state = CodeGradX.getCurrentState();
+    state.debug('getJobReport1', job);
+    if ( job.XMLreport ) {
+        return Promise.resolve(job);
     }
-  });
-  const promise1 = promise.then(function (response) {
-    //state.log.show();
-    //console.log(response);
-    state.debug('getJobReport2', job);
+    const path = job.getReportURL();
+    const response = await state.sendRepeatedlyESServer('s', parameters, {
+        path: path,
+        method: 'GET',
+        headers: {
+            "Accept": "text/xml"
+        }
+    }).catch(reasons => {
+        // sort reasons and extract only waitedTooMuch if present:
+        function tooLongWaiting (reasons) {
+            if ( Array.isArray(reasons) ) {
+                for ( let i = 0 ; i<reasons.length ; i++ ) {
+                    const r = reasons[i];
+                    const result = tooLongWaiting(r);
+                    if ( result ) {
+                        return result;
+                    }
+                }
+            } else if ( reasons instanceof Error ) {
+                if ( reasons.message.match(/waitedTooMuch/) ) {
+                    return reasons;
+                }
+            }
+            return undefined;
+        }
+        const result = tooLongWaiting(reasons);
+        return Promise.reject(result || reasons);
+    });
+    state.debug('getJobReport2', response);
     job.originServer = response.url.replace(/^(.*)\/s\/.*$/, "$1");
     job.XMLreport = response.entity;
-    return Promise.resolve(job);
-  }).catch(function (reasons) {
-      // sort reasons and extract only waitedTooMuch if present:
-      function tooLongWaiting (reasons) {
-          if ( Array.isArray(reasons) ) {
-              for ( let i = 0 ; i<reasons.length ; i++ ) {
-                  const r = reasons[i];
-                  const result = tooLongWaiting(r);
-                  if ( result ) {
-                      return result;
-                  }
-              }
-          } else if ( reasons instanceof Error ) {
-              if ( reasons.message.match(/waitedTooMuch/) ) {
-                  return reasons;
-              }
-          }
-          return undefined;
-      }
-      const result = tooLongWaiting(reasons);
-      return Promise.reject(result || reasons);
-  });
-  const promise2 = promise.then(function (response) {
-    // Fill archived, started, ended, finished, mark and totalMark
-    state.debug('getJobReport3', job);
-    /* eslint no-control-regex: "off" */
+    //state.log.show();
+    
     const markingRegExp = new RegExp("^(.|\n)*(<marking (.|\n)*?>)(.|\n)*$");
     let marking = response.entity.replace(markingRegExp, "$2");
     state.debug('getJobReport3 marking', marking);
@@ -69,34 +61,26 @@ CodeGradX.Job.prototype.getReport = function (parameters) {
     }
     marking = marking.replace(/>/, "/>");
     //console.log(marking);
-    return CodeGradX.parsexml(marking).then(function (js) {
-      job.mark = CodeGradX._str2num2decimals(js.marking.$.mark);
-      job.totalMark = CodeGradX._str2num2decimals(js.marking.$.totalMark);
-      job.archived  = CodeGradX._str2Date(js.marking.$.archived);
-      job.started   = CodeGradX._str2Date(js.marking.$.started);
-      job.ended     = CodeGradX._str2Date(js.marking.$.ended);
-      job.finished  = CodeGradX._str2Date(js.marking.$.finished);
-      // machine, partial marks TO BE DONE
-      return Promise.resolve(response);
-    });
-  });
-  const promise3 = promise.then(function (response) {
-    // Fill exerciseid (already in exercise.uuid !)
-    state.debug('getJobReport4', job);
+    let js = await CodeGradX.parsexml(marking);
+    job.mark = CodeGradX._str2num2decimals(js.marking.$.mark);
+    job.totalMark = CodeGradX._str2num2decimals(js.marking.$.totalMark);
+    job.archived  = CodeGradX._str2Date(js.marking.$.archived);
+    job.started   = CodeGradX._str2Date(js.marking.$.started);
+    job.ended     = CodeGradX._str2Date(js.marking.$.ended);
+    job.finished  = CodeGradX._str2Date(js.marking.$.finished);
+    // machine, partial marks TO BE DONE
+    //state.log.show();
+
     const exerciseRegExp = new RegExp("^(.|\n)*(<exercise (.|\n)*?>)(.|\n)*$");
     const exercise = response.entity.replace(exerciseRegExp, "$2");
     if ( exercise.length === response.entity.length ) {
         return Promise.reject(response);
     }
     //console.log(exercise);
-    return CodeGradX.parsexml(exercise).then(function (js) {
-      Object.assign(job, js.exercise.$);
-      return Promise.resolve(response);
-    });
-  });
-  const promise4 = promise.then(function (response) {
-    // Fill report
-    state.debug('getJobReport5');
+    js = await CodeGradX.parsexml(exercise);
+    Object.assign(job, js.exercise.$);
+    //state.log.show();
+    
     const contentRegExp = new RegExp("^(.|\n)*(<report>(.|\n)*?</report>)(.|\n)*$");
     const content = response.entity.replace(contentRegExp, "$2");
     //state.debug('getJobReport5 content',
@@ -104,16 +88,13 @@ CodeGradX.Job.prototype.getReport = function (parameters) {
     if ( content.length === response.entity.length ) {
         return Promise.reject(response);
     }
-    job.HTMLreport = CodeGradX.xml2html(content);
-    return Promise.resolve(response);
-  });
-  return when.join(promise2, promise3, promise4).then(function (/*values*/) {
-    state.debug('getJobReport6', job);
-    //console.log(job);
-    return promise1;
-  }).finally(function () {
-      return promise1;
-  });
+    state.debug('getJobReport5a', 'before xml2html');
+    const HTMLreport = await CodeGradX.xml2html(content);
+    job.HTMLreport = HTMLreport;
+    state.debug('getJobReport5b', 'after xml2html');
+    //state.log.show();
+
+    return job;
 };
 
 /** Get the problem report of that Job if it exists. The marking

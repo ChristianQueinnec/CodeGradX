@@ -49,7 +49,7 @@ describe("when.join", function () {
                   Promise.resolve(22),
                   delayedSuccess(100, 23) )
             .then((values) => {
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 expect(values.length).toBe(3);
                 expect(values[0]).toBe(21);
                 expect(values[1]).toBe(22);
@@ -97,7 +97,7 @@ describe("when.join", function () {
                   delayedRejection(100, 54) )
             .then(faildone)
             .catch((reason) => {
-                expect(Date.now() - t0).toBeGreaterThan(99);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 expect(reason).toBe(54);
                 done();
             });

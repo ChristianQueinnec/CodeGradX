@@ -2,6 +2,8 @@
 
 var CodeGradX = require('../index.js');
 var xml2js = require('xml2js').parseString;
+// Some of these tests require s3 and s6 storage servers:
+var otherServers = require('./otherServers.json');
 
 describe('CodeGradX', function () {
 
@@ -69,6 +71,7 @@ describe('CodeGradX', function () {
 
   it('again with implicit checkServers', function (done) {
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     function faildone (reason) {
       fail(reason);
       done();
@@ -95,6 +98,7 @@ describe('CodeGradX', function () {
 
   it("should get a public job report", function (done) {
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     function faildone (reason) {
       state.log.show();
       fail(reason);
@@ -123,6 +127,7 @@ describe('CodeGradX', function () {
 
   it("again with implicit checkServers", function (done) {
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     function faildone (reason) {
       fail(reason);
       done();
@@ -147,6 +152,7 @@ describe('CodeGradX', function () {
 
   it("should get a public job report repeatedly", function (done) {
     var state = new CodeGradX.State();
+    state.servers = otherServers;
     function faildone (reason) {
       fail(reason);
       done();

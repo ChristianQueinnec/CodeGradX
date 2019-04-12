@@ -4,10 +4,13 @@
 var CodeGradX = require('../index.js');
 var authData = require('./auth1-data.json');      // lambda student
 require('../src/campaign.js')(CodeGradX);
-require('../src/exercisesSet.js')(CodeGradX);
+require('../src/campaignlib.js')(CodeGradX);
 require('../src/exercise.js')(CodeGradX);
-require('../src/xml2html.js')(CodeGradX);
+require('../src/exercisesSet.js')(CodeGradX);
 require('../src/job.js')(CodeGradX);
+require('../src/parsexml.js')(CodeGradX);
+require('../src/xml2html.js')(CodeGradX);
+const otherServers = require('./otherServers.json');
 
 describe('CodeGradX', function () {
 
@@ -15,7 +18,7 @@ describe('CodeGradX', function () {
       return function faildone (reason) {
           var state = CodeGradX.getCurrentState();
           state.debug('faildone', reason).show();
-          //console.log(reason);
+          console.log(reason);
           fail(reason);
           done();
       };
@@ -33,36 +36,25 @@ describe('CodeGradX', function () {
     }, faildone);
   });
 
-function _str2Date (str) {
-  var ms = Date.parse(str);
-  if ( ! isNaN(ms) ) {
-    var d = new Date(ms);
-    //console.log("STR:" + str + " => " + ms + " ==> " + d);
-    return d;
-  } else {
-    throw new Error("Cannot parse " + str);
-  }
-}
-
   it("should have a working str2Date", function (done) {
     var string1 = "2001-01-01 00:00:00+01";
-    var date1 = _str2Date(string1);
+    var date1 = CodeGradX._str2Date(string1);
     expect(date1.getFullYear()).toBe(2001);
 
     var string2 = "2032-01-01 00:00:00+01";
-    var date2 = _str2Date(string2);
+    var date2 = CodeGradX._str2Date(string2);
     expect(date2.getFullYear()).toBe(2032);
 
     var string3 = "2028-01-01T00:00:00";
-    var date3 = _str2Date(string3);
+    var date3 = CodeGradX._str2Date(string3);
     expect(date3.getFullYear()).toBe(2028);
 
     var string4 = "2027-01-01 00:00:00Z";
-    var date4 = _str2Date(string4);
+    var date4 = CodeGradX._str2Date(string4);
     expect(date4.getFullYear()).toBe(2027);
 
     var string5 = "2026-01-01T00:00:00Z";
-    var date5 = _str2Date(string5);
+    var date5 = CodeGradX._str2Date(string5);
     expect(date5.getFullYear()).toBe(2026);
 
     done();
@@ -249,6 +241,7 @@ function _str2Date (str) {
 
   it("may send an answer", function (done) {
     var state = CodeGradX.getCurrentState();
+    state.servers = otherServers;
     var faildone = make_faildone(done);
     expect(exercise2).toBeDefined();
     //console.log(exercise2);

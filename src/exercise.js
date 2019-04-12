@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-04-08 09:39:35 queinnec"
+// Time-stamp: "2019-04-11 19:10:21 queinnec"
 /* eslint no-control-regex: "off" */
 
 module.exports = function (CodeGradX) {
@@ -60,13 +60,16 @@ CodeGradX.Exercise.prototype.getDescription = function () {
         const contentRegExp = new RegExp("^(.|\n)*(<\\s*content\\s*>(.|\n)*</content\\s*>)(.|\n)*$");
         const content = response.entity.replace(contentRegExp, "$2");
         exercise.XMLcontent = content;
-        exercise.stem = CodeGradX.xml2html(content, { exercise });
-        // extract equipment:
-        state.debug("getDescription5b", exercise);
-        extractEquipment(exercise, response.entity);
-        // extract identity and authorship:
-        state.debug("getDescription6", exercise);
-        return extractIdentification(exercise, response.entity);
+        return CodeGradX.xml2html(content, { exercise })
+            .then((stem) => {
+                exercise.stem = stem;
+                // extract equipment:
+                state.debug("getDescription5b", exercise);
+                extractEquipment(exercise, response.entity);
+                // extract identity and authorship:
+                state.debug("getDescription6", exercise);
+                return extractIdentification(exercise, response.entity);
+            });
     });
     const promise4 = promise.then(function (response) {
         // If only one question expecting only one file, retrieve its name:
@@ -161,22 +164,25 @@ function extractIdentification (exercise, s) {
         exercise.nickname = result.$.nickname;
         exercise.date = result.$.date;
         const summary = content.replace(summaryRegExp, "$2");
-        exercise.summary = CodeGradX.xml2html(summary);
-        if ( Array.isArray(result.tags.tag) ) {
-            exercise.tags = result.tags.tag.map(function (tag) {
-                return tag.$.name;
+        return CodeGradX.xml2html(summary)
+            .then((summary) => {
+                exercise.summary = summary;
+                if ( Array.isArray(result.tags.tag) ) {
+                    exercise.tags = result.tags.tag.map(function (tag) {
+                        return tag.$.name;
+                    });
+                } else {
+                    exercise.tags = [result.tags.tag.$.name];
+                }
+                // extract authors
+                const authors = result.authorship;
+                if ( Array.isArray(authors.author) ) {
+                    exercise.authorship = authors.author;
+                } else {
+                    exercise.authorship = [ authors.author ];
+                }
+                return Promise.resolve(exercise);
             });
-        } else {
-            exercise.tags = [result.tags.tag.$.name];
-        }
-        // extract authors
-        const authors = result.authorship;
-        if ( Array.isArray(authors.author) ) {
-            exercise.authorship = authors.author;
-        } else {
-            exercise.authorship = [ authors.author ];
-        }
-        return Promise.resolve(exercise);
     });
 }
 

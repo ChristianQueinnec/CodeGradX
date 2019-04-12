@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-07 13:30:39 queinnec"
+// Time-stamp: "2019-04-11 19:14:31 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -373,15 +373,7 @@ CodeGradX.State = function (initializer) {
             // Description of an A server:
             0: {
                 // a full hostname supersedes the default FQDN:
-                host: 'a5.codegradx.org',
-                enabled: false
-            },
-            1: {
-                host: 'a4.codegradx.org',
-                enabled: false
-            },
-            2: {
-                host: 'a6.codegradx.org',
+                host: 'a.codegradx.org',
                 enabled: false
             }
         },
@@ -389,15 +381,7 @@ CodeGradX.State = function (initializer) {
             suffix: '/alive',
             protocol: 'https',
             0: {
-                host: 'e5.codegradx.org',
-                enabled: false
-            },
-            1: {
-                host: 'e4.codegradx.org',
-                enabled: false
-            },
-            2: {
-                host: 'e6.codegradx.org',
+                host: 'e.codegradx.org',
                 enabled: false
             }
         },
@@ -405,15 +389,7 @@ CodeGradX.State = function (initializer) {
             suffix: '/dbalive',
             protocol: 'https',
             0: {
-                host: 'x4.codegradx.org',
-                enabled: false
-            },
-            1: {
-                host: 'x5.codegradx.org',
-                enabled: false
-            },
-            2: {
-                host: 'x6.codegradx.org',
+                host: 'x.codegradx.org',
                 enabled: false
             }
         },
@@ -421,21 +397,8 @@ CodeGradX.State = function (initializer) {
             suffix: '/index.txt',
             protocol: 'https',
             0: {
-                host: 's4.codegradx.org',
+                host: 's.codegradx.org',
                 enabled: false
-            },
-            1: {
-                host: 's5.codegradx.org',
-                enabled: false
-            },
-            2: {
-                host: 's6.codegradx.org',
-                enabled: false
-            },
-            3: {
-                host: 's3.codegradx.org',
-                enabled: false,
-                once: true
             }
         }
     };
@@ -472,43 +435,6 @@ CodeGradX.State = function (initializer) {
 
 CodeGradX.getCurrentState = function (initializer) {
     return new CodeGradX.State(initializer);
-};
-
-/** Further dynamic initialization of the state. The configuration
-    looks like:
-
-  {
-     servers: { },   // replaces state.servers
-     functions: {    // additional autoload functions
-        name: file,
-        ...
-     }
-  }
-
-  @returns {Promise<State>} yields {State}
-
- */
-
-CodeGradX.State.prototype.initialize = function (hostname) {
-    const state = this;
-    state.debug('initialize1', hostname);
-    return state.sendAXserver('x', {
-        path: `/constellation/configuration/${hostname}`,
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    }).then(function (response) {
-        //console.log(response);
-        state.debug('initialize2', response);
-        state.servers = response.entity.servers;
-        // more to be done......................................
-        return state;
-    }).catch(function (exc) {
-        state.debug('initialize3', exc);
-        return state;
-    });
 };
 
 /** Helper function, add a fact to the log held in the current state
@@ -1022,17 +948,18 @@ CodeGradX.State.prototype.getAuthenticatedUser =
 function (login, password) {
   const state = this;
   state.debug('getAuthenticatedUser1', login);
+  const params = { login, password };
+  if ( state.currentCampaignName ) {
+      params.campaign = state.currentCampaignName;
+  }
   return state.sendAXServer('x', {
-    path: '/direct/check',
+    path: '/fromp/connect',
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    entity: {
-      login: login,
-      password: password
-    }
+    entity: params
   }).then(function (response) {
     //console.log(response);
     state.debug('getAuthenticatedUser2', response);
@@ -1055,7 +982,19 @@ CodeGradX.getCurrentUser = function (force) {
         return Promise.resolve(state.currentUser);
     }
     state.debug('getCurrentUser1');
-    return state.getAuthenticatedUser('', '')
+    return state.sendAXServer('x', {
+        path: '/fromp/whoami',
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('getWhoAmI2', response);
+        state.currentUser = new CodeGradX.User(response.entity);
+        return Promise.resolve(state.currentUser);
+    })
         .catch((reason) => {
             state.debug('getCurrentUser2', reason);
             return undefined;
@@ -1314,50 +1253,246 @@ CodeGradX.Batch = function (js) {
   Object.assign(this, js);
 };
 
-// ******************* Autoload methods *******************
+/** ******************* Initialization *******************
+    Initialization is done in several steps.
+
+   -1- get the current default constellation of a, e, s and x servers.
+    This configuration is taken out of an X server as
+             x.codegradx.org/constellation/current.json
+
+    -2- get the specialized configuration for the server say
+    li101.codegradx.org. This configuration defines the campaign, the
+    programming language, the editor, etc. The configuration is held
+    on the server itself as
+       li101.codegradx.org/config.js
+    or on an X server as
+      x.codegradx.org/constellation/configuration/li101.codegradx.org/config.js
+
+
+      @return Promise<> yielding <State>
+*/
+
+CodeGradX.initialize = async function () {
+    const state = new CodeGradX.State();
+    CodeGradX.initializeAutoloads(CodeGradX.autoloads);
+    try {
+        const servers = await state.getCurrentConstellation();
+        state.servers = servers;
+    } catch (exc) {
+        state.debug('initialize aesx', exc);
+    }
+    const hostname = document.URL
+          .replace(/^https?:\/\//, '')
+          .replace(/\/.*$/, '')
+          .replace(/:\d+/, '');
+    let js = 'true';
+    try {
+        js = await state.getCurrentConfiguration1(hostname);
+    } catch (exc) {
+        state.debug('initialize getcurrentconfiguration1', exc);
+        try {
+            js = await state.getCurrentConfigurationX(hostname);
+        } catch (exc) {
+            state.debug('initialize getcurrentconfigurationX', exc);
+        }
+    }
+    try {
+        const f = eval(`(${js})`);
+        f(CodeGradX);
+    } catch (exc) {
+        state.debug('initialize eval configuration', exc);
+    }
+    return state;
+};
+
+/** Get the current definition of the constellation of aesx servers.
+*/
+
+CodeGradX.State.prototype.getCurrentConstellation = function () {
+    const state = this;
+    state.debug('getCurrentConstellation1');
+    return state.sendAXServer('x', {
+        path: `/constellation/aesx`,
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('getCurrentConstellation2', response);
+        return response.entity;
+    }).catch(function (exc) {
+        state.debug('getCurrentConstellation3', exc);
+        return state;
+    });
+};
+
+/** Get the configuration from the server itself.
+ */
+
+CodeGradX.State.prototype.getCurrentConfiguration1 = function (hostname) {
+    const state = this;
+    state.debug('getCurrentConfiguration11');
+    return state.userAgent({
+        path: `/${hostname}.js`,
+        method: 'GET',
+        headers: {
+            'Accept': 'application/javascript',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('getCurrentConfiguration12', response);
+        return response.entity;
+    }).catch(function (exc) {
+        state.debug('getCurrentConfiguration13', exc);
+        return state;
+    });
+};
+
+/** Get the configuration from an X server.
+ */
+
+CodeGradX.State.prototype.getCurrentConfigurationX = function (hostname) {
+    const state = this;
+    state.debug('getCurrentConfigurationX1');
+    return state.sendAXServer('x', {
+        path: `/constellation/configuration/${hostname}.js`,
+        method: 'GET',
+        headers: {
+            'Accept': 'application/javascript',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('getCurrentConfigurationX2', response);
+        return response.entity;
+    }).catch(function (exc) {
+        state.debug('getCurrentConfigurationX3', exc);
+        return state;
+    });
+};
+
 /** 
-    Convert 
+    In order to take benefit from autoload, one should convert 
        result = o.f(a,b) 
     into 
        o.f(a,b).then((result) => { ... });
 
     All autoload methods are converted into Promises.
+
+    The dynamically loaded files must look like:
+
+   module.exports = function (CodeGradX) {
+       ...
+   }
+
+   This module can only require other modules such as he, sax, xml2js.
+
 */
 
 CodeGradX.initializeAutoloads = function (autoloads) {
     const state = CodeGradX.getCurrentState();
     function load (file) {
-        file;
+        state.debug('autoload1', file);
+        return state.userAgent({
+            path: `/extras/${file}`,
+            method: 'GET',
+            headers: {
+                'Accept': 'application/javascript',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response) {
+            //console.log(response);
+            state.debug('autoload2', response);
+            const js = response.entity;
+            let result;
+            try {
+                result = new Function ('require', 'module', js);
+                function newrequire (word) {
+                    if ( word === 'codegradx' ) {
+                        return CodeGradX;
+                    // These other modules should also be dynamically loaded!!!
+                    } else if ( word === 'xml2js' ) {
+                        return require('xml2js');
+                    } else if ( word === 'sax' ) {
+                        return require('sax');
+                    } else if ( word === 'he' ) {
+                        return require('he');
+                    } else {
+                        throw new Error(`require(${word}) not defined!`);
+                    }
+                }
+                let module = {};
+                result(newrequire, module);
+                return module.exports(CodeGradX);
+            } catch (exc) {
+                throw exc;
+            }
+        }).catch(function (exc) {
+            state.debug('autoload3', exc);
+            throw new Error(`autoload function ${file} not ready`);
+        });
     }
     for ( let klass in autoloads ) {
         if ( typeof autoloads[klass] === 'string' ) {
             let file = autoloads[klass];
             //console.log(`Autoload CodeGradX.${klass}`);
-            CodeGradX[klass] = function (...args) {
-                load(file)(CodeGradX)(args);
+            const loader = function (...args) {
+                const self = this;
+                state.debug('Autoload1', klass, self, args);
+                return load(file).then(() => {
+                    state.debug('Autoload2', klass, self, args)
+                    const newfunction = CodeGradX[klass];
+                    if ( newfunction !== loader ) {
+                        try {
+                            const result = newfunction.apply(self, args);
+                            return Promise.resolve(result);
+                        } catch (exc) {
+                            return Promise.reject(exc);
+                        }
+                    } else {
+                        return Promise.reject(new Error(`Bad autoload for ${file}`));
+                    }
+                }).catch((exc) => {
+                    state.debug('Autoload3', klass, exc);
+                    throw exc;
+                });
             };
+            CodeGradX[klass] = loader;
         } else {
             for ( let name in autoloads[klass] ) {
                 let file = autoloads[klass][name];
                 //console.log(`Autoload CodeGradX.${klass}.prototype.${name}`);
-                CodeGradX[klass].prototype[name] = function (...args) {
+                const loader = function (...args) {
                     const self = this;
-                    state.debug('initializeAutoloads1', klass, name, self, args);
-                    return true(file,args) /////////////////////////
-                      .then(function (response) {
-                        state.debug('initializeAutoloads2', klass, name, response);
-                        (eval(response.entity))(CodeGradX);
-                        return CodeGradX[klass].prototype[name].apply(self, args);
+                    state.debug('Autoloads1', klass, name, self, args);
+                    return load(file).then(function () {
+                        state.debug('Autoloads2', klass, name);
+                        const newfunction = CodeGradX[klass].prototype[name];
+                        if ( newfunction !== loader ) {
+                            try {
+                                const result = newfunction.apply(self, args);
+                                return Promise.resolve(result);
+                            } catch (exc) {
+                                return Promise.reject(exc);
+                            }
+                        } else {
+                            return Promise.reject(new Error(`Bad autoloads for ${name} and ${file}`));
+                        }
                     }).catch(function (exc) {
-                        state.debug('initializeAutoloads3', exc);
+                        state.debug('Autoloads3', exc);
+                        throw exc;
                     });
                 };
+                CodeGradX[klass].prototype[name] = loader;
             }
         }
     }
 };
 
-CodeGradX.initializeAutoloads({
+CodeGradX.autoloads = {
     xml2html: 'xml2html.js',
     parsexml: 'parsexml.js',
     State: {
@@ -1409,6 +1544,6 @@ CodeGradX.initializeAutoloads({
         getFinalReport: 'batch.js',
         getReportURL: 'batch.js'
     }
-});
+};
 
 // end of index.js
