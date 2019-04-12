@@ -1,4 +1,5 @@
 // Jasmine test to check xml to html conversion
+// Time-stamp: "2019-04-12 15:13:38 queinnec"
 
 var CodeGradX = require('../index.js');
 require('../src/xml2html.js')(CodeGradX);

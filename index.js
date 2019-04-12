@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-12 10:24:02 queinnec"
+// Time-stamp: "2019-04-12 18:24:49 queinnec"
 
 /** Javascript Library to interact with the CodeGradX infrastructure.
 
@@ -1374,6 +1374,80 @@ CodeGradX.State.prototype.getCurrentConfigurationX = function (hostname) {
     });
 };
 
+/** An implementation of require using dynamic load. 
+    loadrequire returns a promise that yields the module.exports 
+    value of the module.
+    
+    @param {String} modulename
+    @returns Promise<Object> yields the exports object
+
+    Modules are kept on the server within the extras/ directory.
+
+*/
+
+CodeGradX.loadrequire = function (file, options={ port: 80 }) {
+    const state = CodeGradX.getCurrentState();
+    if ( CodeGradX.loadrequire.cache[file] ) {
+        state.debug('loadrequire0 cached', file);
+        return Promise.resolve(CodeGradX.loadrequire.cache[file]);
+    }
+    state.debug('loadrequire1', file);
+    return state.userAgent({
+        path: `/extras/${file}`,
+        method: 'GET',
+        port: options.port,
+        headers: {
+            'Accept': 'application/javascript',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('loadrequire2', response);
+        if ( response.status.code >= 400 ) {
+            throw new Error(`Missing module ${file} (${response.status.code}`);
+        }
+        const js = response.entity;
+        let result;
+        let module = {};
+        try {
+            result = new Function ('require', 'module', js);
+            result(CodeGradX.cachedrequire, module);
+            if ( module.exports ) {
+                CodeGradX.loadrequire.cache[file] = module.exports;
+                return Promise.resolve(module.exports);
+            } else {
+                throw new Error(`Missing module.exports in ${file}`);
+            }
+        } catch (exc) {
+            state.debug('loadrequire3', exc);
+            throw exc;
+        }
+    }).catch(exc => {
+        state.debug('loadrequire4', exc);
+        return Promise.reject(exc);
+    });
+};
+CodeGradX.loadrequire.cache = {};
+
+/** 
+    Load from cache and directly returns the exports value.
+    Throw an error if the module is not yet in cache.
+
+    @param {String} filename
+    @returns {Object} exports
+
+*/
+
+CodeGradX.cachedrequire = function (file) {
+    const state = CodeGradX.getCurrentState();
+    if ( CodeGradX.loadrequire.cache[file] ) {
+        state.debug('cachedrequire0 cached', file);
+        return CodeGradX.loadrequire.cache[file];
+    } else {
+        throw new Error(`Uncached module ${file}`);
+    }
+};
+
 /** 
     In order to take benefit from autoload, one should convert 
        result = o.f(a,b) 
@@ -1419,8 +1493,6 @@ CodeGradX.initializeAutoloads = function (autoloads) {
                         return require('xml2js');
                     } else if ( word === 'sax' ) {
                         return require('sax');
-                    } else if ( word === 'he' ) {
-                        return require('he');
                     } else {
                         throw new Error(`require(${word}) not defined!`);
                     }
