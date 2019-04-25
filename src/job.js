@@ -1,7 +1,9 @@
 // job.js
-// Time-stamp: "2019-04-12 10:22:59 queinnec"
+// Time-stamp: "2019-04-25 17:24:50 queinnec"
 
-module.exports = function (CodeGradX) {
+import CodeGradX from '../codegradx.mjs';
+/** Re-export the `CodeGradX` object */
+export default CodeGradX;
 
 /** Get the marking report of that Job. The marking report will be stored
     in the `XMLreport` and `HTMLreport` properties.
@@ -161,8 +163,6 @@ CodeGradX.Job.prototype.getProblemReportURL = function () {
 CodeGradX.Job.prototype.getTgzURL = function () {
     const job = this;
     return job.getBaseURL() + '.tgz';
-};
-
 };
 
 // end of job.js

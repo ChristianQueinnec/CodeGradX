@@ -10,9 +10,63 @@ import _4 from '../src/job.mjs';
 import _5 from '../src/xml2html.mjs';
 import _6 from '../src/parsexml.mjs';
 
-const otherServers = require('./otherServers.json');
+// Some of these tests require s3 and s6 storage servers
+// and also working a, e and x servers:
+const otherServers = {
+  "domain" : ".codegradx.org",
+  "names": ["a", "e", "x", "s"],
+  "protocol": "https",
+  "a": {
+      "suffix": "/alive",
+      "protocol": "https",
+      "0": {
+          "host": "a.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "a.codegradx.org",
+          "enabled": false
+      }
+  },
+  "e": {
+      "suffix": "/alive",
+      "protocol": "https",
+      "0": {
+          "host": "e.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "e.codegradx.org",
+          "enabled": false
+      }
+  },
+  "x": {
+      "suffix": "/dbalive",
+      "protocol": "https",
+      "0": {
+          "host": "x.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "x.codegradx.org",
+          "enabled": false
+      }
+  },
+  "s": {
+      "suffix": "/index.txt",
+      "protocol": "https",
+      "0": {
+          "host": "s6.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "s3.codegradx.org",
+          "enabled": false
+      }
+  }
+};
 
-describe('CodeGradX', function () {
+describe('CodeGradX 30 exercise', function () {
 
   function make_faildone (done) {
       return function faildone (reason) {
@@ -115,7 +169,7 @@ describe('CodeGradX', function () {
   });
 
   // Javascript test
-  it("checks replace globally", function () {
+  it("JS tests: checks replace globally", function () {
     var re = new RegExp("^(.)*(<a>(.)*</a>)(.)*$", "g");
     var s1 = "1234<a>X</a>567";
     expect(s1.replace(re, "$2")).toBe("<a>X</a>");
@@ -230,6 +284,8 @@ describe('CodeGradX', function () {
     var faildone = make_faildone(done);
     var exerciseName = "com.paracamplus.li205.function.1,.XXX";
     campaign1.getExercise(exerciseName).then(faildone, function (reason) {
+      expect(reason).toBeDefined();
+      expect(reason.message).toMatch(/no such exercise/i);
       done();
     });
   });

@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-25 16:48:25 queinnec"
+// Time-stamp: "2019-04-25 17:50:26 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -465,6 +465,8 @@ CodeGradX.State.prototype.mkUserAgent = function () {
                             encodeURIComponent(options.entity[key]));
             }
             options.body = params.join('&');
+        } else if ( typeof options.entity === 'string' ) {
+            options.body = options.entity;
         }
         state.debug('userAgent2', options);
         try {
@@ -508,7 +510,7 @@ CodeGradX.State.prototype.adjoinCurrentCookie = function (kind, request) {
     if ( state.currentCookie ) {
         //request.credentials = 'include';
         if ( ! request.headers ) {
-            request.headers = new Headers.Headers();
+            request.headers = {};
         }
         // To send this header would impose a pre-flight:
         //if ( kind !== 's' ) {

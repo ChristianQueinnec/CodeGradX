@@ -1,5 +1,5 @@
-// campaign.js
-// Time-stamp: "2019-04-25 17:05:06 queinnec"
+// campaign.mjs
+// Time-stamp: "2019-04-25 17:22:33 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
