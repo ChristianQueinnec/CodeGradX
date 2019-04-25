@@ -6,7 +6,7 @@
 import CodeGradX from '../codegradx.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 
-describe('CodeGradX', function () {
+describe('CodeGradX 20', function () {
   it('should be loaded', function () {
     expect(CodeGradX).toBeDefined();
   });
