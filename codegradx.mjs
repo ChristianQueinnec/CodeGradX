@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-25 09:27:53 queinnec"
+// Time-stamp: "2019-04-25 16:35:16 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -252,6 +252,16 @@ CodeGradX.Log = function () {
     this.size = 90;
 };
 
+/** Erase the log.
+
+    @returns {Log}
+*/
+
+CodeGradX.Log.prototype.clear = function () {
+    this.items = [];
+    return this;
+};
+
 /** Log some facts. The facts (the arguments) will be concatenated
     (with a separating space) to form a string to be recorded in the log.
 
@@ -264,7 +274,9 @@ CodeGradX.Log = function () {
 
 CodeGradX.Log.prototype.debug = function () {
     function inspect (o) {
-        if ( typeof o === 'object' ) {
+        if ( o === undefined ) {
+            return 'undefined';
+        } else if ( typeof o === 'object' ) {
             let results = [];
             for ( let key of Object.keys(o) ) {
                 results.push(`${key}: ${inspect(o[key])}`);
@@ -336,58 +348,7 @@ CodeGradX.Log.prototype.show = function (items) {
   */
 
 CodeGradX.State = function (initializer) {
-    function responseKind (headers) {
-        const contentType = headers.get('Content-Type');
-        if ( contentType ) {
-            if ( /application\/json/.exec(contentType) ) {
-                return 'JSON';
-            } else if ( /(application|text)\/xml/.exec(contentType) ) {
-                return 'XML';
-            } else if ( /text\/plain/.exec(contentType) ) {
-                return 'TEXT';
-            }
-        }
-        return undefined;
-    }
-    const self = this;
-    this.userAgent = async function (options) {
-        self.debug('userAgent1', options);
-        options.redirect = options.redirect || 'follow';
-        options.credentials = 'include';
-        if ( typeof options.entity === 'object' ) {
-            let params = [];
-            for ( let key of Object.keys(options.entity) ) {
-                params.push(encodeURIComponent(key) + '=' +
-                            encodeURIComponent(options.entity[key]));
-            }
-            options.body = params.join('&');
-            self.debug('userAgent4', options);
-        };
-        //options.mode = 'cors';
-        try {
-            const response = await window.fetch(options.path, options);
-            self.debug('userAgent2', options, response.ok);
-            if ( response.ok ) {
-                response.entityKind = responseKind(response.headers);
-                if ( response.entityKind &&
-                     response.entityKind === 'JSON' ) {
-                    response.entity = await response.json();
-                } else if ( response.entityKind &&
-                            response.entityKind === 'XML' ) {
-                    response.entity = await response.text();
-                } else {
-                    // text/plain for instance:
-                    response.entity = await response.text();
-                }
-                self.debug('userAgent3', response.entityKind);
-                return Promise.resolve(response);
-            } else {
-                return Promise.reject(response);
-            }
-        } catch (exc) {
-            return Promise.reject(exc);
-        }
-    };
+    this.userAgent = this.mkUserAgent();
     this.log = new CodeGradX.Log();
     // State of servers:
     this.servers = {
@@ -457,6 +418,84 @@ CodeGradX.State = function (initializer) {
     return state;
 };
 
+/**  This userAgent uses the fetch API available in modern browsers.
+
+     @param {Object} options 
+     @returns Promise<response|exception>
+*/
+
+CodeGradX.State.prototype.mkUserAgent = function () {
+    const state = this;
+    async function decodeBody (response) {
+        function responseKind (headers) {
+            const contentType = headers.get('Content-Type');
+            if ( contentType ) {
+                if ( /application\/json/.exec(contentType) ) {
+                    return 'JSON';
+                } else if ( /(application|text)\/xml/.exec(contentType) ) {
+                    return 'XML';
+                } else if ( /text\/plain/.exec(contentType) ) {
+                    return 'TEXT';
+                }
+            }
+            return undefined;
+        }
+        response.entityKind = responseKind(response.headers);
+        if ( response.entityKind &&
+             response.entityKind === 'JSON' ) {
+            response.entity = await response.json();
+        } else if ( response.entityKind &&
+                    response.entityKind === 'XML' ) {
+            response.entity = await response.text();
+        } else {
+            // text/plain for instance:
+            response.entity = await response.text();
+        }
+        return response;
+    }
+    return async function (options) {
+        state.debug('userAgent1', options);
+        options.redirect = options.redirect || 'follow';
+        options.credentials = options.credentials || 'include';
+        options.mode = options.mode || 'cors';
+        if ( typeof options.entity === 'object' ) {
+            let params = [];
+            for ( let key of Object.keys(options.entity) ) {
+                params.push(encodeURIComponent(key) + '=' +
+                            encodeURIComponent(options.entity[key]));
+            }
+            options.body = params.join('&');
+        };
+        state.debug('userAgent2', options);
+        try {
+            const response = await window.fetch(options.path, options);
+            state.debug('userAgent3', options, response.ok);
+            if ( response.ok ) {
+                await decodeBody(response);
+                state.debug('userAgent4', response.entityKind);
+                return Promise.resolve(response);
+            } else if ( 400 <= response.status && response.status < 500 ) {
+                await decodeBody(response);
+                state.debug('userAgent4 clientError', response);
+                return Promise.reject(response);
+            } else if ( 500 <= response.status ) {
+                state.debug('userAgent4 serverError', response);
+                return Promise.reject(response);
+            } else if ( ! response.status ) {     // HACK ATTEMPT ???
+                await decodeBody(response);
+                state.debug('userAgent4 fetchPB', response);
+                return Promise.reject(response);
+            } else {
+                state.debug('userAgent4 PB', response);
+                return Promise.reject(response);
+            }
+        } catch (exc) {
+            state.debug('userAgent5 PB', exc);
+            return Promise.reject(exc);
+        }
+    };
+};
+
 /** Adjoin current cookie to the request.
 
     @param {Request} request
@@ -464,12 +503,12 @@ CodeGradX.State = function (initializer) {
 
  */
 
-CodeGradX.State.prototype.adjoinCurrentCookie = function (request) {
+CodeGradX.State.prototype.adjoinCurrentCookie = function (kind, request) {
     const state = this;
     if ( state.currentCookie ) {
-        request.credentials = 'include';
+        //request.credentials = 'include';
         if ( ! request.headers ) {
-            request.headers = {};
+            request.headers = new Headers.Headers();
         }
         // To send this header would impose a pre-flight:
         //if ( kind !== 's' ) {
@@ -483,6 +522,10 @@ CodeGradX.State.prototype.adjoinCurrentCookie = function (request) {
                 document.cookie = state.currentCookie + ";path='/';";
             }
         }
+    }
+    if ( kind === 's' ) {
+        request.credentials = 'omit';
+        //request.mode = 'no-cors';
     }
     return request;
 };
@@ -572,10 +615,7 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
   const request = {
       path: url
   };
-  state.adjoinCurrentCookie(request);
-  if ( kind === 's' ) {
-      request.credentials = 'omit';
-  }
+  state.adjoinCurrentCookie(kind, request);
   return state.userAgent(request)
         .then(updateDescription)
         .catch(invalidateDescription);
@@ -675,7 +715,7 @@ CodeGradX.State.prototype.getActiveServers = function (kind) {
 };
 
 /** Check HTTP response and try to elaborate a good error message.
-    A good HTTP response has a return code less than 400.
+    A good HTTP response has a return code less than 300.
 
     Error messages look like:
     <?xml version="1.0" encoding="UTF-8"?>
@@ -690,6 +730,8 @@ CodeGradX.State.prototype.getActiveServers = function (kind) {
     */
 
 CodeGradX.checkStatusCode = function (response) {
+    return Promise.resolve(response);       /// TEMP
+    
   const state = CodeGradX.getCurrentState();
   state.debug('checkStatusCode1', response);
   //console.log(response);
@@ -742,7 +784,7 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
     function regenerateNewOptions (options) {
         const newoptions = Object.assign({}, options);
         newoptions.headers = newoptions.headers || options.headers || {};
-        state.adjoinCurrentCookie(newoptions);
+        state.adjoinCurrentCookie(kind, newoptions);
         return newoptions;
     }
 
@@ -776,6 +818,7 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         // This function declares the host as unable to answer.
         // Meanwhile, the host may answer with bad status code!
         return function (reason) {
+            // With the fetch API, reason is a Response:
             state.debug('sendAXserver invalidate', description, reason);
             //console.log(reason);
             description.enabled = false;
@@ -846,7 +889,7 @@ CodeGradX.State.prototype.sendConcurrently = function (kind, options) {
     function regenerateNewOptions (options) {
         const newoptions = Object.assign({}, options);
         newoptions.headers = newoptions.headers || options.headers || {};
-        state.adjoinCurrentCookie(newoptions);
+        state.adjoinCurrentCookie(kind, newoptions);
         return newoptions;
     }
 
@@ -994,6 +1037,12 @@ function (login, password) {
     state.debug('getAuthenticatedUser2', response);
     state.currentUser = new CodeGradX.User(response.entity);
     return Promise.resolve(state.currentUser);
+  }).catch(function (response) {
+      if ( response.entityKind === 'JSON' ) {
+          return Promise.reject(response.entity);
+      } else {
+          return Promise.reject(response.entity);
+      }
   });
 };
 

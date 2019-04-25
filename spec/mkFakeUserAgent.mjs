@@ -23,7 +23,12 @@ export default function make_fakeUserAgent (history) {
             if ( item.status > 0 ) {
                 var js = {
                     status: item.status,
-                    headers: {}
+                    // Specific headers in fetch API should be accessed with get
+                    headers: {
+                        get: function (tag) {
+                            return undefined;
+                        }
+                    }
                 };
                 state.debug("fakeUserAgent response " + item.status);
                 return Promise.resolve(js).delay(100 * Math.random());

@@ -64,11 +64,34 @@ const otherServers = {
   }
 };
 
-describe('CodeGradX', function () {
+describe('CodeGradX 10', function () {
 
   it('should be loaded', function () {
     expect(CodeGradX).toBeDefined();
   });
+
+    it("erase cookie if any", function (done) {
+        var state = new CodeGradX.State();
+        function faildone (reason) {
+            state.log.show();
+            fail(reason);
+            done();
+        }
+        state.checkServers('x')
+            .then(function (descriptions) {
+                return state.sendAXServer('x', {
+                    path: '/fromp/disconnect',
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+            }).then(function (response) {
+                expect(response.status).toBe(200);
+                expect(response.entity.reason).toMatch(/e126 disconnected/);
+                done();
+            }).catch(faildone);
+    });
 
   it('should send failing authentication request', function (done) {
     var state = new CodeGradX.State();
@@ -82,21 +105,26 @@ describe('CodeGradX', function () {
       //console.log(state.servers.x);
       // At least one X server is available:
       expect(descriptions.next).toBeUndefined();
-      var promise2 = state.sendAXServer('x', {
+      return state.sendAXServer('x', {
         path: '/direct/check',
         method: 'POST',
         headers: {
-          'Accept': 'application/json, text/xml',
+          'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         entity: {
           login: 'foo',
           password: 'xyzzy'
         }
-      }).then(faildone).catch(function (reason) {
-        done();
-      });
-    }, faildone);
+      }).then(faildone)
+        .catch(function (reason) {
+            //state.debug('reason', reason);
+            //state.log.show();
+            expect(reason.entity.kind).toMatch(/errorAnswer/);
+            expect(reason.entity.reason).toMatch(/e152-a/);
+            done();
+        });
+    }).catch(faildone);
   }, 10*1000); // 10 seconds
 
   it('should get public list of exercises', function (done) {
@@ -157,6 +185,7 @@ describe('CodeGradX', function () {
 
   it("should get a public job report", function (done) {
     var state = new CodeGradX.State();
+    state.log.clear();
     state.servers = otherServers;
     function faildone (reason) {
       state.log.show();
@@ -164,24 +193,24 @@ describe('CodeGradX', function () {
       done();
     }
     var promise1 = state.checkServers('s');
-    promise1.then(function (responses) {
-      var promise2 = state.sendESServer('s', {
+    promise1.then(function (descriptions) {
+      return state.sendESServer('s', {
         path: "/s/D/B/F/6/0/8/9/8/8/A/0/2/1/1/E/5/8/D/7/4/A/9/8/8/7/0/A/0/6/C/9/0/DBF60898-8A02-11E5-8D74-A98870A06C90.xml"
       }).then(function (response) {
-        //console.log(response);
+        console.log(response);
         //console.log(response.headers);
         expect(response.status).toBe(200);
         xml2js.parseString(response.entity, function (err, result) {
           if ( err ) {
-            fail(err);
+            faildone(err);
           } else {
-            //console.log(result);
+            console.log(result);
             expect(result.fw4ex.jobStudentReport).toBeDefined();
+            done();
           }
         });
-        done();
-      }, faildone);
-    }, faildone);
+      });
+    }).catch(faildone);
   }, 10*1000);
 
   it("again with implicit checkServers", function (done) {
