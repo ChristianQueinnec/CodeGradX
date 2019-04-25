@@ -1,10 +1,9 @@
 // Jasmine test to check xml to html conversion
-// Time-stamp: "2019-04-12 15:13:38 queinnec"
+// Time-stamp: "2019-04-25 17:14:24 queinnec"
 
-var CodeGradX = require('../index.js');
-require('../src/xml2html.js')(CodeGradX);
+import CodeGradX from '../src/xml2html.mjs';
 
-describe('CodeGradX', function () {
+describe('CodeGradX xml2html', function () {
 
   it('should be loaded', function (done) {
     expect(CodeGradX).toBeDefined();

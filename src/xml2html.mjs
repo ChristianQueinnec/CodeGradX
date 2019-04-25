@@ -1,5 +1,5 @@
-// xml2html.js
-// Time-stamp: "2019-04-25 17:12:35 queinnec"
+// xml2html.mjs
+// Time-stamp: "2019-04-25 17:14:40 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 import sax from '../src/sax.mjs';

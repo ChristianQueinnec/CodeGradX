@@ -1,7 +1,7 @@
 // campaign.js
-// Time-stamp: "2019-04-25 16:48:56 queinnec"
+// Time-stamp: "2019-04-25 17:05:06 queinnec"
 
-import CodeGradX from '../CodeGradX.mjs';
+import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
 
