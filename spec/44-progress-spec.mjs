@@ -9,6 +9,7 @@ import _3 from '../src/exercisesSet.mjs';
 import _4 from '../src/job.mjs';
 import _5 from '../src/xml2html.mjs';
 import _6 from '../src/parsexml.mjs';
+import _7 from '../src/userlib.mjs';
 
 describe('CodeGradX', function () {
 

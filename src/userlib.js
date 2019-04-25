@@ -1,8 +1,9 @@
 // userlib.js
-// Time-stamp: "2019-04-08 09:41:55 queinnec"
+// Time-stamp: "2019-04-25 18:03:25 queinnec"
 
-module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
+import CodeGradX from '../codegradx.mjs';
+/** Re-export the `CodeGradX` object */
+export default CodeGradX;
 
 /** Fetch all the jobs submitted by the user (independently of the
     current campaign).
