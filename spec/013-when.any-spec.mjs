@@ -1,6 +1,6 @@
 // Tests of when.any, when.settle, when.timeout
 
-const CodeGradX = require('../index.js');
+import CodeGradX from '../codegradx.mjs';
 const when = CodeGradX.when;
 
 function delayedSuccess (delay, value) {

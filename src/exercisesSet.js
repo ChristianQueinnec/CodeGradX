@@ -1,8 +1,7 @@
 // exercisesSet.js
-// Time-stamp: "2019-04-07 10:21:55 queinnec"
+// Time-stamp: "2019-04-22 17:40:54 queinnec"
 
-module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
+import CodeGradX from '../codegradx.mjs';
 
 /** Find an exercise by its name in an ExercisesSet that is,
     a tree of Exercises.
@@ -14,7 +13,7 @@ module.exports = function (CodeGradX) {
 
 CodeGradX.ExercisesSet.prototype.getExercise = function (name) {
   const exercises = this;
-  if ( _.isNumber(name) ) {
+  if ( Number.isFinite(name) ) {
       return exercises.getExerciseByIndex(name);
   } else {
       return exercises.getExerciseByName(name);

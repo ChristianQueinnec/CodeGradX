@@ -1,6 +1,6 @@
-// Tests of when.join
+// Tests of when.delay
 
-const CodeGradX = require('../index.js');
+import CodeGradX from '../codegradx.mjs';
 const when = CodeGradX.when;
 
 function delayedSuccess (delay, value) {
@@ -21,7 +21,7 @@ function delayedRejection (delay, value) {
     });
 }
 
-describe("when.join", function () {
+describe("when.delay", function () {
     
     function make_faildone (done) {
         return function faildone (reason) {
@@ -31,76 +31,67 @@ describe("when.join", function () {
         };
     }
 
-    it("one success ", function (done) {
+    it("success delay", function (done) {
         const faildone = make_faildone(done);
         const t0 = Date.now();
-        when.join(Promise.resolve(11))
-            .then((values) => {
-                expect(values.length).toBe(1);
-                expect(values[0]).toBe(11);
+        when.delay(Promise.resolve(11), 100)
+            .then((value) => {
+                expect(value).toBe(11);
+                expect(Date.now() - t0).toBeGreaterThan(98);
                 done();
             }).catch(faildone);
     });
 
-    it("three successes (one delayed)", function (done) {
+    it("failure delay", function (done) {
         const faildone = make_faildone(done);
         const t0 = Date.now();
-        when.join(Promise.resolve(21),
-                  Promise.resolve(22),
-                  delayedSuccess(100, 23) )
-            .then((values) => {
+        when.delay(Promise.reject(21), 100)
+            .then(faildone)
+            .catch((reason) => {
+                expect(reason).toBe(21);
                 expect(Date.now() - t0).toBeGreaterThan(98);
-                expect(values.length).toBe(3);
-                expect(values[0]).toBe(21);
-                expect(values[1]).toBe(22);
-                expect(values[2]).toBe(23);
                 done();
-            }).catch(faildone);
+            });
+    });
+
+    it("timeout before success", function (done) {
+        const faildone = make_faildone(done);
+        const t0 = Date.now();
+        when.timeout(when.delay(Promise.resolve(31), 1000), 200)
+            .then(faildone)
+            .catch((reason) => {
+                expect(reason).toMatch(/exhausted/);
+                expect(Date.now() - t0).toBeGreaterThan(198);
+                expect(Date.now() - t0).toBeLessThan(1000);
+                done();
+            });
     });
     
-    it("three successes (one delayed), one failure", function (done) {
+    it("timeout before failure", function (done) {
         const faildone = make_faildone(done);
         const t0 = Date.now();
-        when.join(Promise.resolve(31),
-                  Promise.reject(32),
-                  Promise.resolve(33),
-                  delayedSuccess(100, 34) )
+        when.timeout(when.delay(Promise.reject(41), 1000), 200)
             .then(faildone)
             .catch((reason) => {
-                expect(Date.now() - t0).toBeLessThan(100);
-                expect(reason).toBe(32);
-                done();
-            });
-    });
-
-    it("three successes (one delayed), one delayed failure", function (done) {
-        const faildone = make_faildone(done);
-        const t0 = Date.now();
-        when.join(Promise.resolve(41),
-                  delayedRejection(200, 42),
-                  Promise.resolve(43),
-                  delayedSuccess(100, 44) )
-            .then(faildone)
-            .catch((reason) => {
+                expect(reason).toMatch(/exhausted/);
                 expect(Date.now() - t0).toBeGreaterThan(198);
-                expect(reason).toBe(42);
+                expect(Date.now() - t0).toBeLessThan(1000);
                 done();
             });
     });
-
-    it("two successes (one delayed), two delayed failures", function (done) {
+    
+    it("Promise failure delay ", function (done) {
         const faildone = make_faildone(done);
         const t0 = Date.now();
-        when.join(delayedSuccess(50, 51),
-                  delayedRejection(200, 52),
-                  Promise.resolve(53),
-                  delayedRejection(100, 54) )
+        Promise.reject(51).delay(100)
             .then(faildone)
             .catch((reason) => {
+                expect(reason).toBe(51);
                 expect(Date.now() - t0).toBeGreaterThan(98);
-                expect(reason).toBe(54);
                 done();
             });
     });
 
 });
+
+// end of 012-when.delay-spec.js

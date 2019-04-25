@@ -1,10 +1,8 @@
 // Jasmine tests for servers availability related methods.
 // Here we test various kinds of unavailability with a fake UserAgent.
 
-var CodeGradX = require('../index.js');
-const when = CodeGradX.when;
-const _ = CodeGradX._;
-_.findIndex = require('lodash/findIndex');
+import CodeGradX from '../codegradx.mjs';
+import make_fakeUserAgent from './mkFakeUserAgent.mjs';
 
 describe('CodeGradX', function () {
   it('should be loaded', function () {
@@ -54,34 +52,6 @@ describe('CodeGradX', function () {
           }
       };
     return state;
-  }
-
-/** make_fakeUserAgent creates HttpResponses (with only a status code)
-    as told by `history`. Once used, items in history are removed.
-*/
-
-  function make_fakeUserAgent (history) {
-    var fakeUserAgent = function (options) {
-      var state = CodeGradX.getCurrentState();
-      var i = _.findIndex(history, { path: options.path });
-      if ( i >= 0 ) {
-        state.debug("fakeUserAgent request " + options.path);
-        var item = history[i];
-        history.splice(i, 1);
-        if ( item.status > 0 ) {
-          return Promise.resolve({
-            status: { code: item.status },
-            headers: {}
-          }).delay(100 * Math.random());
-        } else {
-          return Promise.reject("Non responding server " + options.path);
-        }
-      } else {
-        // History was probably incomplete:
-        return Promise.reject("Unexpected URL " + options.path);
-      }
-    };
-    return fakeUserAgent;
   }
 
   it('should create a State', function (done) {
@@ -203,7 +173,7 @@ describe('CodeGradX', function () {
     state.sendAXServer('e', {
       path: '/foobar'
     }).then(function (response) {
-      expect(response.status.code).toBe(201);
+      expect(response.status).toBe(201);
       expect(state.servers.e[0].enabled).toBeTruthy();
       expect(state.servers.e[1].enabled).toBeFalsy();
       done();
@@ -241,13 +211,13 @@ describe('CodeGradX', function () {
     state.sendAXServer('e', {
       path: '/foo'
     }).then(function (response) {
-      expect(response.status.code).toBe(201);
+      expect(response.status).toBe(201);
       expect(state.servers.e[0].enabled).toBeTruthy();
       expect(state.servers.e[1].enabled).toBeFalsy();
       state.sendAXServer('e', {
         path: '/bar'
       }).then(function (response2) {
-        expect(response2.status.code).toBe(202);
+        expect(response2.status).toBe(202);
         expect(state.servers.e[0].enabled).toBeTruthy();
         expect(state.servers.e[1].enabled).toBeFalsy();
         expect(history.length).toBe(0);
@@ -291,13 +261,13 @@ describe('CodeGradX', function () {
     state.sendAXServer('e', {
       path: '/foo'
     }).then(function (response) {
-      expect(response.status.code).toBe(201);
+      expect(response.status).toBe(201);
       expect(state.servers.e[0].enabled).toBeTruthy();
       expect(state.servers.e[1].enabled).toBeTruthy();
       state.sendAXServer('e', {
         path: '/bar'
       }).then(function (response2) {
-        expect(response2.status.code).toBe(202);
+        expect(response2.status).toBe(202);
         expect(state.servers.e[0].enabled).toBeTruthy();
         expect(state.servers.e[1].enabled).toBeTruthy();
         expect(history.length).toBe(1);
@@ -348,13 +318,13 @@ describe('CodeGradX', function () {
     state.sendAXServer('e', {
       path: '/foo'
     }).then(function (response) {
-      expect(response.status.code).toBe(201);
+      expect(response.status).toBe(201);
       expect(state.servers.e[0].enabled).toBeTruthy();
       expect(state.servers.e[1].enabled).toBeTruthy();
       state.sendAXServer('e', {
         path: '/bar'
       }).then(function (response2) {
-        expect(response2.status.code).toBe(212);
+        expect(response2.status).toBe(212);
         expect(state.servers.e[1].enabled).toBeTruthy();
         expect(state.servers.e[0].enabled).toBeFalsy();
         //console.log(history);
@@ -410,7 +380,7 @@ describe('CodeGradX', function () {
     state.sendAXServer('e', {
       path: '/foo'
     }).then(function (response) {
-      expect(response.status.code).toBe(201);
+      expect(response.status).toBe(201);
       expect(state.servers.e[0].enabled).toBeTruthy();
       expect(state.servers.e[1].enabled).toBeTruthy();
       state.sendAXServer('e', {

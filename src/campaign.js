@@ -1,8 +1,7 @@
 // campaign.js
-// Time-stamp: "2019-04-07 13:29:59 queinnec"
+// Time-stamp: "2019-04-20 10:03:14 queinnec"
 
-module.exports = function (CodeGradX) {
-    const _ = CodeGradX._;
+import CodeGradX from '../CodeGradX.mjs';
 
 /** Get the campaigns where the current user is enrolled.
 
@@ -10,9 +9,9 @@ module.exports = function (CodeGradX) {
       @returns {Promise<Hashtable<Campaign>>} yielding a Hashtable of Campaigns
                 indexed by their name.
 
-   The current user maintains in _campaigns the active campaigns and
-   in _all_campaigns all past or current campaigns. Three cases are
-   possible: 
+   The current user maintains in _campaigns the hash of active
+   campaigns and in hash _all_campaigns all past or current campaigns.
+   Three cases are possible:
       - both are defined
       - only _campaigns is defined (see constructor 'User')
       - none are defined
@@ -23,7 +22,8 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
     const user = this;
     function filterActive (campaigns) {
         const activeCampaigns = {};
-        _.forEach(campaigns, function (campaign) {
+        for ( let key of Object.keys(campaigns) {
+            let campaign = campaigns[key];
             if ( campaign.active ) {
                 activeCampaigns[campaign.name] = campaign;
             }
@@ -147,8 +147,6 @@ CodeGradX.User.prototype.getCurrentCampaign = function () {
 };
 CodeGradX.User.prototype.getCurrentCampaign.default = {
     currentCampaign: undefined
-};
-
 };
 
 // end of campaign.js

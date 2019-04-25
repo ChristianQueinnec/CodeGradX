@@ -1,6 +1,6 @@
 // Tests of when.any, when.settle, when.timeout
 
-const CodeGradX = require('../index.js');
+import CodeGradX from '../codegradx.mjs';
 const when = CodeGradX.when;
 
 function delayedSuccess (delay, value) {
@@ -110,7 +110,7 @@ describe("when.settle", function () {
                 expect(results[1].value).toBe(52);
                 expect(results[2].state).toBe('rejected');
                 expect(results[2].reason).toBe(53);
-                expect(Date.now() - t0).toBeGreaterThan(1000);
+                expect(Date.now() - t0).toBeGreaterThan(999);
                 expect(Date.now() - t0).toBeLessThan(1100);
                 done();
             }).catch(faildone);

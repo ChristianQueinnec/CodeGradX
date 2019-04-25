@@ -1,9 +1,68 @@
 // Jasmine tests for public interactions
 
-var CodeGradX = require('../index.js');
-var xml2js = require('xml2js').parseString;
-// Some of these tests require s3 and s6 storage servers:
-var otherServers = require('./otherServers.json');
+import CodeGradX from '../codegradx.mjs';
+
+import xml2js from '../src/xml2js.mjs';
+
+/** This tests uses the xml2js.ParseString function.
+    The xml2js file requires sax and xmlbuilder.
+*/
+
+// Some of these tests require s3 and s6 storage servers
+// and also working a, e and x servers:
+const otherServers = {
+  "domain" : ".codegradx.org",
+  "names": ["a", "e", "x", "s"],
+  "protocol": "https",
+  "a": {
+      "suffix": "/alive",
+      "protocol": "https",
+      "0": {
+          "host": "a.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "a.codegradx.org",
+          "enabled": false
+      }
+  },
+  "e": {
+      "suffix": "/alive",
+      "protocol": "https",
+      "0": {
+          "host": "e.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "e.codegradx.org",
+          "enabled": false
+      }
+  },
+  "x": {
+      "suffix": "/dbalive",
+      "protocol": "https",
+      "0": {
+          "host": "x.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "x.codegradx.org",
+          "enabled": false
+      }
+  },
+  "s": {
+      "suffix": "/index.txt",
+      "protocol": "https",
+      "0": {
+          "host": "s6.codegradx.org",
+          "enabled": false
+      },
+      "1": {
+          "host": "s3.codegradx.org",
+          "enabled": false
+      }
+  }
+};
 
 describe('CodeGradX', function () {
 
@@ -55,7 +114,7 @@ describe('CodeGradX', function () {
         }
       }).then(function (response) {
         //console.log(response);
-        expect(response.status.code).toBe(200);
+        expect(response.status).toBe(200);
         var es = new CodeGradX.ExercisesSet(response.entity);
         expect(es).toBeDefined();
         //console.log(es);
@@ -83,7 +142,7 @@ describe('CodeGradX', function () {
       }
     }).then(function (response) {
       //console.log(response);
-      expect(response.status.code).toBe(200);
+      expect(response.status).toBe(200);
       var es = new CodeGradX.ExercisesSet(response.entity);
       expect(es).toBeDefined();
       //console.log(es);
@@ -111,8 +170,8 @@ describe('CodeGradX', function () {
       }).then(function (response) {
         //console.log(response);
         //console.log(response.headers);
-        expect(response.status.code).toBe(200);
-        xml2js(response.entity, function (err, result) {
+        expect(response.status).toBe(200);
+        xml2js.parseString(response.entity, function (err, result) {
           if ( err ) {
             fail(err);
           } else {
@@ -137,8 +196,8 @@ describe('CodeGradX', function () {
     }).then(function (response) {
       //console.log(response);
       //console.log(response.headers);
-      expect(response.status.code).toBe(200);
-      xml2js(response.entity, function (err, result) {
+      expect(response.status).toBe(200);
+      xml2js.parseString(response.entity, function (err, result) {
         if ( err ) {
           fail(err);
         } else {
@@ -165,8 +224,8 @@ describe('CodeGradX', function () {
     }).then(function (response) {
       //console.log(response);
       //console.log(response.headers);
-      expect(response.status.code).toBe(200);
-      xml2js(response.entity, function (err, result) {
+      expect(response.status).toBe(200);
+      xml2js.parseString(response.entity, function (err, result) {
         if ( err ) {
           fail(err);
         } else {

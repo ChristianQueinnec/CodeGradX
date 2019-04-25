@@ -1,16 +1,28 @@
-# Time-stamp: "2019-04-12 10:25:43 queinnec"
+# Time-stamp: "2019-04-23 09:15:35 queinnec"
 
 work : nothing 
 clean :: 
 	-rm *~ src/*~ spec/*~
 
 lint :
-	node_modules/.bin/eslint index.js src/*.js
+	node_modules/.bin/eslint *.mjs
+#src/*.mjs
+
+prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js
+	-rm -rf wrapsrc/dist/
+	bash wrapsrc/all.sh
+#	bash wrapsrc/sax.sh
+#	bash wrapsrc/xmlbuilder.sh
+#	bash wrapsrc/xml2js.sh
 
 tests : test.with.real.servers
-test.with.real.servers :
+test.with.real.servers : prepare
 	node_modules/.bin/jasmine --random=false \
 		spec/[0-8]*.js 2>&1 | tee /tmp/spec.log
+
+test.within.browser :
+	cd spec/ && ln -sf ../node_modules/jasmine-core .
+	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
 
 publish : lint clean
 	git status .
