@@ -39,13 +39,16 @@ describe('CodeGradX 40 history', function () {
     }
     expect(state.currentUser instanceof CodeGradX.User).toBeTruthy();
     state.currentUser.getCampaign('free').then(function (campaign) {
-      expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+        expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+        expect(campaign).toBeDefined();
+        expect(campaign.name).toBe('free');
         //console.log(campaign);
         campaign0 = campaign;
         campaign.getExercisesSet().then(function (es) {
-          expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
-          expect(es).toBe(campaign.exercisesSet);
-          done();
+            expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
+            expect(es).toBeDefined();
+            expect(es).toBe(campaign.exercisesSet);
+            done();
         }, faildone);
     }, faildone);
   });
@@ -58,6 +61,7 @@ describe('CodeGradX 40 history', function () {
       done();
     }
     expect(campaign0 instanceof CodeGradX.Campaign).toBeTruthy();
+    expect(campaign0).toBeDefined();
     campaign0.getJobs().then(function (jobs) {
       //console.log(jobs);
       expect(jobs.length).toBeGreaterThan(2);

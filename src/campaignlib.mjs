@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-04-25 17:34:52 queinnec"
+// Time-stamp: "2019-04-25 17:59:38 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -199,7 +199,7 @@ CodeGradX.Campaign.prototype.getJobs = function () {
     state.debug('getJobs2');
     //console.log(response);
     //state.jobs = _.map(response.entity.jobs, CodeGradX.Job.js2job);
-    state.jobs = response.entity.jobs.forEach(CodeGradX.Job.js2job);
+    state.jobs = response.entity.jobs.map(CodeGradX.Job.js2job);
     return Promise.resolve(state.jobs);
   });
 };
@@ -224,7 +224,7 @@ CodeGradX.Campaign.prototype.getCampaignStudentJobs = function (user) {
     state.debug('getAchievements2');
     //console.log(response);
     //user.jobs = _.map(response.entity.jobs, CodeGradX.Job.js2job);
-    user.jobs = response.entity.jobs.forEach(CodeGradX.Job.js2job);
+    user.jobs = response.entity.jobs.map(CodeGradX.Job.js2job);
     return Promise.resolve(user.jobs);
   });
 };
