@@ -1,7 +1,7 @@
-// Jasmine test. Get current user
+// Jasmine test. load a sub library
 
-
-require('../src/campaign.js')(CodeGradX);
+import CodeGradX from '../src/campaign.mjs';
+import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX', function () {
 

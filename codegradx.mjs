@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-25 16:35:16 queinnec"
+// Time-stamp: "2019-04-25 16:48:25 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -465,7 +465,7 @@ CodeGradX.State.prototype.mkUserAgent = function () {
                             encodeURIComponent(options.entity[key]));
             }
             options.body = params.join('&');
-        };
+        }
         state.debug('userAgent2', options);
         try {
             const response = await window.fetch(options.path, options);
@@ -714,55 +714,6 @@ CodeGradX.State.prototype.getActiveServers = function (kind) {
     }
 };
 
-/** Check HTTP response and try to elaborate a good error message.
-    A good HTTP response has a return code less than 300.
-
-    Error messages look like:
-    <?xml version="1.0" encoding="UTF-8"?>
-    <fw4ex version='1.0'>
-      <errorAnswer>
-        <message code='400'>
-          <reason>FW4EX e135 Not a tar gzipped file!</reason>
-        </message>
-      </errorAnswer>
-    </fw4ex>
-
-    */
-
-CodeGradX.checkStatusCode = function (response) {
-    return Promise.resolve(response);       /// TEMP
-    
-  const state = CodeGradX.getCurrentState();
-  state.debug('checkStatusCode1', response);
-  //console.log(response);
-    /* eslint no-control-regex: 0 */
-  const reasonRegExp = new RegExp("^(.|\n)*<reason>((.|\n)*)</reason>(.|\n)*$");
-  function extractFW4EXerrorMessage (response) {
-    let reason;
-    const contentType = response.headers.get('Content-Type');
-    if ( /text\/xml/.exec(contentType) ) {
-      //console.log(response.entity);
-      reason = response.entity.replace(reasonRegExp, ": $2");
-      return reason;
-    } else if ( /application\/json/.exec(contentType) ) {
-      reason = response.entity.reason;
-      return reason;
-    } else {
-      return '';
-    }
-  }
-  if ( response.status && response.status >= 300 ) {
-      const msg = "Bad HTTP code " + response.status + ' ' +
-        extractFW4EXerrorMessage(response);
-      state.debug('checkStatusCode2', msg);
-      //console.log(response);
-      const error = new Error(msg);
-      error.response = response;
-      return Promise.reject(error);
-  }
-  return Promise.resolve(response);
-};
-
 /** Send request to the first available server of the right kind.
     In case of problems, try sequentially the next available server of
     the same kind.
@@ -835,7 +786,6 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         state.debug('sendSequentially send', newoptions);
         return state.userAgent(newoptions)
             .catch(mk_invalidate(description))
-            .then(CodeGradX.checkStatusCode)
             .then(updateCurrentCookie);
     }
 
@@ -919,8 +869,7 @@ CodeGradX.State.prototype.sendConcurrently = function (kind, options) {
             description.host + options.path;
         state.debug("sendConcurrently send", tryoptions.path);
         return state.userAgent(tryoptions)
-            .catch(mk_invalidate(description))
-            .then(CodeGradX.checkStatusCode);
+            .catch(mk_invalidate(description));
     }
     
     function tryConcurrently (adescriptions) {
@@ -1462,215 +1411,6 @@ CodeGradX.State.prototype.getCurrentConfigurationX = function (hostname) {
     parsexml requires xml2js
     exercise requires xml2js
 
-    An implementation of require using dynamic load. 
-    loadrequire returns a promise that yields the module.exports 
-    value of the module.
-    
-    @param {String} modulename
-    @returns Promise<Object> yields the exports object
-
-    Modules are kept on the server within the extras/ directory.
-
 */
-
-// Sapper does not like 'import.'
-CodeGradX.mkrequire = function (urlbase=import.meta.url) {
-//CodeGradX.mkrequire = function (urlbase) {
-    return async function require (file, name=undefined) {
-        try {
-            if ( file.startsWith('./') && ! file.endsWith('.js') ) {
-                file += '.js';
-            }
-            const url = new URL(file, urlbase);
-
-            if ( CodeGradX.requireCache[file] ) {
-                return Promise.resolve(CodeGradX.requireCache[file]);
-            } else if ( CodeGradX.requireCache[url] ) {
-                return Promise.resolve(CodeGradX.requireCache[url]);
-            } else if ( name && CodeGradX.requireCache[name] ) {
-                return Promise.resolve(CodeGradX.requireCache[name]);
-            }
-            
-            const response = await window.fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/javascript',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            //console.log(response);
-            if ( ! response.ok ) {
-                const msg = `Unfetchable module ${url} (${response.status})`;
-                throw new Error(msg);
-            }
-            const js = await response.text();
-            let result;
-            let module = { exports: {} };
-            result = new Function('require', 'module', 'exports', js);
-            let newrequire = CodeGradX.mkrequire(url);
-            result(newrequire, module, module.exports);
-            if ( module.exports ) {
-                CodeGradX.requireCache[file] = module.exports;
-                CodeGradX.requireCache[url] = module.exports;
-                if ( name ) {
-                    CodeGradX.requireCache[name] = module.exports;
-                }
-                return Promise.resolve(module.exports);
-            } else {
-                throw new Error(`Missing module.exports in ${file}`);
-            }
-        } catch (exc) {
-            //console.log(`require problem ${exc}`);
-            return Promise.reject(exc);
-        }
-    };
-};
-CodeGradX.requireCache = {};
-// const require = CodeGradX.mkrequire();
-
-/** 
-    In order to take benefit from autoload, one should convert 
-       result = o.f(a,b) 
-    into 
-       o.f(a,b).then((result) => { ... });
-
-    All autoload methods are converted into Promises.
-
-    The dynamically loaded files must look like:
-
-   module.exports = function (CodeGradX) {
-       ...
-   }
-
-   This module can only require other modules such as he, sax, xml2js.
-
-*/
-
-CodeGradX.initializeAutoloads = function (autoloads) {
-    const state = CodeGradX.getCurrentState();
-    const require = CodeGradX.mkrequire('/extras/');
-    async function load (file) {
-        state.debug('autoload', file);
-        const exports = require(file);
-        exports(CodeGradX);
-    }
-    function mkAutoloadFunction (klass) {
-        let file = autoloads[klass];
-        //console.log(`Autoload CodeGradX.${klass}`);
-        const loader = function (...args) {
-            const self = this;
-            state.debug('Autoload1', klass, self, args);
-            return load(file).then(() => {
-                state.debug('Autoload2', klass, self, args);
-                const newfunction = CodeGradX[klass];
-                if ( newfunction !== loader ) {
-                    try {
-                        const result = newfunction.apply(self, args);
-                        return Promise.resolve(result);
-                    } catch (exc) {
-                        return Promise.reject(exc);
-                    }
-                } else {
-                    const exc = new Error(`Bad autoload for ${file}`);
-                    return Promise.reject(exc);
-                }
-            }).catch((exc) => {
-                state.debug('Autoload3', klass, exc);
-                return Promise.reject(exc);
-            });
-        };
-        CodeGradX[klass] = loader;
-    }
-    function mkAutoloadMethod (klass, name) {
-        let file = autoloads[klass][name];
-        //console.log(`Autoload CodeGradX.${klass}.prototype.${name}`);
-        const loader = function (...args) {
-            const self = this;
-            state.debug('Autoloads1', klass, name, self, args);
-            return load(file).then(function () {
-                state.debug('Autoloads2', klass, name);
-                const newfunction = CodeGradX[klass].prototype[name];
-                if ( newfunction !== loader ) {
-                    try {
-                        const result = newfunction.apply(self, args);
-                        return Promise.resolve(result);
-                    } catch (exc) {
-                        return Promise.reject(exc);
-                    }
-                } else {
-                    const exc = new Error(`Bad autoloads for ${name} and ${file}`);
-                    return Promise.reject(exc);
-                }
-            }).catch(function (exc) {
-                state.debug('Autoloads3', klass, name, exc);
-                return Promise.reject(exc);
-            });
-        };
-        CodeGradX[klass].prototype[name] = loader;
-    }
-    for ( let klass in autoloads ) {
-        if ( typeof autoloads[klass] === 'string' ) {
-            mkAutoloadFunction(klass);
-        } else {
-            for ( let name in autoloads[klass] ) {
-                mkAutoloadMethod(klass, name);
-            }
-        }
-    }
-};
-
-CodeGradX.autoloads = {
-    xml2html: 'xml2html.mjs',
-    parsexml: 'parsexml.mjs',
-    State: {
-        userGetLink: 'userGetLink.mjs',
-        userEnroll:  'userEnroll.mjs'
-    },
-    User: {
-        getCampaigns: 'campaign.mjs',
-        getCampaign: 'campaign.mjs',
-        getCurrentCampaign: 'campaign.mjs',
-        getProgress: 'userlib.mjs',
-        getAllJobs: 'userlib.mjs',
-        getAllExercises: 'userlib.mjs'
-    },
-    Campaign: {
-        getExercisesSet: 'campaignlib.mjs',
-        getExercise: 'campaignlib.mjs',
-        getExercises: 'campaignlib.mjs',
-        getJobs: 'campaignlib.mjs',
-        getSkills: 'campaignlib.mjs',
-        getBatches: 'campaignlib.mjs',
-        getCampaignStudentJobs: 'campaignlib.mjs'
-    },
-    Exercise: {
-        getDescription: 'exercise.mjs',
-        getEquipmentFile: 'exercise.mjs',
-        sendStringAnswer: 'exercise.mjs',
-        sendFileFromDOM: 'exercise.mjs',
-        sendBatchFromDOM: 'exercise.mjs',
-        getExerciseReport: 'exercise.mjs',
-        getBaseURL: 'exercise.mjs',
-        getExerciseReportURL: 'exercise.mjs',
-        getTgzURL: 'exercise.mjs'
-    },
-    ExercisesSet: {
-        getExercise: 'exercisesSet.mjs',
-        getExerciseByName: 'exercisesSet.mjs',
-        getExerciseByIndex: 'exercisesSet.mjs',
-    },
-    Job: {
-        getReport: "job.mjs",
-        getProblemReport: "job.mjs",
-        getReportURL: "job.mjs",
-        getProblemReportURL: "job.mjs",
-        getTgzURL: "job.mjs"
-    },
-    Batch: {
-        getReport: 'batch.mjs',
-        getFinalReport: 'batch.mjs',
-        getReportURL: 'batch.mjs'
-    }
-};
 
 // end of codegradx.mjs
