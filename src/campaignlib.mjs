@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-04-25 17:59:38 queinnec"
+// Time-stamp: "2019-04-25 18:11:45 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -229,4 +229,4 @@ CodeGradX.Campaign.prototype.getCampaignStudentJobs = function (user) {
   });
 };
 
-// end of campaignlib.js
+// end of campaignlib.mjs

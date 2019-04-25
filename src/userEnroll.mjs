@@ -1,7 +1,9 @@
-// userEnroll.js
-// Time-stamp: "2019-04-11 16:54:41 queinnec"
+// userEnroll.mjs
+// Time-stamp: "2019-04-25 18:15:04 queinnec"
 
-module.exports = function (CodeGradX) {
+import CodeGradX from '../codegradx.mjs';
+/** Re-export the `CodeGradX` object */
+export default CodeGradX;
 
 /** Enroll a new user. 
 
@@ -33,6 +35,4 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
     });
 };
 
-};
-
-// end of userEnroll.js
+// end of userEnroll.mjs

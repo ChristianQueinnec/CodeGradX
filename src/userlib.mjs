@@ -1,5 +1,5 @@
-// userlib.js
-// Time-stamp: "2019-04-25 18:03:25 queinnec"
+// userlib.mjs
+// Time-stamp: "2019-04-25 18:12:45 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -101,4 +101,4 @@ CodeGradX.User.prototype.getProgress = function (campaign) {
 
 };
 
-// end of userlib.js
+// end of userlib.mjs

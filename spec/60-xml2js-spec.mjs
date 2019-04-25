@@ -1,9 +1,8 @@
 // Jasmine test related to the conversion of xml towards javascript.
 
-var CodeGradX = require('../index.js');
-require('../src/parsexml.js')(CodeGradX);
+import CodeGradX from '../src/parsexml.mjs';
 
-describe('CodeGradX', function () {
+describe('CodeGradX 60 xml2js', function () {
 
   it("converts xml to js", function (done) {
     function faildone (reason) {

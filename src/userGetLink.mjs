@@ -1,7 +1,9 @@
-// userGetLink.js
-// Time-stamp: "2019-04-11 16:54:17 queinnec"
+// userGetLink.mjs
+// Time-stamp: "2019-04-25 18:14:57 queinnec"
 
-module.exports = function (CodeGradX) {
+import CodeGradX from '../codegradx.mjs';
+/** Re-export the `CodeGradX` object */
+export default CodeGradX;
 
 /** Ask for a temporary link to be received by email.
 
@@ -32,6 +34,4 @@ CodeGradX.State.prototype.userGetLink = function (email) {
     });
 };
 
-};
-
-// end of userGetLink.js
+// end of userGetLink.mjs
