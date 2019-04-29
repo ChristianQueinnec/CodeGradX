@@ -1,5 +1,5 @@
 // job.js
-// Time-stamp: "2019-04-25 17:27:09 queinnec"
+// Time-stamp: "2019-04-26 10:06:56 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -25,7 +25,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
         path: path,
         method: 'GET',
         headers: {
-            "Accept": "text/xml"
+            "Accept": "application/json"
         }
     }).catch(reasons => {
         // sort reasons and extract only waitedTooMuch if present:
@@ -125,7 +125,7 @@ CodeGradX.Job.prototype.getProblemReport = function (parameters) {
         path: path,
         method: 'GET',
         headers: {
-            "Accept": "text/xml"
+            "Accept": "application/json"
         }
     });
     const promise1 = promise.then(function (response) {

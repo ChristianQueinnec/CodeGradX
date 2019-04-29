@@ -1,7 +1,7 @@
 // userlib.mjs
-// Time-stamp: "2019-04-25 18:12:45 queinnec"
+// Time-stamp: "2019-04-25 18:36:43 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import CodeGradX from '../src/campaign.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
 
@@ -25,7 +25,7 @@ CodeGradX.User.prototype.getAllJobs = function () {
     }).then(function (response) {
         state.debug('getAllJobs2');
         //console.log(response);
-        state.jobs = _.map(response.entity.jobs, CodeGradX.Job.js2job);
+        state.jobs = response.entity.jobs.map(CodeGradX.Job.js2job);
         return Promise.resolve(state.jobs);
     });
 };
@@ -60,8 +60,8 @@ CodeGradX.User.prototype.getAllExercises = function () {
         }).then(function (response) {
             state.debug('getAllExercises2');
             //console.log(response);
-            state.exercises = _.map(response.entity.exercises,
-                                    CodeGradX.Exercise.js2exercise);
+            state.exercises = response.entity.exercises.map(
+                CodeGradX.Exercise.js2exercise );
             return Promise.resolve(state.exercises);
         });
 };
@@ -97,8 +97,6 @@ CodeGradX.User.prototype.getProgress = function (campaign) {
         user.badges = response.entity.badges;
         return Promise.resolve(user);
     });
-};
-
 };
 
 // end of userlib.mjs

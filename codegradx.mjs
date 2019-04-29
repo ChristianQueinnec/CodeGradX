@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-25 17:50:26 queinnec"
+// Time-stamp: "2019-04-29 18:35:05 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -273,17 +273,22 @@ CodeGradX.Log.prototype.clear = function () {
     */
 
 CodeGradX.Log.prototype.debug = function () {
-    function inspect (o) {
-        if ( o === undefined ) {
+    function inspect (o, maxdepth) {
+        if ( maxdepth <= 0 ) {
+            return '...';
+        } else if ( o === undefined ) {
             return 'undefined';
         } else if ( typeof o === 'object' ) {
             let results = [];
             for ( let key of Object.keys(o) ) {
-                results.push(`${key}: ${inspect(o[key])}`);
+                results.push(`${key}: ${inspect(o[key], maxdepth-1)}`);
             }
             return `{${results.join(', ')}}`;
         } else if ( Array.isArray(o) ) {
-            let results = o.map(inspect);
+            let results = [];
+            for ( let i=0 ; i<o.length ; i++ ) {
+                results.push(inspect(o[i], maxdepth-1));
+            }
             return `[${results.join(', ')}]`;
         } else {
             return o.toString();
@@ -297,7 +302,7 @@ CodeGradX.Log.prototype.debug = function () {
         } else if ( arguments[i] === undefined ) {
             msg += 'undefined ';
         } else {
-            msg += inspect(arguments[i], { depth: 2 }) + ' ';
+            msg += inspect(arguments[i], 2) + ' ';
         }
     }
     if ( this.items.length > this.size ) {
@@ -436,6 +441,8 @@ CodeGradX.State.prototype.mkUserAgent = function () {
                     return 'XML';
                 } else if ( /text\/plain/.exec(contentType) ) {
                     return 'TEXT';
+                } else if ( /application\/octet-stream/.exec(contentType) ) {
+                    return 'BYTES';
                 }
             }
             return undefined;
@@ -447,26 +454,50 @@ CodeGradX.State.prototype.mkUserAgent = function () {
         } else if ( response.entityKind &&
                     response.entityKind === 'XML' ) {
             response.entity = await response.text();
+        } else if ( response.entityKind &&
+                    response.entityKind === 'BYTES' ) {
+            response.entity = await readBytes(response.body);
         } else {
             // text/plain for instance:
             response.entity = await response.text();
         }
         return response;
     }
+    async function readBytes (stream) {
+        let result = new Uint8Array();
+        const reader = stream.getReader();
+        function processBytes ({ done, value }) {
+            if ( done ) {
+                return Promise.resolve(result);
+            } else {
+                const newresult = new Uint8Array(result.length + value.length);
+                newresult.set(result, 0);
+                newresult.set(value, result.length);
+                result = newresult;
+                return reader.read().then(processBytes);
+            }
+        }
+        return reader.read().then(processBytes);
+    }
     return async function (options) {
         state.debug('userAgent1', options);
         options.redirect = options.redirect || 'follow';
         options.credentials = options.credentials || 'include';
         options.mode = options.mode || 'cors';
-        if ( typeof options.entity === 'object' ) {
-            let params = [];
-            for ( let key of Object.keys(options.entity) ) {
-                params.push(encodeURIComponent(key) + '=' +
-                            encodeURIComponent(options.entity[key]));
+        if ( options.entity ) {
+            if ( options.entity instanceof Uint8Array ) {
+                options.body = new Blob([options.entity],
+                                        {type: 'application/octet-stream'});
+            } else if ( typeof options.entity === 'object' ) {
+                let params = [];
+                for ( let key of Object.keys(options.entity) ) {
+                    params.push(encodeURIComponent(key) + '=' +
+                                encodeURIComponent(options.entity[key]));
+                }
+                options.body = params.join('&');
+            } else if ( typeof options.entity === 'string' ) {
+                options.body = options.entity;
             }
-            options.body = params.join('&');
-        } else if ( typeof options.entity === 'string' ) {
-            options.body = options.entity;
         }
         state.debug('userAgent2', options);
         try {

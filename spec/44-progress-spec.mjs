@@ -40,13 +40,14 @@ describe('CodeGradX', function () {
     }
     expect(state.currentUser instanceof CodeGradX.User).toBeTruthy();
     state.currentUser.getCampaign('free').then(function (campaign) {
-      expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+        expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+        expect(campaign).toBeDefined();
         //console.log(campaign);//DEBUG
         campaign0 = campaign;
         campaign.getExercisesSet().then(function (es) {
-          expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
-          expect(es).toBe(campaign.exercisesSet);
-          done();
+            expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
+            expect(es).toBe(campaign.exercisesSet);
+            done();
         }, faildone);
     }, faildone);
   });

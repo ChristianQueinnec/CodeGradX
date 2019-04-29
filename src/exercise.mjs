@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-04-25 17:43:36 queinnec"
+// Time-stamp: "2019-04-29 18:44:21 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -34,7 +34,7 @@ CodeGradX.Exercise.prototype.getDescription = function () {
         path: ('/exercisecontent/' + exercise.safecookie + '/content'),
         method: 'GET',
         headers: {
-            Accept: "text/xml",
+            Accept: "application/json",
             // useful for debug:
             "X-CodeGradX-Comment": `ExerciseName=${exercise.name}`
         }
@@ -328,7 +328,7 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
   const headers = {
       "Content-Type": "application/octet-stream",
       "Content-Disposition": ("inline; filename=" + exercise.inlineFileName),
-      "Accept": 'text/xml'
+      "Accept": 'application/json'
   };
     if ( CodeGradX.isNode() ) {
         headers["Content-Length"] = content.length;
@@ -387,69 +387,11 @@ CodeGradX.Exercise.prototype.sendFileFromDOM =
     const headers = {
         "Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),
-        "Accept": 'text/xml'
+        "Accept": 'application/json'
     };
     const fd = new FormData(form);
     return state.sendAXServer('a', {
         path: ('/exercise/' + exercise.safecookie + '/job'),
-        method: "POST",
-        headers: headers,
-        entity: fd
-    }).then(processResponse);
-};
-
-/** Send a batch of files that is, multiple answers to be marked
-    against an Exercise. That file is selected with an input:file
-    widget in the browser.
-
-    @param {DOMform} form - the input:file widget
-    @param {String} currentFileName - file name
-    @returns {Promise<Batch>} yielding a Batch.
-
-The form DOM element must contain an <input type='file' name='content'>
-element. This code only runs in a browser providing the FormData class.
-
-*/
-
-CodeGradX.Exercise.prototype.sendBatchFromDOM = 
-  function (form, currentFileName) {
-    const exercise = this;
-    const state = CodeGradX.getCurrentState();
-    currentFileName = currentFileName || state.currentFileName;
-    state.debug('sendBatchFile1', currentFileName);
-    if ( ! exercise.safecookie ) {
-        return Promise.reject("Non deployed exercise " + exercise.name);
-    }
-    function processResponse (response) {
-        //console.log(response);
-        state.debug('sendBatchFile2', response);
-        return CodeGradX.parsexml(response.entity).then(function (js) {
-            //console.log(js);
-            state.debug('sendBatchFile3', js);
-            js = js.fw4ex.multiJobSubmittedReport;
-            exercise.uuid = js.exercise.$.exerciseid;
-            const batch = new CodeGradX.Batch({
-                exercise: exercise,
-                responseXML: response.entity,
-                response: js,
-                personid: CodeGradX._str2num(js.person.$.personid),
-                archived: CodeGradX._str2Date(js.batch.$.archived),
-                batchid:  js.batch.$.batchid,
-                pathdir:  js.$.location,
-                finishedjobs: 0
-            });
-            return Promise.resolve(batch);
-        });
-    }
-    const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
-    const headers = {
-        "Content-Type": "multipart/form-data",
-        "Content-Disposition": ("inline; filename=" + basefilename),
-        "Accept": 'text/xml'
-    };
-    const fd = new FormData(form);
-    return state.sendAXServer('a', {
-        path: ('/exercise/' + exercise.safecookie + '/batch'),
         method: "POST",
         headers: headers,
         entity: fd
@@ -587,7 +529,7 @@ CodeGradX.Exercise.prototype.getExerciseReport = function (parameters) {
       path: exercise.getExerciseReportURL(),
       method: 'GET',
       headers: {
-          "Accept": 'text/xml'
+          "Accept": 'application/json'
       }
   }).then(processResponse);
 };

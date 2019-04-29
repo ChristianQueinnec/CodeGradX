@@ -1,4 +1,4 @@
-# Time-stamp: "2019-04-25 18:15:14 queinnec"
+# Time-stamp: "2019-04-29 13:09:47 queinnec"
 
 work : nothing 
 clean :: 
@@ -11,9 +11,7 @@ lint :
 prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js
 	-rm -rf wrapsrc/dist/
 	bash wrapsrc/all.sh
-#	bash wrapsrc/sax.sh
-#	bash wrapsrc/xmlbuilder.sh
-#	bash wrapsrc/xml2js.sh
+	@echo "New modules are now in src/"
 
 tests : test.with.real.servers
 test.with.real.servers : prepare
@@ -34,7 +32,7 @@ publish : lint clean
 	cp -pf tmp/CodeGradX/package.json .
 	rm -rf tmp
 	npm install -g codegradx@`jq -r .version < package.json`
-#	m propagate
+#	M propagate
 
 CodeGradX.tgz :
 	-rm -rf tmp

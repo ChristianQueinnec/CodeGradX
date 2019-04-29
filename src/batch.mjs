@@ -1,9 +1,119 @@
 // batch.mjs
-// Time-stamp: "2019-04-25 18:11:38 queinnec"
+// Time-stamp: "2019-04-29 18:53:27 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
+
+/** Send a batch of files that is, multiple answers to be marked
+    against an Exercise. That file is selected with an input:file
+    widget in the browser.
+
+    @param {DOMform} form - the input:file widget
+    @param {String} currentFileName - file name
+    @returns {Promise<Batch>} yielding a Batch.
+
+The form DOM element must contain an <input type='file' name='content'>
+element. This code only runs in a browser providing the FormData class.
+
+*/
+
+CodeGradX.Exercise.prototype.sendBatchFromDOM = 
+  function (form, currentFileName) {
+    const exercise = this;
+    const state = CodeGradX.getCurrentState();
+    currentFileName = currentFileName || state.currentFileName;
+    state.debug('sendBatchFile1', currentFileName);
+    if ( ! exercise.safecookie ) {
+        return Promise.reject("Non deployed exercise " + exercise.name);
+    }
+    function processResponse (response) {
+        //console.log(response);
+        state.debug('sendBatchFile2', response);
+        return CodeGradX.parsexml(response.entity).then(function (js) {
+            //console.log(js);
+            state.debug('sendBatchFile3', js);
+            js = js.fw4ex.multiJobSubmittedReport;
+            exercise.uuid = js.exercise.$.exerciseid;
+            const batch = new CodeGradX.Batch({
+                exercise: exercise,
+                responseXML: response.entity,
+                response: js,
+                personid: CodeGradX._str2num(js.person.$.personid),
+                archived: CodeGradX._str2Date(js.batch.$.archived),
+                batchid:  js.batch.$.batchid,
+                pathdir:  js.$.location,
+                finishedjobs: 0
+            });
+            return Promise.resolve(batch);
+        });
+    }
+    const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
+    const headers = {
+        "Content-Type": "multipart/form-data",
+        "Content-Disposition": ("inline; filename=" + basefilename),
+        "Accept": 'application/json'
+    };
+    const fd = new FormData(form);
+    return state.sendAXServer('a', {
+        path: ('/exercise/' + exercise.safecookie + '/batch'),
+        method: "POST",
+        headers: headers,
+        entity: fd
+    }).then(processResponse);
+};
+
+/** submit a new Batch and return it as soon as submitted successfully.
+    This variant sends the content as a file.
+
+    @param {ByteString} tgz
+    @param {String} filename
+    @returns {Promise<Batch>} yielding Batch
+
+    */
+
+CodeGradX.Exercise.prototype.sendBatch = function (tgz, filename) {
+    const exercise = this;
+    const state = CodeGradX.getCurrentState();
+    state.debug('sendBatchFile1', filename);
+    if ( ! exercise.safecookie ) {
+        return Promise.reject("Non deployed exercise " + exercise.name);
+    }
+    function processResponse (response) {
+        //console.log(response);
+        state.debug('sendBatchFile3', response);
+        return CodeGradX.parsexml(response.entity).then(function (js) {
+            //console.log(js);
+            state.debug('sendBatchFile4', js);
+            js = js.fw4ex.multiJobSubmittedReport;
+            exercise.uuid = js.exercise.$.exerciseid;
+            const batch = new CodeGradX.Batch({
+                exercise: exercise,
+                responseXML: response.entity,
+                response: js,
+                personid: CodeGradX._str2num(js.person.$.personid),
+                archived: CodeGradX._str2Date(js.batch.$.archived),
+                batchid:  js.batch.$.batchid,
+                pathdir:  js.$.location,
+                finishedjobs: 0
+            });
+            state.debug('sendBatchFile5', batch.batchid);
+            return Promise.resolve(batch);
+        });
+    }
+    const basefilename = filename.replace(new RegExp("^.*/"), '');
+    const headers = {
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": `inline; filename=${basefilename}`,
+        "Accept": 'application/json'
+    };
+    return state.sendAXServer('a', {
+        path: ('/exercise/' + exercise.safecookie + '/batch'),
+        method: "POST",
+        headers: headers,
+        entity: tgz
+    }).then(processResponse);
+};
 
 /** Get the current state of the Batch report that is, always fetch
     it. See also `getFinalReport()` to get the final report of the
@@ -88,7 +198,7 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
     path: path,
     method: 'GET',
     headers: {
-      "Accept": "text/xml"
+      "Accept": "application/json"
     }
   }).then(processResponse);
 };
