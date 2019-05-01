@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.3",
+    "version": "3.0.4",
     "description": "CodeGradX incremental loader",
     "main": "index.js",
     "scripts": {

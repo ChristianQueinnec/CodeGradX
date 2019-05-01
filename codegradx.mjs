@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-29 18:35:05 queinnec"
+// Time-stamp: "2019-04-30 18:52:09 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -180,17 +180,30 @@ CodeGradX._str2Date = function (str) {
         //console.log("STR1:" + str + " => " + ms + " ==> " + d);
         return d;
     }
+
     // Safari cannot Date.parse('2001-01-01 00:00:00+00')
     // but can Date.parse('2001-01-01T00:00:00')
     const rmtz = /^\s*(.+)([+]\d+)?\s*$/;
-    str = str.replace(rmtz, "$1").replace(/ /, 'T');
-    ms = Date.parse(str);
+    const str2 = str.replace(rmtz, "$1").replace(/ /, 'T');
+    ms = Date.parse(str2);
     if ( ! isNaN(ms) ) {
         const d = new Date(ms);
-        //console.log("STR2:" + str + " => " + ms + " ==> " + d);
+        //console.log("STR2:" + str2 + " => " + ms + " ==> " + d);
         return d;
     }
-    throw new Error("Cannot parse Date " + str);
+
+    // Firefox cannot Date.parse('2001-01-01 05:00:00+01')
+    // nor Date.parse('2001-01-01T05:00:00+01')
+    // but can Date.parse('2001-01-01T05:00:00+01:00')
+    const str3 = str.replace(/([+]\d\d)\s*$/, '$1:00');
+    ms = Date.parse(str3);
+    if ( ! isNaN(ms) ) {
+        const d = new Date(ms);
+        //console.log("STR3:" + str3 + " => " + ms + " ==> " + d);
+        return d;
+    }
+    
+    throw new Error("Cannot parse Date " + str3);
 };
 
 // On some browsers the ISO string shows the long name of the time zone:

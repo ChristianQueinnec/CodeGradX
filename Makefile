@@ -1,4 +1,4 @@
-# Time-stamp: "2019-04-29 13:09:47 queinnec"
+# Time-stamp: "2019-04-29 19:05:07 queinnec"
 
 work : nothing 
 clean :: 
@@ -32,7 +32,7 @@ publish : lint clean
 	cp -pf tmp/CodeGradX/package.json .
 	rm -rf tmp
 	npm install -g codegradx@`jq -r .version < package.json`
-#	M propagate
+	m install
 
 CodeGradX.tgz :
 	-rm -rf tmp
