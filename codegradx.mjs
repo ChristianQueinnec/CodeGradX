@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-04-30 18:52:09 queinnec"
+// Time-stamp: "2019-05-12 16:53:51 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1016,9 +1016,9 @@ function (login, password) {
   const state = this;
   state.debug('getAuthenticatedUser1', login);
   const params = { login, password };
-  if ( state.currentCampaignName ) {
-      params.campaign = state.currentCampaignName;
-  }
+  //if ( state.currentCampaignName ) {
+  //    params.campaign = state.currentCampaignName;
+  //}
   return state.sendAXServer('x', {
     path: '/fromp/connect',
     method: 'POST',
@@ -1066,6 +1066,7 @@ CodeGradX.getCurrentUser = function (force) {
         //console.log(response);
         state.debug('getWhoAmI2', response);
         state.currentUser = new CodeGradX.User(response.entity);
+        // NOTA: whoami lists only active campaigns:
         return Promise.resolve(state.currentUser);
     })
         .catch((reason) => {
@@ -1141,6 +1142,17 @@ CodeGradX.User = function (json) {
       this._campaigns = campaigns;
   }
 };
+
+/** Utility: user's campaigns are kept in a hashtable and in an array.
+*/
+
+CodeGradX.hash2array = function (o) {
+    let result = [];
+    Object.keys(o).forEach((key) => {
+        result.push(o[key]);
+    });
+    return result;
+}
 
 // **************** Campaign *********************************
 
@@ -1341,41 +1353,45 @@ CodeGradX.Batch = function (js) {
     or on an X server as
       x.codegradx.org/constellation/configuration/li101.codegradx.org/config.js
 
-
       @return Promise<> yielding <State>
 */
 
-CodeGradX.initialize = async function () {
-    const state = new CodeGradX.State();
-    CodeGradX.initializeAutoloads(CodeGradX.autoloads);
-    try {
-        const servers = await state.getCurrentConstellation();
-        state.servers = servers;
-    } catch (exc) {
-        state.debug('initialize aesx', exc);
-    }
-    const hostname = document.URL
-          .replace(/^https?:\/\//, '')
-          .replace(/\/.*$/, '')
-          .replace(/:\d+/, '');
-    let js = 'true';
-    try {
-        js = await state.getCurrentConfiguration1(hostname);
-    } catch (exc) {
-        state.debug('initialize getcurrentconfiguration1', exc);
+CodeGradX.initialize = async function (force=false) {
+    let state = CodeGradX.getCurrentState();
+    if ( force || ! state.initialized ) {
+        state = new CodeGradX.State();
         try {
-            js = await state.getCurrentConfigurationX(hostname);
+            const servers = await state.getCurrentConstellation();
+            state.servers = servers;
         } catch (exc) {
-            state.debug('initialize getcurrentconfigurationX', exc);
+            state.debug('initialize aesx', exc);
         }
+        const hostname = document.URL
+              .replace(/^https?:\/\//, '')
+              .replace(/\/.*$/, '')
+              .replace(/:\d+/, '');
+        let js = 'true';
+        try {
+            js = await state.getCurrentConfiguration1(hostname);
+        } catch (exc) {
+            state.debug('initialize getcurrentconfiguration1', exc);
+            try {
+                js = await state.getCurrentConfigurationX(hostname);
+            } catch (exc) {
+                state.debug('initialize getcurrentconfigurationX', exc);
+            }
+        }
+        try {
+            const f = eval(`(${js})`);
+            f(CodeGradX);
+        } catch (exc) {
+            state.debug('initialize eval configuration', exc);
+        }
+        state.initialized = true;
+        return state;
+    } else {
+        return state;
     }
-    try {
-        const f = eval(`(${js})`);
-        f(CodeGradX);
-    } catch (exc) {
-        state.debug('initialize eval configuration', exc);
-    }
-    return state;
 };
 
 /** Get the current definition of the constellation of aesx servers.

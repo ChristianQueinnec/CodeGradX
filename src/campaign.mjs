@@ -1,5 +1,5 @@
 // campaign.mjs
-// Time-stamp: "2019-04-25 17:22:33 queinnec"
+// Time-stamp: "2019-05-12 16:53:29 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -17,6 +17,14 @@ export default CodeGradX;
       - both are defined
       - only _campaigns is defined (see constructor 'User')
       - none are defined
+
+   In return, the user object is always enriched with 
+   _campaigns and _array_campaigns.
+
+   _array_campaigns is the array of all (active or past) campaigns.
+
+   The _campaigns property may also come from /whoami but whoami only
+   lists active campaigns.
 
     */
 
@@ -42,6 +50,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
             return Promise.resolve(user._campaigns);
         }
     }
+    // now is false or (_campaigns and _all_campaigns are not yet filled):
     if ( user._all_campaigns ) {
         if ( now ) {
             user._campaigns = filterActive(user._all_campaigns);
@@ -68,6 +77,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
                 campaigns[campaign.name] = campaign;
             });
             user._all_campaigns = campaigns;
+            user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
             user._campaigns = filterActive(user._all_campaigns);
             if ( now ) {
                 return Promise.resolve(user._campaigns);
@@ -126,14 +136,7 @@ CodeGradX.User.prototype.getCurrentCampaign = function () {
     } else {
         return user.getCampaigns(true)
             .then(function (campaigns) {
-                function hash2array (o) {
-                    let result = [];
-                    Object.keys(o).forEach((key) => {
-                        result.push(o[key]);
-                    });
-                    return result;
-                }
-                campaigns = hash2array(campaigns);
+                campaigns = CodeGradX.hash2array(campaigns);
                 if ( campaigns.length === 1 ) {
                     state.currentCampaignName = campaigns[0].name;
                     state.currentCampaign = campaigns[0];
@@ -149,6 +152,24 @@ CodeGradX.User.prototype.getCurrentCampaign = function () {
 };
 CodeGradX.User.prototype.getCurrentCampaign.default = {
     currentCampaign: undefined
+};
+
+/** Set current campaign.
+
+    @param {Campaign}
+    @returns Promise<Campaign>
+
+*/
+
+CodeGradX.User.prototype.setCurrentCampaign = function (campaign) {
+    const user = this;
+    const state = CodeGradX.getCurrentState();
+    if ( state.currentCampaign === campaign ) {
+        return Promise.resolve(state.currentCampaign);
+    }
+    state.currentCampaignName = campaign.name;
+    state.currentCampaign = campaign;
+    return Promise.resolve(campaign);
 };
 
 // end of campaign.js

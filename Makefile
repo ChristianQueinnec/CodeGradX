@@ -1,4 +1,4 @@
-# Time-stamp: "2019-04-29 19:05:07 queinnec"
+# Time-stamp: "2019-05-06 08:46:36 queinnec"
 
 work : nothing 
 clean :: 
@@ -18,6 +18,7 @@ test.with.real.servers : prepare
 	node_modules/.bin/jasmine --random=false \
 		spec/[0-8]*.js 2>&1 | tee /tmp/spec.log
 
+# Use local configuration file: Archive/cqhome.codegradx.org
 test.within.browser :
 	cd spec/ && ln -sf ../node_modules/jasmine-core .
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
