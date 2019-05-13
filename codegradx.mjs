@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-05-12 16:53:51 queinnec"
+// Time-stamp: "2019-05-13 09:45:17 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1152,7 +1152,7 @@ CodeGradX.hash2array = function (o) {
         result.push(o[key]);
     });
     return result;
-}
+};
 
 // **************** Campaign *********************************
 
