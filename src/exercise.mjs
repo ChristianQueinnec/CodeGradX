@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-05-24 15:42:40 queinnec"
+// Time-stamp: "2019-09-03 15:01:06 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -8,7 +8,6 @@ export default CodeGradX;
 import xml2js from '../src/xml2js.mjs';
 import { parsexml } from '../src/parsexml.mjs';
 import { xml2html } from '../src/xml2html.mjs';
-const when = CodeGradX.when;
     
 /** Get the XML descriptor of the Exercise.
     This XML descriptor will enrich the Exercise instance.
