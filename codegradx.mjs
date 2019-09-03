@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-05-13 09:45:17 queinnec"
+// Time-stamp: "2019-05-22 17:27:12 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -419,6 +419,7 @@ CodeGradX.State = function (initializer) {
     this.currentCampaign = null;
     this.currentCampaignName = undefined;
     this.currentFileName = undefined;
+    this.currentExercise = null;
     // Post-initialization
     let state = this;
     // Cache for jobs useful when processing batches:
@@ -501,6 +502,8 @@ CodeGradX.State.prototype.mkUserAgent = function () {
             if ( options.entity instanceof Uint8Array ) {
                 options.body = new Blob([options.entity],
                                         {type: 'application/octet-stream'});
+            } else if ( options.entity instanceof FormData ) {
+                options.body = options.entity;
             } else if ( typeof options.entity === 'object' ) {
                 let params = [];
                 for ( let key of Object.keys(options.entity) ) {

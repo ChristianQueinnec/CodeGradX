@@ -1,11 +1,13 @@
 // exercise.js
-// Time-stamp: "2019-04-29 18:44:21 queinnec"
+// Time-stamp: "2019-05-24 15:42:40 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
 import xml2js from '../src/xml2js.mjs';
+import { parsexml } from '../src/parsexml.mjs';
+import { xml2html } from '../src/xml2html.mjs';
 const when = CodeGradX.when;
     
 /** Get the XML descriptor of the Exercise.
@@ -20,7 +22,7 @@ const when = CodeGradX.when;
 
        */
 
-CodeGradX.Exercise.prototype.getDescription = function () {
+CodeGradX.Exercise.prototype.getDescription = async function () {
     const exercise = this;
     const state = CodeGradX.getCurrentState();
     state.debug('getDescription1', exercise);
@@ -30,82 +32,98 @@ CodeGradX.Exercise.prototype.getDescription = function () {
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
-    const promise = state.sendESServer('e', {
+    const response = await state.sendESServer('e', {
         path: ('/exercisecontent/' + exercise.safecookie + '/content'),
         method: 'GET',
         headers: {
             Accept: "application/json",
-            // useful for debug:
-            "X-CodeGradX-Comment": `ExerciseName=${exercise.name}`
+            // useful for debug (but requires CORS authorization):
+            //"X-CodeGradX-Comment": `ExerciseName=${exercise.name}`
         }
     });
-    // Parse the HTTP response, translate the XML into a Javascript object
-    // and provide it to the sequel:
-    const promise1 = promise.then(function (response) {
-        state.debug('getDescription2', response);
-        //console.log(response);
-        exercise.server = response.url.replace(
-            new RegExp('^(https?://[^/]+)/.*$'), "$1");
-        exercise._XMLdescription = response.entity;
-        function parseXML (description) {
-            state.debug('getDescription2b', description);
-            exercise._description = description;
-            //description._exercise = exercise;
-            return Promise.resolve(description);
-        }
-        return CodeGradX.parsexml(exercise._XMLdescription).then(parseXML);
-    });
-    const promise3 = promise.then(function (response) {
-        // Extract stem
-        state.debug("getDescription4", response);
-        const contentRegExp = new RegExp("^(.|\n)*(<\\s*content\\s*>(.|\n)*</content\\s*>)(.|\n)*$");
-        const content = response.entity.replace(contentRegExp, "$2");
+    state.debug('getDescription2', response);
+    //console.log(response);
+    const re1 = new RegExp('^(https?://[^/]+)/.*$');
+    exercise.server = response.url.replace(re1, "$1");
+    exercise._XMLdescription = response.entity;
+
+    // Parse XML
+    try {
+        const description = await parsexml(exercise._XMLdescription);
+        state.debug('getDescription4 _description', description);
+        exercise._description = description;
+    } catch (exc) {
+        state.debug('getDescription4b', exc);
+    }
+
+    // Determine the language of the exercise:
+    try {
+        exercise.lang = undefined;
+        exercise.lang = exercise._description.fw4ex.$.lang
+            .replace(/_\w+$/, '');
+        state.debug('getDescription3 lang=', exercise.lang);
+    } catch (exc) {
+        state.debug('getDescription3b', exc);
+    }
+
+    // Extract stem
+    try {
+        const re4 = new RegExp("^(.|\n)*(<\\s*content\\s*>(.|\n)*</content\\s*>)(.|\n)*$");
+        const content = exercise._XMLdescription.replace(re4, "$2");
         exercise.XMLcontent = content;
-        return CodeGradX.xml2html(content, { exercise })
-            .then((stem) => {
-                exercise.stem = stem;
-                // extract equipment:
-                state.debug("getDescription5b", exercise);
-                extractEquipment(exercise, response.entity);
-                // extract identity and authorship:
-                state.debug("getDescription6", exercise);
-                return extractIdentification(exercise, response.entity);
-            });
-    });
-    const promise4 = promise.then(function (response) {
-        // If only one question expecting only one file, retrieve its name:
-        state.debug('getDescription5c');
-        const expectationsRegExp =
-            new RegExp("<\\s*expectations\\s*>((.|\n)*?)</expectations\\s*>", "g");
-        const expectationss = response.entity.match(expectationsRegExp);
+        const stem = await xml2html(content, { exercise });
+        exercise.stem = stem;
+        state.debug('getDescription5 stem', stem);
+    } catch (exc) {
+        state.debug('getDescription5b', exc);
+    }
+    
+    // Extract equipment:
+    try {
+        extractEquipment(exercise, exercise._XMLdescription);
+        state.debug("getDescription6 equipment", exercise.equipment);
+    } catch (exc) {
+        state.debug('getDescription6b', exc);
+    }
+
+    // Extract identity and authorship:
+    try {
+        await extractIdentification(exercise, exercise._XMLdescription);
+        state.debug("getDescription7 identity", exercise.authorship);
+    } catch (exc) {
+        state.debug('getDescription7b', exc);
+    }
+
+    // Extract expectations
+    try {
+        state.debug('getDescription8 expectations');
+        exercise.expectations = [];
+        const re5 =
+              new RegExp("<\\s*expectations\\s*>((.|\n)*?)</expectations\\s*>", "g");
+        const expectationss = exercise._XMLdescription.match(re5);
         if ( expectationss ) {
             //const files = _.reduce(expectationss, concat);
+            // Collect all expectations:
             const files = expectationss.join('');
+            // Surround with <div> for parsexml to work:
             const expectations = '<div>' + files + '</div>';
-            return CodeGradX.parsexml(expectations).then(function (result) {
-                state.debug('getDescription5a');
-                if ( Array.isArray(result.div.expectations.file) ) {
-                    // to be done. Maybe ? Why ?
-                } else {
-                    //console.log(result.div.expectations);
-                    exercise.expectations = result.div.expectations;
-                    exercise.inlineFileName = result.div.expectations.file.$.basename;
-                }
-                return Promise.resolve(response);
-            }).catch(function (/*reason*/) {
-                exercise.expectations = [];
-                return Promise.resolve(response);
-            });
-        } else {
-            exercise.expectations = [];
-            return Promise.resolve(response);
+            const result = await parsexml(expectations);
+            state.debug('getDescription8a', result);
+            if ( Array.isArray(result.div.expectations.file) ) {
+                // to be done. Maybe ? Why ?
+            } else {
+                //console.log(result.div.expectations);
+                exercise.expectations = result.div.expectations;
+                exercise.inlineFileName = result.div.expectations.file.$.basename;
+            }
         }
-    });
-    return when.join(promise3, promise4)
-        .then(function (/*values*/) {
-            return promise1;
-        });
+    } catch (exc) {
+        state.debug('getDescription8b', exc);
+    }
+
+    return Promise.resolve(exercise._description);
 };
+
 
 /** Get an equipment file that is a file needed by the students
     and stored in the exercise.
@@ -153,7 +171,7 @@ const summaryRegExp =
 
 function extractIdentification (exercise, s) {
     const content = s.replace(identificationRegExp, "$2");
-    return CodeGradX.parsexml(content).then(function (result) {
+    return parsexml(content).then(function (result) {
         if ( ! result.identification ) {
             return Promise.resolve(exercise);
         }
@@ -163,7 +181,7 @@ function extractIdentification (exercise, s) {
         exercise.nickname = result.$.nickname;
         exercise.date = result.$.date;
         const summary = content.replace(summaryRegExp, "$2");
-        return CodeGradX.xml2html(summary)
+        return xml2html(summary)
             .then((summary) => {
                 exercise.summary = summary;
                 if ( Array.isArray(result.tags.tag) ) {
@@ -305,7 +323,7 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
   function processResponse (response) {
     //console.log(response);
     state.debug('sendStringAnswer2', response);
-    return CodeGradX.parsexml(response.entity).then(function (js) {
+    return parsexml(response.entity).then(function (js) {
       //console.log(js);
       state.debug('sendStringAnswer3', js);
       js = js.fw4ex.jobSubmittedReport;
@@ -365,7 +383,7 @@ CodeGradX.Exercise.prototype.sendFileFromDOM =
     function processResponse (response) {
         //console.log(response);
         state.debug('sendZipFileAnswer2', response);
-        return CodeGradX.parsexml(response.entity).then(function (js) {
+        return parsexml(response.entity).then(function (js) {
             //console.log(js);
             state.debug('sendZipFileAnswer3', js);
             js = js.fw4ex.jobSubmittedReport;
@@ -385,7 +403,8 @@ CodeGradX.Exercise.prototype.sendFileFromDOM =
     }
     const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
     const headers = {
-        "Content-Type": "multipart/form-data",
+        // Useless since we post a FormData:
+        //"Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),
         "Accept": 'application/json'
     };
@@ -456,7 +475,7 @@ CodeGradX.Exercise.prototype.getExerciseReport = function (parameters) {
     return extractIdentification(exercise, response.entity)
           .then(function (/*exercise*/) {
               state.debug("getExerciseReport3b");
-              return CodeGradX.parsexml(response.entity);
+              return parsexml(response.entity);
           }).then(function (js) {
               state.debug("getExerciseReport3c", js);
               js = js.fw4ex.exerciseAuthorReport;

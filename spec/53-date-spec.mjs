@@ -1,7 +1,8 @@
 // Jasmine test to check parsing of dates (Safari Date.parse does not
 // work as in Chrome).
 
-import CodeGradX from '../src/xml2html.mjs';
+import CodeGradX from '../codegradx.mjs';
+import { xml2html } from '../src/xml2html.mjs';
 
 describe('CodeGradX 53 date', function () {
 

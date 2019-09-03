@@ -1,16 +1,15 @@
 // xml2html.mjs
-// Time-stamp: "2019-04-25 17:14:40 queinnec"
+// Time-stamp: "2019-09-03 14:52:46 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 import sax from '../src/sax.mjs';
-/** Re-export the `CodeGradX` object */
-export default CodeGradX;
+import { htmlencode } from '../src/htmlencode.mjs';
 
 /** Conversion of texts (stems, reports) from XML to HTML.
     This function may be modified to accommodate your own desires.
 */
 
-CodeGradX.xml2html = function (s, options) {
+export function xml2html (s, options) {
   options = Object.assign({}, CodeGradX.xml2html.default, options);
   let result = '';
   //const mark, totalMark;
@@ -21,7 +20,7 @@ CodeGradX.xml2html = function (s, options) {
   // Tags to be converted into DIV:
   const divTagsRegExp = new RegExp('^(warning|error|introduction|conclusion|normal|stem|report)$');
   // Tags to be converted into SPAN:
-  const spanTagsRegExp = new RegExp("^(user|machine|lineNumber)$");
+  const spanTagsRegExp = new RegExp("^(user|machine|lineNumber|summary)$");
   // Tags with special hack:
   const specialTagRegExp = new RegExp("^(img|a)$");
   // Tags to be ignored:
@@ -40,39 +39,9 @@ CodeGradX.xml2html = function (s, options) {
   parser.onerror = function (e) {
       throw e;
   };
-  const special = {
-      "'": "&apos;",
-      '"': "&quot;",
-      '<': "&lt;",
-      '>': "&gt;",
-      '&': "&amp;"
-  };
-  function htmlencode (text) {
-      let htmltext = '';
-      const letters = text.split('');
-      for ( let i=0 ; i<letters.length ; i++ ) {
-          const ch = letters[i];
-          if ( special[ch] ) {
-              htmltext += special[ch];
-          } else {
-              htmltext += ch;
-          }
-      }
-      return htmltext;
-  }
   parser.ontext= function (text) {
       if ( ! mode.match(/ignore/) ) {
-          let htmltext = '';
-          const letters = text.split('');
-          for ( let i=0 ; i<letters.length ; i++ ) {
-              const ch = letters[i];
-              if ( special[ch] ) {
-                  htmltext += special[ch];
-              } else {
-                  htmltext += ch;
-              }
-          }
-          result += htmltext;
+          result += htmlencode(text);
       }
   };
   function absolutize (node) {
@@ -186,7 +155,8 @@ CodeGradX.xml2html = function (s, options) {
       result = result.replace(questionTitleRegExp, '');
   }
   return Promise.resolve(result);
-};
+}
+CodeGradX.xml2html = xml2html;
 CodeGradX.xml2html.default = {
   markFactor:  100
 };

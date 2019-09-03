@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2019-04-29 18:53:27 queinnec"
+// Time-stamp: "2019-05-22 17:54:02 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -50,7 +50,8 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM =
     }
     const basefilename = currentFileName.replace(new RegExp("^.*/"), '');
     const headers = {
-        "Content-Type": "multipart/form-data",
+        // Useless since we post a FormData:
+        //"Content-Type": "multipart/form-data",
         "Content-Disposition": ("inline; filename=" + basefilename),
         "Accept": 'application/json'
     };

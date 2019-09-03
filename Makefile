@@ -1,4 +1,4 @@
-# Time-stamp: "2019-05-06 08:46:36 queinnec"
+# Time-stamp: "2019-05-20 18:29:52 queinnec"
 
 work : nothing 
 clean :: 
@@ -15,8 +15,9 @@ prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js
 
 tests : test.with.real.servers
 test.with.real.servers : prepare
-	node_modules/.bin/jasmine --random=false \
-		spec/[0-8]*.js 2>&1 | tee /tmp/spec.log
+	m test.within.browser
+#	node_modules/.bin/jasmine --random=false \
+#		spec/[0-8]*.js 2>&1 | tee /tmp/spec.log
 
 # Use local configuration file: Archive/cqhome.codegradx.org
 test.within.browser :

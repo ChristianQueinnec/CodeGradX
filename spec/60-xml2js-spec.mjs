@@ -1,6 +1,7 @@
 // Jasmine test related to the conversion of xml towards javascript.
 
-import CodeGradX from '../src/parsexml.mjs';
+import CodeGradX from '../codegradx.mjs';
+import { parsexml } from '../src/parsexml.mjs';
 
 describe('CodeGradX 60 xml2js', function () {
 

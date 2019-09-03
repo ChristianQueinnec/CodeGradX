@@ -7,8 +7,8 @@ import _1 from '../src/campaignlib.mjs';
 import _2 from '../src/exercise.mjs';
 import _3 from '../src/exercisesSet.mjs';
 import _4 from '../src/job.mjs';
-import _5 from '../src/xml2html.mjs';
-import _6 from '../src/parsexml.mjs';
+import { xml2html } from '../src/xml2html.mjs';
+import { parsexml } from '../src/parsexml.mjs';
 
 describe('CodeGradX 40 history', function () {
 

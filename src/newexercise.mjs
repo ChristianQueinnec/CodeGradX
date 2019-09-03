@@ -1,5 +1,5 @@
 // userlib.mjs
-// Time-stamp: "2019-04-29 18:47:11 queinnec"
+// Time-stamp: "2019-05-22 17:53:23 queinnec"
 
 import CodeGradX from '../src/campaign.mjs';
 /** Re-export the `CodeGradX` object */
@@ -38,7 +38,8 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form) {
   const basefilename = FW4EX.currentFileName
       .replace(new RegExp("^.*/"), '');
   const headers = {
-      "Content-Type": "multipart/form-data",
+      // Useless since we post a FormData:
+      //"Content-Type": "multipart/form-data",
       "Content-Disposition": ("inline; filename=" + basefilename),
       "Accept": 'application/json'
   };
