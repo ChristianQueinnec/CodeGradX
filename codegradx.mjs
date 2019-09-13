@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-05-22 17:27:12 queinnec"
+// Time-stamp: "2019-09-13 17:22:08 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -368,7 +368,7 @@ CodeGradX.Log.prototype.show = function (items) {
 CodeGradX.State = function (initializer) {
     this.userAgent = this.mkUserAgent();
     this.log = new CodeGradX.Log();
-    // State of servers:
+    // State of servers [this may be changed with .getCurrentConstellation()]
     this.servers = {
         // The domain to be suffixed to short hostnames:
         domain: '.codegradx.org',
@@ -381,10 +381,18 @@ CodeGradX.State = function (initializer) {
             // Use that URI to check whether the server is available or not:
             suffix: '/alive',
             protocol: 'https',
-            // Description of an A server:
+            // Description of plausible A servers:
             0: {
                 // a full hostname supersedes the default FQDN:
-                host: 'a.codegradx.org',
+                host: 'a5.codegradx.org',
+                enabled: false
+            },
+            1: {
+                host: 'a6.codegradx.org',
+                enabled: false
+            },
+            2: {
+                host: 'a7.codegradx.org',
                 enabled: false
             }
         },
@@ -392,7 +400,15 @@ CodeGradX.State = function (initializer) {
             suffix: '/alive',
             protocol: 'https',
             0: {
-                host: 'e.codegradx.org',
+                host: 'e5.codegradx.org',
+                enabled: false
+            },
+            1: {
+                host: 'e6.codegradx.org',
+                enabled: false
+            },
+            2: {
+                host: 'e7.codegradx.org',
                 enabled: false
             }
         },
@@ -400,7 +416,15 @@ CodeGradX.State = function (initializer) {
             suffix: '/dbalive',
             protocol: 'https',
             0: {
-                host: 'x.codegradx.org',
+                host: 'x5.codegradx.org',
+                enabled: false
+            },
+            1: {
+                host: 'x6.codegradx.org',
+                enabled: false
+            },
+            2: {
+                host: 'x7.codegradx.org',
                 enabled: false
             }
         },
@@ -408,7 +432,19 @@ CodeGradX.State = function (initializer) {
             suffix: '/index.txt',
             protocol: 'https',
             0: {
-                host: 's.codegradx.org',
+                host: 's3.codegradx.org',
+                enabled: false
+            },
+            1: {
+                host: 's5.codegradx.org',
+                enabled: false
+            },
+            2: {
+                host: 's6.codegradx.org',
+                enabled: false
+            },
+            3: {
+                host: 's7.codegradx.org',
                 enabled: false
             }
         }
@@ -493,11 +529,15 @@ CodeGradX.State.prototype.mkUserAgent = function () {
         }
         return reader.read().then(processBytes);
     }
-    return async function (options) {
+    return async function tryRequest (options) {
         state.debug('userAgent1', options);
         options.redirect = options.redirect || 'follow';
-        options.credentials = options.credentials || 'include';
         options.mode = options.mode || 'cors';
+        if ( options.mode === 'no-cors' ) {
+            options.credentials = options.credentials || 'omit';
+        } else {
+            options.credentials = options.credentials || 'include';
+        }
         if ( options.entity ) {
             if ( options.entity instanceof Uint8Array ) {
                 options.body = new Blob([options.entity],
@@ -525,21 +565,29 @@ CodeGradX.State.prototype.mkUserAgent = function () {
                 return Promise.resolve(response);
             } else if ( 400 <= response.status && response.status < 500 ) {
                 await decodeBody(response);
-                state.debug('userAgent4 clientError', response);
+                state.debug('userAgent4 clientError',
+                            response.status, response);
                 return Promise.reject(response);
             } else if ( 500 <= response.status ) {
-                state.debug('userAgent4 serverError', response);
+                state.debug('userAgent4 serverError',
+                            response.status, response);
                 return Promise.reject(response);
-            } else if ( ! response.status ) {     // HACK ATTEMPT ???
-                await decodeBody(response);
-                state.debug('userAgent4 fetchPB', response);
+            } else if ( response.status === 302 ||
+                        response.status === 307 ) {
+                state.debug('userAgent4 redirect');
+                return Promise.resolve(response);
+            } else if ( ! response.status ) {
+                // response.status === 0 suggests a CORS issue
+                state.debug('userAgent4 fetchPB',
+                            response.status, response);
                 return Promise.reject(response);
             } else {
-                state.debug('userAgent4 PB', response);
+                state.debug('userAgent4 PB',
+                            response.status, response);
                 return Promise.reject(response);
             }
         } catch (exc) {
-            state.debug('userAgent5 PB', exc);
+            state.debug('userAgent5 PB', JSON.stringify(exc));
             return Promise.reject(exc);
         }
     };
@@ -648,10 +696,37 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
   // Don't use that host while being checked:
   description.enabled = false;
   delete description.lastError;
+  function adjoinHost(descriptions, host) {
+      let maxkey = 0;
+      for ( let key in descriptions ) {
+          if ( /^\d+$/.exec(key) ) {
+              key = CodeGradX._str2num(key);
+              maxkey = (maxkey < key) ? key : maxkey;
+              const oldhost = descriptions[key];
+              if ( oldhost.host === host ) {
+                  // host is already known!
+                  state.debug('updateDescription adjoin already known', host);
+                  return;
+              }
+          }
+      }
+      // host is not known
+      state.debug('updateDescription adjoin', host, descriptions);
+      descriptions[maxkey+1] = { host, enabled: false };
+  }
   function updateDescription (response) {
-    state.debug('updateDescription', description.host, response);
-    description.enabled = (response.status < 300);
-    return Promise.resolve(response);
+      state.debug('updateDescription', description.host, response);
+      if ( response.status < 300 ) {
+          description.enabled = (response.status < 300);
+          return Promise.resolve(response);
+      } else if ( response.status === 302 ||
+                  response.status === 307 ) {
+          const location = response.headers.get('Location');
+          const host = location.replace(/^https?:\/\/([^/]+)\/.*$/, '$1');
+          adjoinHost(descriptions, host);
+      } else {
+          return Promise.reject(response.status);
+      }
   }
   function invalidateDescription (reason) {
     state.debug('invalidateDescription', description.host, reason);
@@ -659,15 +734,19 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
     description.lastError = reason;
     return Promise.reject(reason);
   }
-  const url = description.protocol + "://" + host + descriptions.suffix;
-  state.debug('checkServer2', kind, index, url);
-  const request = {
-      path: url
-  };
-  state.adjoinCurrentCookie(kind, request);
-  return state.userAgent(request)
-        .then(updateDescription)
-        .catch(invalidateDescription);
+  function tryServer (url) {
+      state.debug('checkServer2', kind, index, url);
+      const request = {
+          //mode: 'no-cors',
+          path: url
+      };
+      state.adjoinCurrentCookie(kind, request);
+      return state.userAgent(request)
+          .then(updateDescription)
+          .catch(invalidateDescription);
+  }
+    const url = description.protocol + "://" + host + descriptions.suffix;
+    return tryServer(url);
 };
 
 /** Check all possible servers of some kind (a, e, x or s) that is,
@@ -753,6 +832,7 @@ CodeGradX.State.prototype.getActiveServers = function (kind) {
                 active = filterEnabled(descriptions);
                 if ( active.length === 0 ) {
                     const error = new Error(`No available ${kind} servers`);
+                    state.debug('getActiveServers', error);
                     return Promise.reject(error);
                 } else {
                     return Promise.resolve(active);
@@ -785,6 +865,7 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         const newoptions = Object.assign({}, options);
         newoptions.headers = newoptions.headers || options.headers || {};
         state.adjoinCurrentCookie(kind, newoptions);
+        //newoptions.mode = 'cors';
         return newoptions;
     }
 
@@ -810,7 +891,8 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         if ( ! extractCookie('Set-Cookie') ) {
             extractCookie('X-CodeGradX-Cookie');
         }
-        state.debug('sendSequentially updateCurrentCookie2', state.currentCookie);
+        state.debug('sendSequentially updateCurrentCookie2',
+                    state.currentCookie);
         return Promise.resolve(response);
     }
 
@@ -1038,8 +1120,10 @@ function (login, password) {
   }).catch(function (response) {
       if ( response.entityKind === 'JSON' ) {
           return Promise.reject(response.entity);
-      } else {
+      } else if ( response.entity ) {
           return Promise.reject(response.entity);
+      } else {
+          return Promise.reject(response);
       }
   });
 };

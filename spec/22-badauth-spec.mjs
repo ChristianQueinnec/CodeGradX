@@ -2,7 +2,7 @@
 
 import CodeGradX from '../codegradx.mjs';
 
-describe('CodeGradX bad authentication', function () {
+describe('CodeGradX 22 bad authentication', function () {
     
     function make_faildone (done) {
         return function faildone (reason) {
@@ -22,8 +22,8 @@ describe('CodeGradX bad authentication', function () {
                 faildone();
             })
             .catch(function (reason) {
-                //console.log(reason);
-                //state.debug().show();
+                console.log(reason);
+                state.debug().show();
                 expect(reason.kind).toMatch(/errorAnswer/);
                 expect(reason.reason).toMatch(/e150/);
                 done();

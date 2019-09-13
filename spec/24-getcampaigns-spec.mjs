@@ -3,7 +3,7 @@
 import CodeGradX from '../src/campaign.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 
-describe('CodeGradX', function () {
+describe('CodeGradX 24', function () {
 
     it('should be loaded', function () {
         expect(CodeGradX).toBeDefined();

@@ -3,63 +3,9 @@
 import CodeGradX from '../codegradx.mjs';
 
 // Some of these tests require at least two servers:
-//var otherServers = require('./otherServers.json');
-const otherServers = { 
-  "domain" : ".codegradx.org",
-  "names": ["a", "e", "x", "s"],
-  "protocol": "https",
-  "a": {
-      "suffix": "/alive",
-      "protocol": "https",
-      "0": {
-          "host": "a.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "a.codegradx.org",
-          "enabled": false
-      }
-  },
-  "e": {
-      "suffix": "/alive",
-      "protocol": "https",
-      "0": {
-          "host": "e.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "e.codegradx.org",
-          "enabled": false
-      }
-  },
-  "x": {
-      "suffix": "/dbalive",
-      "protocol": "https",
-      "0": {
-          "host": "x.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "x.codegradx.org",
-          "enabled": false
-      }
-  },
-  "s": {
-      "suffix": "/index.txt",
-      "protocol": "https",
-      "0": {
-          "host": "s6.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "s3.codegradx.org",
-          "enabled": false
-      }
-  }
-};
+import otherServers from './otherServers.mjs';
 
-
-describe('CodeGradX', function () {
+describe('CodeGradX 04', function () {
   it('should be loaded', function () {
     expect(CodeGradX).toBeDefined();
   });
@@ -120,7 +66,7 @@ describe('CodeGradX', function () {
       fail("should not happen!");
       done();
     }).catch(function (error) {
-      //console.log(error);
+      console.log(error);
       //console.log(state.servers.a);
       expect(state.servers.a[17].enabled).toBe(false);
       expect(state.servers.a[17].lastError).toBeTruthy();

@@ -11,7 +11,7 @@ import { xml2html } from '../src/xml2html.mjs';
 import { parsexml } from '../src/parsexml.mjs';
 import _7 from '../src/userlib.mjs';
 
-describe('CodeGradX', function () {
+describe('CodeGradX 44', function () {
 
   it('should be loaded', function (done) {
     expect(CodeGradX).toBeDefined();
@@ -63,9 +63,22 @@ describe('CodeGradX', function () {
       state.currentUser.getProgress(campaign0).then(function (user) {
           expect(user.results.length).toBeGreaterThan(0);
           console.log(user.results);//DEBUG
-          expect(user.results[0].name).toBe('com.paracamplus.li205.function.1');
-          expect(user.results[0].nickname).toBe('min');
-          expect(user.results[0].mark).toBe(1);
+          // user.results are not sorted!
+          let result;
+          for ( let i=0 ; i<user.results.length ; i++ ) {
+              const item = user.results[i];
+              if ( item.name === 'com.paracamplus.li362.tr.4' ) {
+                  result = item;
+                  break;
+              }
+          }
+          if ( result ) {
+              expect(result.name).toBe('com.paracamplus.li362.tr.4');
+              expect(result.nickname).toBe('deblanchir');
+              expect(result.mark).toBe(0.1);
+          } else {
+              faildone("Could not find deblanchir");
+          }
           expect(user.badges.length).toBe(0);
           done();
       }, faildone);

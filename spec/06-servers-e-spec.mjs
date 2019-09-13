@@ -4,7 +4,7 @@
 import CodeGradX from '../codegradx.mjs';
 import make_fakeUserAgent from './mkFakeUserAgent.mjs';
 
-describe('CodeGradX', function () {
+describe('CodeGradX 06', function () {
   it('should be loaded', function () {
     expect(CodeGradX).toBeDefined();
   });

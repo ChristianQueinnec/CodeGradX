@@ -12,59 +12,7 @@ import { parsexml } from '../src/parsexml.mjs';
 
 // Some of these tests require s3 and s6 storage servers
 // and also working a, e and x servers:
-const otherServers = {
-  "domain" : ".codegradx.org",
-  "names": ["a", "e", "x", "s"],
-  "protocol": "https",
-  "a": {
-      "suffix": "/alive",
-      "protocol": "https",
-      "0": {
-          "host": "a.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "a.codegradx.org",
-          "enabled": false
-      }
-  },
-  "e": {
-      "suffix": "/alive",
-      "protocol": "https",
-      "0": {
-          "host": "e.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "e.codegradx.org",
-          "enabled": false
-      }
-  },
-  "x": {
-      "suffix": "/dbalive",
-      "protocol": "https",
-      "0": {
-          "host": "x.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "x.codegradx.org",
-          "enabled": false
-      }
-  },
-  "s": {
-      "suffix": "/index.txt",
-      "protocol": "https",
-      "0": {
-          "host": "s6.codegradx.org",
-          "enabled": false
-      },
-      "1": {
-          "host": "s3.codegradx.org",
-          "enabled": false
-      }
-  }
-};
+import otherServers from './otherServers.mjs';
 
 describe('CodeGradX 30 exercise', function () {
 
@@ -295,6 +243,6 @@ describe('CodeGradX 30 exercise', function () {
         }, faildone);
       }, faildone);
     }, faildone);
-  }, 50*1000); // 50 seconds
+  }, 55*1000); // 55 seconds
 
 });
