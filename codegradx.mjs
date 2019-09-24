@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-09-13 17:22:08 queinnec"
+// Time-stamp: "2019-09-23 09:12:38 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1430,7 +1430,7 @@ CodeGradX.Batch = function (js) {
 
    -1- get the current default constellation of a, e, s and x servers.
     This configuration is taken out of an X server as
-             x.codegradx.org/constellation/current.json
+             x.codegradx.org/constellation/aesx
 
     -2- get the specialized configuration for the server say
     li101.codegradx.org. This configuration defines the campaign, the
@@ -1438,7 +1438,7 @@ CodeGradX.Batch = function (js) {
     on the server itself as
        li101.codegradx.org/config.js
     or on an X server as
-      x.codegradx.org/constellation/configuration/li101.codegradx.org/config.js
+      x.codegradx.org/constellation/configuration/li101.codegradx.org.js
 
       @return Promise<> yielding <State>
 */
@@ -1447,17 +1447,16 @@ CodeGradX.initialize = async function (force=false) {
     let state = CodeGradX.getCurrentState();
     if ( force || ! state.initialized ) {
         state = new CodeGradX.State();
+        // Get the current state of the constellation of a, e, x, s servers:
         try {
             const servers = await state.getCurrentConstellation();
             state.servers = servers;
         } catch (exc) {
             state.debug('initialize aesx', exc);
         }
-        const hostname = document.URL
-              .replace(/^https?:\/\//, '')
-              .replace(/\/.*$/, '')
-              .replace(/:\d+/, '');
-        let js = 'true';
+        // There may be some code specific to that host:
+        const hostname = document.location.hostname;
+        let js = 'function (CodeGradX) { true; };';
         try {
             js = await state.getCurrentConfiguration1(hostname);
         } catch (exc) {

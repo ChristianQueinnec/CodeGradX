@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-04-25 18:11:45 queinnec"
+// Time-stamp: "2019-09-21 15:36:28 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -227,6 +227,26 @@ CodeGradX.Campaign.prototype.getCampaignStudentJobs = function (user) {
     user.jobs = response.entity.jobs.map(CodeGradX.Job.js2job);
     return Promise.resolve(user.jobs);
   });
+};
+
+/** Get the open campaigns ie the campaigns that may be freely joined.
+ */
+
+CodeGradX.getOpenCampaigns = function () {
+    const state = CodeGradX.getCurrentState();
+    state.debug('getOpenCampaigns');
+    return state.sendAXServer('x', {
+        path: '/campaigns/open',
+        method: 'GET',
+        headers: {
+            Accept: "application/json"
+        }
+    }).then(function (response) {
+        state.debug('getOpenCampaigns2', response);
+        let campaigns = response.entity.campaigns.map((js) =>
+                new CodeGradX.Campaign(js));
+        return Promise.resolve(campaigns);
+    });
 };
 
 // end of campaignlib.mjs

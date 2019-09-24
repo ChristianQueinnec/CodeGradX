@@ -1,5 +1,5 @@
 // campaign.mjs
-// Time-stamp: "2019-05-13 09:45:35 queinnec"
+// Time-stamp: "2019-09-23 09:54:00 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -141,8 +141,6 @@ CodeGradX.User.prototype.getCurrentCampaign = function () {
                     state.currentCampaignName = campaigns[0].name;
                     state.currentCampaign = campaigns[0];
                     return Promise.resolve(campaigns[0]);
-                } else if ( state.currentCampaign ) { 
-                    return Promise.resolve(state.currentCampaign);
                 } else {
                     const msg = "Cannot determine current campaign";
                     return Promise.reject(new Error(msg));

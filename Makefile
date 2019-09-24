@@ -1,4 +1,4 @@
-# Time-stamp: "2019-09-11 10:38:34 queinnec"
+# Time-stamp: "2019-09-13 17:39:05 queinnec"
 
 work : nothing 
 clean :: 
@@ -56,6 +56,6 @@ install :
 	m CodeGradX.tgz
 	rsync -avu CodeGradX.tgz \
 		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
-
+# Caution: inodes may lack!
 
 # end of Makefile
