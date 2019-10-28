@@ -1,5 +1,5 @@
 // userEnroll.mjs
-// Time-stamp: "2019-04-25 18:15:04 queinnec"
+// Time-stamp: "2019-10-24 17:37:37 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -30,6 +30,31 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
     }).then(function (response) {
         //console.log(response);
         state.debug('userEnroll2', response);
+        state.currentUser = new CodeGradX.User(response.entity);
+        return Promise.resolve(state.currentUser);
+    });
+};
+
+/** Sign the current version of the User Agreement.
+
+    @param {string} token - signing token
+    @returns {Promise<User>} yields {User}
+
+*/
+
+CodeGradX.State.prototype.userSignUA = function (token) {
+    const state = this;
+    state.debug('userSignUA1', token);
+    return state.sendAXServer('x', {
+        path: '/fromp/sign/' + token,
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('userSignUA2', response);
         state.currentUser = new CodeGradX.User(response.entity);
         return Promise.resolve(state.currentUser);
     });

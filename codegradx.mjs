@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-09-23 09:12:38 queinnec"
+// Time-stamp: "2019-10-28 18:22:45 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -174,6 +174,9 @@ CodeGradX._str2num2decimals = function (str) {
 };
 
 CodeGradX._str2Date = function (str) {
+    if ( str.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/) ) {
+        str = str.replace(/Z$/, '');
+    }
     let ms = Date.parse(str);
     if ( ! isNaN(ms) ) {
         const d = new Date(ms);
@@ -184,7 +187,9 @@ CodeGradX._str2Date = function (str) {
     // Safari cannot Date.parse('2001-01-01 00:00:00+00')
     // but can Date.parse('2001-01-01T00:00:00')
     const rmtz = /^\s*(.+)([+]\d+)?\s*$/;
-    const str2 = str.replace(rmtz, "$1").replace(/ /, 'T');
+    const str2 = str.replace(rmtz, "$1")
+          .replace(/ /, 'T')
+          .replace(/[^Z]$/, 'Z');
     ms = Date.parse(str2);
     if ( ! isNaN(ms) ) {
         const d = new Date(ms);
@@ -899,12 +904,18 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
     function mk_invalidate (description) {
         // This function declares the host as unable to answer.
         // Meanwhile, the host may answer with bad status code!
+        // We consider 40x status code to be correct (the server answers
+        // and the fault is a client fault).
         return function (reason) {
-            // With the fetch API, reason is a Response:
-            state.debug('sendAXserver invalidate', description, reason);
-            //console.log(reason);
-            description.enabled = false;
-            description.lastError = reason;
+            // With the fetch API, reason is a Response (or Exception):
+            if ( reason instanceof Response &&
+                 reason.status < 400 &&
+                 500 <= reason.status ) {
+                state.debug('sendAXserver invalidate', description, reason);
+                //console.log(reason);
+                description.enabled = false;
+                description.lastError = reason;
+            }
             return Promise.reject(reason);
         };
     }
@@ -984,12 +995,16 @@ CodeGradX.State.prototype.sendConcurrently = function (kind, options) {
                 }
                 return result;
             }
-            state.debug('sendConcurrently seeError', see(reason));
-            // Don't consider the absence of a report to be a
-            // reason to disable the server.
-            description.enabled = false;
-            description.lastError = reason;
-            //const js = JSON.parse(reason.entity);
+            if ( reason instanceof Response &&
+                 reason.status < 400 &&
+                 500 <= reason.status ) {
+                state.debug('sendConcurrently seeError', see(reason));
+                // Don't consider the absence of a report to be a
+                // reason to disable the server.
+                description.enabled = false;
+                description.lastError = reason;
+                //const js = JSON.parse(reason.entity);
+            }
             return Promise.reject(reason);
         };
     }
