@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-10-28 18:22:45 queinnec"
+// Time-stamp: "2019-11-18 10:06:36 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -375,6 +375,14 @@ CodeGradX.State = function (initializer) {
     this.log = new CodeGradX.Log();
     // State of servers [this may be changed with .getCurrentConstellation()]
     this.servers = {
+        domain: '.codegradx.org',
+        names: ['a', 'e', 'x', 's'],
+        protocol: 'https'
+    };
+    for ( let kind of this.servers.names ) {
+        this.servers[kind] = {};
+    }
+    this.defaultservers = {
         // The domain to be suffixed to short hostnames:
         domain: '.codegradx.org',
         // the shortnames of the four kinds of servers:
@@ -463,7 +471,7 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
-    // Cache for jobs useful when processing batches:
+    // Cache for jobs: useful when processing batches:
     state.cache = {
         jobs: {} 
     };
@@ -686,6 +694,14 @@ CodeGradX.State.prototype.gc = function () {
 CodeGradX.State.prototype.checkServer = function (kind, index) {
   const state = this;
   state.debug('checkServer1', kind, index);
+  if ( ! state.servers ) {
+      state.debug('checkServer', "uninitialized state.servers");
+      state.servers = {
+          domain: '.codegradx.org',
+          names: ['a', 'e', 'x', 's'],
+          protocol: 'https'
+      };
+  }        
   if ( ! state.servers[kind] ) {
     state.servers[kind] = {};
   }
@@ -698,6 +714,7 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
   description.host = host;
   description.protocol = description.protocol ||
         descriptions.protocol || state.servers.protocol;
+  description.prefix = description.prefix || '';
   // Don't use that host while being checked:
   description.enabled = false;
   delete description.lastError;
@@ -750,7 +767,8 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
           .then(updateDescription)
           .catch(invalidateDescription);
   }
-    const url = description.protocol + "://" + host + descriptions.suffix;
+    const url = description.protocol + "://" + host +
+          description.prefix + descriptions.suffix;
     return tryServer(url);
 };
 
@@ -842,6 +860,8 @@ CodeGradX.State.prototype.getActiveServers = function (kind) {
                 } else {
                     return Promise.resolve(active);
                 }
+            }).catch((exc) => {
+                return Promise.reject(exc);
             });
     } else {
         return Promise.resolve(active);
@@ -924,7 +944,7 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         newoptions.protocol = newoptions.protocol || 
             description.protocol || state.servers.protocol;
         newoptions.path = newoptions.protocol + '://' +
-            description.host + options.path;
+            description.host + description.prefix + options.path;
         state.debug('sendSequentially send', newoptions);
         return state.userAgent(newoptions)
             .catch(mk_invalidate(description))
@@ -1012,7 +1032,7 @@ CodeGradX.State.prototype.sendConcurrently = function (kind, options) {
     function send (description) {
         const tryoptions = Object.assign({}, regenerateNewOptions(options));
         tryoptions.path = description.protocol + '://' +
-            description.host + options.path;
+            description.host + description.prefix + options.path;
         state.debug("sendConcurrently send", tryoptions.path);
         return state.userAgent(tryoptions)
             .catch(mk_invalidate(description));
@@ -1462,19 +1482,13 @@ CodeGradX.initialize = async function (force=false) {
     let state = CodeGradX.getCurrentState();
     if ( force || ! state.initialized ) {
         state = new CodeGradX.State();
-        // Get the current state of the constellation of a, e, x, s servers:
-        try {
-            const servers = await state.getCurrentConstellation();
-            state.servers = servers;
-        } catch (exc) {
-            state.debug('initialize aesx', exc);
-        }
-        // There may be some code specific to that host:
+        // -1- try the specific host:
         const hostname = document.location.hostname;
-        let js = 'function (CodeGradX) { true; };';
+        let js = undefined;
         try {
             js = await state.getCurrentConfiguration1(hostname);
         } catch (exc) {
+            // -2- ask the X server for that specific host:
             state.debug('initialize getcurrentconfiguration1', exc);
             try {
                 js = await state.getCurrentConfigurationX(hostname);
@@ -1482,19 +1496,30 @@ CodeGradX.initialize = async function (force=false) {
                 state.debug('initialize getcurrentconfigurationX', exc);
             }
         }
-        try {
-            const f = eval(`(${js})`);
-            f(CodeGradX);
-        } catch (exc) {
-            state.debug('initialize eval configuration', exc);
+        if ( js ) {
+            // js should be like "function (CodeGradX) { true; }"
+            try {
+                const f = eval(`(${js})`);
+                f(CodeGradX);
+            } catch (exc) {
+                state.debug('initialize eval configuration', exc);
+            }
+        }
+        if ( ! state.servers ) {
+            // Get the current state of the constellation of a, e, x, s servers:
+            try {
+                const servers = await state.getCurrentConstellation();
+                state.servers = servers;
+            } catch (exc) {
+                state.debug('initialize aesx', exc);
+                state.servers = state.defaultservers;
+            }
         }
         state.initialized = true;
-        return state;
-    } else {
-        return state;
     }
+    return state;
 };
-
+    
 /** Get the current definition of the constellation of aesx servers.
 */
 
@@ -1537,7 +1562,7 @@ CodeGradX.State.prototype.getCurrentConfiguration1 = function (hostname) {
         return response.entity;
     }).catch(function (exc) {
         state.debug('getCurrentConfiguration13', exc);
-        return state;
+        throw exc;
     });
 };
 
@@ -1560,7 +1585,7 @@ CodeGradX.State.prototype.getCurrentConfigurationX = function (hostname) {
         return response.entity;
     }).catch(function (exc) {
         state.debug('getCurrentConfigurationX3', exc);
-        return state;
+        throw exc;
     });
 };
 
