@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-11-18 10:06:36 queinnec"
+// Time-stamp: "2019-11-19 09:36:34 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -374,14 +374,7 @@ CodeGradX.State = function (initializer) {
     this.userAgent = this.mkUserAgent();
     this.log = new CodeGradX.Log();
     // State of servers [this may be changed with .getCurrentConstellation()]
-    this.servers = {
-        domain: '.codegradx.org',
-        names: ['a', 'e', 'x', 's'],
-        protocol: 'https'
-    };
-    for ( let kind of this.servers.names ) {
-        this.servers[kind] = {};
-    }
+    this.servers = undefined;
     this.defaultservers = {
         // The domain to be suffixed to short hostnames:
         domain: '.codegradx.org',
@@ -927,12 +920,15 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         // We consider 40x status code to be correct (the server answers
         // and the fault is a client fault).
         return function (reason) {
+            state.debug('sendSequentially mk_invalidate', reason);
             // With the fetch API, reason is a Response (or Exception):
             if ( reason instanceof Response &&
-                 reason.status < 400 &&
                  500 <= reason.status ) {
                 state.debug('sendAXserver invalidate', description, reason);
                 //console.log(reason);
+                description.enabled = false;
+                description.lastError = reason;
+            } else {
                 description.enabled = false;
                 description.lastError = reason;
             }
