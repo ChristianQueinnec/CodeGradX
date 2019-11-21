@@ -1,4 +1,4 @@
-# Time-stamp: "2019-11-21 14:48:12 queinnec"
+# Time-stamp: "2019-11-21 14:49:28 queinnec"
 
 work : nothing 
 clean :: 
@@ -46,7 +46,7 @@ CodeGradX.tgz :
 	mkdir -p tmp
 	cd tmp/ && \
 	  git clone https://github.com/ChristianQueinnec/CodeGradX.git
-	rm -rf tmp/CodeGradX/.git
+	cd tmp/CodeGradX/ && rm -rf .git*
 	cp -p package.json tmp/CodeGradX/
 	cd tmp/CodeGradX/ && npm version patch
 	tar czf CodeGradX.tgz -C tmp CodeGradX
