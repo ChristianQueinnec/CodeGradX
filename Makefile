@@ -1,4 +1,4 @@
-# Time-stamp: "2019-11-19 09:04:01 queinnec"
+# Time-stamp: "2019-11-21 14:34:43 queinnec"
 
 work : nothing 
 clean :: 
@@ -33,7 +33,7 @@ publish : lint clean
 	-git commit -m "NPM publication `date`" .
 	git push
 	-rm -f CodeGradX.tgz
-#	m install
+	m CodeGradX.tgz
 	cd tmp/CodeGradX/ && npm publish
 	cp -pf tmp/CodeGradX/package.json .
 	rm -rf tmp
