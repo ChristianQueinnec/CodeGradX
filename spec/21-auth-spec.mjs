@@ -18,8 +18,8 @@ describe('CodeGradX 21', function () {
         };
     }
 
-  it("cannot authenticate with wrong password", function (done) {
-      var state = new CodeGradX.State();
+  it("cannot authenticate with wrong password", async function (done) {
+      var state = await CodeGradX.initialize();
       var faildone = make_faildone(done);
       state.getAuthenticatedUser('nobody:0', 'totallyWrong').then(
           function (user) {

@@ -263,14 +263,6 @@ describe('CodeGradX 05', function () {
       { path: 'http://a0.localdomain/bar',
         status: 0
       },
-      // checkServers('a') again: a0 still ko
-      { path: 'http://a0.localdomain/alive',
-        status: 402
-      },
-      // checkServers('a') again, a1 now ok
-      { path: 'http://a1.localdomain/alive',
-        status: 212
-      },
       // 2nd request again: ok
       { path: 'http://a1.localdomain/bar',
         status: 213
@@ -286,6 +278,7 @@ describe('CodeGradX 05', function () {
       state.sendAXServer('a', {
         path: '/bar'
       }).then(function (response2) {
+        //state.log.show();//DEBUG
         expect(response2.status).toBe(213);
         expect(state.servers.a[1].enabled).toBeTruthy();
         expect(state.servers.a[0].enabled).toBeFalsy();

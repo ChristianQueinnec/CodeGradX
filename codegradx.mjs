@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-11-19 09:36:34 queinnec"
+// Time-stamp: "2019-11-20 12:08:04 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -564,8 +564,13 @@ CodeGradX.State.prototype.mkUserAgent = function () {
         state.debug('userAgent2', options);
         try {
             const response = await window.fetch(options.path, options);
-            state.debug('userAgent3', options, response.ok);
-            if ( response.ok ) {
+            state.debug('userAgent3', options, response);
+            if ( response.redirected ) {
+                state.debug('userAgent4 redirect', response);
+                // This is the final response, we just know that it was
+                // obtained via redirection
+                return Promise.resolve(response);
+            } else if ( response.ok ) {
                 await decodeBody(response);
                 state.debug('userAgent4', response.entityKind);
                 return Promise.resolve(response);
@@ -578,10 +583,6 @@ CodeGradX.State.prototype.mkUserAgent = function () {
                 state.debug('userAgent4 serverError',
                             response.status, response);
                 return Promise.reject(response);
-            } else if ( response.status === 302 ||
-                        response.status === 307 ) {
-                state.debug('userAgent4 redirect');
-                return Promise.resolve(response);
             } else if ( ! response.status ) {
                 // response.status === 0 suggests a CORS issue
                 state.debug('userAgent4 fetchPB',

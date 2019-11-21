@@ -19,8 +19,8 @@ describe('CodeGradX 23', function () {
         };
     }
 
-    it("really authenticate and check", function (done) {
-        var state = new CodeGradX.State();
+    it("really authenticate and check", async function (done) {
+        var state = await CodeGradX.initialize();
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {
@@ -34,8 +34,8 @@ describe('CodeGradX 23', function () {
             }, faildone);
     });
 
-    it("really authenticate and re-check", function (done) {
-        var state = new CodeGradX.State();
+    it("really authenticate and re-check", async function (done) {
+        var state = await CodeGradX.initialize();
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {

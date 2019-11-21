@@ -20,6 +20,7 @@ describe('CodeGradX 10', function () {
 
     it("erase cookie if any", function (done) {
         var state = new CodeGradX.State();
+        state.servers = otherServers;
         function faildone (reason) {
             state.log.show();
             fail(reason);
@@ -43,6 +44,7 @@ describe('CodeGradX 10', function () {
 
   it('should send failing authentication request', function (done) {
     var state = new CodeGradX.State();
+      state.servers = otherServers;
     function faildone (reason) {
       state.log.show();
       fail(reason);
@@ -77,6 +79,7 @@ describe('CodeGradX 10', function () {
 
   it('should get public list of exercises', function (done) {
     var state = new CodeGradX.State();
+      state.servers = otherServers;
     function faildone (reason) {
       fail(reason);
       done();

@@ -12,9 +12,9 @@ import { parsexml } from '../src/parsexml.mjs';
 
 describe('CodeGradX 40 history', function () {
 
-  it('should be loaded', function (done) {
+  it('should be loaded', async function (done) {
     expect(CodeGradX).toBeDefined();
-    var state = new CodeGradX.State();
+    var state = await CodeGradX.initialize();
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);

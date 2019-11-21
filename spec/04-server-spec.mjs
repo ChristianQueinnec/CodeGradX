@@ -11,7 +11,10 @@ describe('CodeGradX 04', function () {
   });
 
   it('should create a State', function () {
-    var state = new CodeGradX.State();
+    var state = new CodeGradX.State((state) => {
+        state.servers = state.defaultservers;
+        return state;
+    });
     expect(state).toBeDefined();
     expect(state instanceof CodeGradX.State).toBeTruthy();
     expect(state.servers.names).toContain('a');

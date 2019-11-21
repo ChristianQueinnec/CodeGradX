@@ -62,7 +62,7 @@ describe('CodeGradX 07', function () {
         done();
     });
 
-    it('access redirection', function (done) {
+    it('access redirection via A', function (done) {
         var state = new CodeGradX.State(initializer);
         var faildone = make_faildone(done);
         expect(state).toBeDefined();
@@ -76,6 +76,46 @@ describe('CodeGradX 07', function () {
             expect(descriptions[0].lastError).not.toBeDefined();
             expect(descriptions[1]).not.toBeDefined();
             //expect(descriptions[1].host).toMatch(/a\d.codegradx.org/);
+            //expect(descriptions[1].enabled).toBeTruthy();
+            //expect(descriptions[1].lastError).not.toBeDefined();
+            done();
+        }, faildone);
+    });
+
+    it('access redirection via E', function (done) {
+        var state = new CodeGradX.State(initializer);
+        var faildone = make_faildone(done);
+        expect(state).toBeDefined();
+        expect(Object.keys(state.servers.e).length).toBe(2);
+        state.checkServers('e').then(function (descriptions) {
+            console.log(state.servers.e);//DEBUG
+            state.log.show(); // DEBUG
+            expect(descriptions).toBe(state.servers.e);
+            expect(descriptions[0].host).toBe('e.codegradx.org');
+            expect(descriptions[0].enabled).toBeTruthy();
+            expect(descriptions[0].lastError).not.toBeDefined();
+            expect(descriptions[1]).not.toBeDefined();
+            //expect(descriptions[1].host).toMatch(/e\d.codegradx.org/);
+            //expect(descriptions[1].enabled).toBeTruthy();
+            //expect(descriptions[1].lastError).not.toBeDefined();
+            done();
+        }, faildone);
+    });
+
+    it('access redirection via X', function (done) {
+        var state = new CodeGradX.State(initializer);
+        var faildone = make_faildone(done);
+        expect(state).toBeDefined();
+        expect(Object.keys(state.servers.x).length).toBe(3);
+        state.checkServers('x').then(function (descriptions) {
+            console.log(state.servers.x);//DEBUG
+            state.log.show(); // DEBUG
+            expect(descriptions).toBe(state.servers.x);
+            expect(descriptions[0].host).toBe('x.codegradx.org');
+            expect(descriptions[0].enabled).toBeTruthy();
+            expect(descriptions[0].lastError).not.toBeDefined();
+            expect(descriptions[1]).not.toBeDefined();
+            //expect(descriptions[1].host).toMatch(/x\d.codegradx.org/);
             //expect(descriptions[1].enabled).toBeTruthy();
             //expect(descriptions[1].lastError).not.toBeDefined();
             done();

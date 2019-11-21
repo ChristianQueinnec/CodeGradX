@@ -29,9 +29,9 @@ describe('CodeGradX 79 exercise', function () {
         };
     }
 
-    it('authenticates user', function (done) {
+    it('authenticates user', async function (done) {
         expect(CodeGradX).toBeDefined();
-        var state = new CodeGradX.State();
+        var state = await CodeGradX.initialize();
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {

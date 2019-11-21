@@ -13,9 +13,9 @@ import _7 from '../src/userlib.mjs';
 
 describe('CodeGradX 44', function () {
 
-  it('should be loaded', function (done) {
+  it('should be loaded', async function (done) {
     expect(CodeGradX).toBeDefined();
-    var state = new CodeGradX.State();
+    var state = await CodeGradX.initialize();
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);

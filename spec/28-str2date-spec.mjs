@@ -14,7 +14,7 @@ describe('CodeGradX 28 str2Date', function () {
     var date1 = CodeGradX._str2Date(string1);
     expect(date1.getFullYear()).toBe(2001);
 
-    var string2 = "2032-01-01 00:00:00+01";
+    var string2 = "2032-01-01 04:00:00+01";
     var date2 = CodeGradX._str2Date(string2);
     expect(date2.getFullYear()).toBe(2032);
 

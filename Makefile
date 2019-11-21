@@ -1,4 +1,4 @@
-# Time-stamp: "2019-09-13 17:39:05 queinnec"
+# Time-stamp: "2019-11-19 09:04:01 queinnec"
 
 work : nothing 
 clean :: 
@@ -26,6 +26,7 @@ test.out.of.browser : TOBEFIXED
 test.within.browser :
 	cd spec/ && ln -sf ../node_modules/jasmine-core .
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
+	@echo "Browse http://172.22.0.1/CodeGradX/spec/tests.html?random=false"
 
 publish : lint clean
 	git status .

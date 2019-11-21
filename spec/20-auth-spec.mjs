@@ -12,9 +12,9 @@ describe('CodeGradX 20', function () {
   });
 
   let firstname, lastname; 
-  it('should send authentication request', function (done) {
-    var state = new CodeGradX.State();
-    state.servers.x[0].host = 'x4.codegradx.org'; // DEBUG
+  it('should send authentication request', async function (done) {
+    var state = await CodeGradX.initialize(true);
+    //state.servers.x[0].host = 'x5.codegradx.org'; // DEBUG
     function faildone (reason) {
       state.debug('faildone', reason).show();
       fail(reason);
@@ -63,9 +63,9 @@ describe('CodeGradX 20', function () {
     }).catch(faildone);
   }, 10*1000); // 10 seconds
 
-  it('again with getAuthenticatedUser', function (done) {
-    var state = new CodeGradX.State();
-    state.servers.x[0].host = 'x4.codegradx.org'; // DEBUG
+  it('again with getAuthenticatedUser', async function (done) {
+    var state = await CodeGradX.initialize();
+    //state.servers.x[0].host = 'x5.codegradx.org'; // DEBUG
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);
