@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-11-20 12:08:04 queinnec"
+// Time-stamp: "2019-12-19 11:29:07 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -112,7 +112,7 @@ const when = CodeGradX.when = {
             promise.then(resolve, reject);
         });
     },
-    // Delay the promise by delay:
+    // Delay the return of a promise by delay:
     delay: function (promise, delay) {
         return new Promise((resolve, reject) => {
             function waitValue (value) {
@@ -173,41 +173,38 @@ CodeGradX._str2num2decimals = function (str) {
     }
 };
 
+/** Convert a string into a Date.
+
+    from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
+
+    "2011-10-10" (date-only form), 
+    "2011-10-10T14:48:00" (date-time form), or 
+    "2011-10-10T14:48:00.000+09:00" (date-time form with milliseconds 
+                                     and time zone) 
+    When the time zone offset is absent, 
+     - date-only forms are interpreted as a UTC time and 
+     - date-time forms are interpreted as local time.
+*/
+
 CodeGradX._str2Date = function (str) {
-    if ( str.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/) ) {
-        str = str.replace(/Z$/, '');
+    //console.log(`str0=${str}`);
+    str = str.replace(/^(.*-\d{2}) (\d{2}:.*)$/, "$1T$2");
+    //console.log(`str1=${str}`);
+    str = str.replace(/Z$/, "+00:00");
+    //console.log(`str2=${str}`);
+    str = str.replace(/([+]\d{2})$/, "$1:00");
+    //console.log(`str3=${str}`);
+    if ( ! str.match(/[+]/) ) {
+        // Assume the date without timezone to be in UTC:
+        str += "+00:00";
+        //console.log(`str4=${str}`);
     }
     let ms = Date.parse(str);
     if ( ! isNaN(ms) ) {
         const d = new Date(ms);
-        //console.log("STR1:" + str + " => " + ms + " ==> " + d);
+        //console.log(`Date=${d.toISOString()}`);
         return d;
     }
-
-    // Safari cannot Date.parse('2001-01-01 00:00:00+00')
-    // but can Date.parse('2001-01-01T00:00:00')
-    const rmtz = /^\s*(.+)([+]\d+)?\s*$/;
-    const str2 = str.replace(rmtz, "$1")
-          .replace(/ /, 'T')
-          .replace(/[^Z]$/, 'Z');
-    ms = Date.parse(str2);
-    if ( ! isNaN(ms) ) {
-        const d = new Date(ms);
-        //console.log("STR2:" + str2 + " => " + ms + " ==> " + d);
-        return d;
-    }
-
-    // Firefox cannot Date.parse('2001-01-01 05:00:00+01')
-    // nor Date.parse('2001-01-01T05:00:00+01')
-    // but can Date.parse('2001-01-01T05:00:00+01:00')
-    const str3 = str.replace(/([+]\d\d)\s*$/, '$1:00');
-    ms = Date.parse(str3);
-    if ( ! isNaN(ms) ) {
-        const d = new Date(ms);
-        //console.log("STR3:" + str3 + " => " + ms + " ==> " + d);
-        return d;
-    }
-    
     throw new Error("Cannot parse Date " + str3);
 };
 
@@ -465,9 +462,7 @@ CodeGradX.State = function (initializer) {
     // Post-initialization
     let state = this;
     // Cache for jobs: useful when processing batches:
-    state.cache = {
-        jobs: {} 
-    };
+    state.cache = Object.create(null);
     if ( typeof initializer === 'function' ||
          initializer instanceof Function ) {
         state = initializer.call(state, state);
@@ -478,6 +473,46 @@ CodeGradX.State = function (initializer) {
     };
     return state;
 };
+
+/** Interface to caches. It may clear, get or set the cache.
+    All these functionalities are gathered in one function so it
+    may be patched to use LocalStorage for instance.
+
+    state.cachedJob()           -- clears the cache
+    state.cachedJob(uuid)       -- returns job with uuid or undefined
+    state.cachedJob(uuid, job)  -- insert job into cache
+*/
+
+CodeGradX.mkCacheFor = function (kind) {
+    return function (key, thing) {
+        const state = this;
+        if ( key ) {
+            if ( ! state.cache[kind] ) {
+                state.cache[kind] = new Map();
+            }
+            if ( thing ) {
+                return state.cache[kind].set(key, thing);
+            } else {
+                return state.cache[kind].get(key);
+            }
+        } else {
+            if ( state.cache[kind] ) {
+                state.cache[kind].clear();
+            }
+        }
+    };
+};
+
+CodeGradX.State.prototype.cachedUser = CodeGradX.mkCacheFor('user');
+CodeGradX.State.prototype.cachedCampaign = CodeGradX.mkCacheFor('campaign');
+CodeGradX.State.prototype.cachedExercise = CodeGradX.mkCacheFor('exercise');
+CodeGradX.State.prototype.cachedExercisesSet =
+    CodeGradX.mkCacheFor('exercisesset');
+CodeGradX.State.prototype.cachedJob = CodeGradX.mkCacheFor('job');
+CodeGradX.State.prototype.cachedBatch = CodeGradX.mkCacheFor('batch');
+CodeGradX.State.prototype.cachedJobReport = CodeGradX.mkCacheFor('jobreport');
+CodeGradX.State.prototype.cachedExerciseReport =
+    CodeGradX.mkCacheFor('exercisereport');
 
 /**  This userAgent uses the fetch API available in modern browsers.
 
@@ -663,8 +698,7 @@ CodeGradX.State.prototype.debug = function () {
 
 CodeGradX.State.prototype.gc = function () {
     const state = this;
-    state.cache.jobs = {};
-    // FUTURE remove also .exercises ....................
+    state.cache = Object.create(null);
 };
 
 /** Update the description of a server in order to determine if that
