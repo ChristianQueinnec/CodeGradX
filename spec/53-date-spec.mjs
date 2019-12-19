@@ -2,40 +2,42 @@
 // work as in Chrome).
 
 import CodeGradX from '../codegradx.mjs';
-import { xml2html } from '../src/xml2html.mjs';
 
 describe('CodeGradX 53 date', function () {
 
     it('should be loaded', async function (done) {
         expect(CodeGradX).toBeDefined();
-        var state = await CodeGradX.initialize();
-        CodeGradX.xml2html.default.markFactor = 100;
         done();
+    });
+
+    // We assume local time to be +02:00
+    
+    it("handle ymd hms", function () {
+        var d = '2001-01-01 01:01:01';
+        expect(CodeGradX._str2Date(d).toISOString())
+            .toBe('2001-01-01T01:01:01.000Z');
+    });
+    it("handle ymdThms", function () {
+        var d = '2001-01-01T01:01:02';
+        expect(CodeGradX._str2Date(d).toISOString())
+            .toBe('2001-01-01T01:01:02.000Z');
+    });
+    
+    it("handle ymd hmsZ", function () {
+        var d = '2001-01-01 01:01:03Z';
+        expect(CodeGradX._str2Date(d).toISOString())
+            .toBe('2001-01-01T01:01:03.000Z');
+    });
+    it("handle ymdThmsZ", function () {
+        var d = '2001-01-01T01:01:04Z';
+        expect(CodeGradX._str2Date(d).toISOString())
+            .toBe('2001-01-01T01:01:04.000Z');
     });
     
     it("handle ymd hms+", function () {
-        var d = '2001-01-01 01:01:01+02';
-        expect(CodeGradX._str2Date(d).toJSON())
-            .toBe('2000-12-31T23:01:01.000Z');
+        var d = '2001-01-01 01:01:05+02';
+        expect(CodeGradX._str2Date(d).toISOString())
+            .toBe('2000-12-31T23:01:05.000Z');
     });
-    it("handle ymd hms+Z", function () {
-        var d = '2001-01-02 01:01:01Z';
-        expect(CodeGradX._str2Date(d).toJSON())
-            .toBe('2001-01-02T01:01:01.000Z');
-    });
-/*
-  // For now, we expect dates output from CodeGradX to be in UTC.
-    it("handle ymdThms", function () {
-        var d = '2001-01-03T01:01:01';
-        expect(CodeGradX._str2Date(d).toJSON())
-            .toBe('2001-01-03T00:01:01.000Z');
-    });
-*/
-    it("handle ymdThms+Z", function () {
-        var d = '2001-01-04T01:01:01Z';
-        expect(CodeGradX._str2Date(d).toJSON())
-            .toBe('2001-01-04T01:01:01.000Z');
-    });
-
     
 });

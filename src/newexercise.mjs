@@ -1,5 +1,5 @@
 // userlib.mjs
-// Time-stamp: "2019-05-22 17:53:23 queinnec"
+// Time-stamp: "2019-12-18 17:01:39 queinnec"
 
 import CodeGradX from '../src/campaign.mjs';
 /** Re-export the `CodeGradX` object */
@@ -31,6 +31,7 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form) {
           XMLsubmission: response.entity
         });
         state.debug('submitNewExerciseFromDOM5', exercise.exerciseid);
+        state.cachedExercise(exercise.exerciseid, exercise);
         return Promise.resolve(exercise);
       });
   }
@@ -78,6 +79,7 @@ CodeGradX.User.prototype.submitNewExercise = function (tgz, filename) {
           XMLsubmission: response.entity
         });
         state.debug('submitNewExercise5', exercise.exerciseid);
+        state.cachedExercise(exercise.exerciseid, exercise);
         return Promise.resolve(exercise);
       });
   }

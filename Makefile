@@ -1,4 +1,4 @@
-# Time-stamp: "2019-11-21 14:54:02 queinnec"
+# Time-stamp: "2019-12-18 14:42:16 queinnec"
 
 work : nothing 
 clean :: 
@@ -58,5 +58,25 @@ install :
 	rsync -avu CodeGradX.tgz \
 		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
 # Caution: inodes may lack!
+
+# ###################### determine modules wrapped more than once
+compute.multiple.wrapped.modules : prepare \
+	/tmp/sax.txt /tmp/xmlbuilder.txt /tmp/xml2js.txt
+	diff -y /tmp/sax.txt /tmp/xml2js.txt
+# sax.txt is included in xml2js.txt
+	diff -y /tmp/xml2js.txt /tmp/xmlbuilder.txt
+# xmlbuilder is included in xml2js (nothing in common with sax)
+/tmp/sax.txt : 
+	grep -F '!*** ./node_modules/' < wrapsrc/dist/sax.bundle.js |\
+	sed -e 's@![*][*][*] ./@@' -e 's@ [*][*][*]!@@' | \
+	sort -u >/tmp/sax.txt
+/tmp/xmlbuilder.txt : 
+	grep -F '!*** ./node_modules/' < wrapsrc/dist/xmlbuilder.bundle.js |\
+	sed -e 's@![*][*][*] ./@@' -e 's@ [*][*][*]!@@' |\
+	sort -u >/tmp/xmlbuilder.txt
+/tmp/xml2js.txt : 
+	grep -F '!*** ./node_modules/' < wrapsrc/dist/xml2js.bundle.js |\
+	sed -e 's@![*][*][*] ./@@' -e 's@ [*][*][*]!@@' |\
+	sort -u >/tmp/xml2js.txt
 
 # end of Makefile

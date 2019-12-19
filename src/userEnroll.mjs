@@ -1,5 +1,5 @@
 // userEnroll.mjs
-// Time-stamp: "2019-10-24 17:37:37 queinnec"
+// Time-stamp: "2019-12-18 17:02:18 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -31,6 +31,7 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
         //console.log(response);
         state.debug('userEnroll2', response);
         state.currentUser = new CodeGradX.User(response.entity);
+        state.cachedUser(user.id, user);
         return Promise.resolve(state.currentUser);
     });
 };
@@ -56,6 +57,7 @@ CodeGradX.State.prototype.userSignUA = function (token) {
         //console.log(response);
         state.debug('userSignUA2', response);
         state.currentUser = new CodeGradX.User(response.entity);
+        state.cachedUser(user.id, user);
         return Promise.resolve(state.currentUser);
     });
 };

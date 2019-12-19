@@ -1,8 +1,8 @@
 #! /bin/bash
-# Time-stamp: "2019-04-23 09:02:39 queinnec"
+# Time-stamp: "2019-12-18 18:55:53 queinnec"
 
-MODE=production
-MODE=development
+MODE=${MODE:-production}
+#MODE=development
 
 ./node_modules/.bin/webpack \
     --context . \
@@ -11,11 +11,23 @@ MODE=development
      --optimize-minimize 
 ls -tl wrapsrc/dist/
 
-for name in sax xmlbuilder xml2js
-do {
-    echo "export default "
-    cat wrapsrc/dist/${name}.bundle.js
+if [ "$MODE" = 'development' ]
+then
+    for name in sax xmlbuilder xml2js
+    do {
+        echo "export default "
+        cat wrapsrc/dist/${name}.bundle.js
     } > src/${name}.mjs
-done
+    done
+else
+    for name in sax xmlbuilder xml2js
+    do {
+        echo "let __r =" ; echo "//" 
+        tail --bytes=+2 wrapsrc/dist/${name}.bundle.js | \
+            sed -e 's@}n.m=@} return n.m=@'
+        echo ; echo "//" ; echo "export default (__r);"
+    } > src/${name}.mjs
+    done
+fi
 
 # end of all.sh

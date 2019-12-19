@@ -1,5 +1,5 @@
 // campaign.mjs
-// Time-stamp: "2019-09-23 09:54:00 queinnec"
+// Time-stamp: "2019-12-18 16:39:16 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -75,6 +75,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
                 //console.log(js);
                 const campaign = new CodeGradX.Campaign(js);
                 campaigns[campaign.name] = campaign;
+                state.cachedCampaign(campaign.name, campaign);
             });
             user._all_campaigns = campaigns;
             user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);

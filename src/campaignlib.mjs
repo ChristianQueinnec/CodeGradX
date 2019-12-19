@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-09-21 15:36:28 queinnec"
+// Time-stamp: "2019-12-18 17:09:35 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -23,6 +23,7 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
     function processResponse (response) {
         state.debug('getExercisesSet1', response);
         campaign.exercisesSet = new CodeGradX.ExercisesSet(response.entity);
+        state.cachedExercisesSet(campaign.name, campaign.exercisesSet);
         return Promise.resolve(campaign.exercisesSet);
     }
     
@@ -102,7 +103,9 @@ CodeGradX.Campaign.prototype.getExercises = function (refresh = false) {
     state.debug('getExercises2');
     //console.log(response);
     campaign.exercises = response.entity.exercises.map(function (exercise) {
-        return new CodeGradX.Exercise(exercise);
+        exercise = new CodeGradX.Exercise(exercise);
+        state.cachedExercise(exercise.uuid, exercise);
+        return exercise;
     });
     return Promise.resolve(campaign.exercises);
   });
@@ -138,7 +141,9 @@ CodeGradX.Campaign.prototype.getBatches = function (refresh = false) {
     state.debug('getBatches2');
     //console.log(response);
     campaign.batches = response.entity.batches.map(function (batch) {
-        return new CodeGradX.Batch(batch);
+        batch = new CodeGradX.Batch(batch);
+        state.cachedBatch(batch.batchid, batch);
+        return batch;
     });
     return Promise.resolve(campaign.batches);
   });

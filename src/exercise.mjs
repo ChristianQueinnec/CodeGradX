@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-09-03 15:01:06 queinnec"
+// Time-stamp: "2019-12-18 16:59:22 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -337,6 +337,7 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
         jobid:    js.job.$.jobid,
         pathdir:  js.$.location
       });
+      state.cachedJob(job.jobid, job);
       return Promise.resolve(job);
     });
   }
@@ -397,6 +398,7 @@ CodeGradX.Exercise.prototype.sendFileFromDOM =
                 jobid:    js.job.$.jobid,
                 pathdir:  js.$.location
             });
+            state.cachedJob(job.jobid, job);
             return Promise.resolve(job);
         });
     }
@@ -502,6 +504,7 @@ CodeGradX.Exercise.prototype.getExerciseReport = function (parameters) {
                       label:     name
                       // partial marks TOBEDONE
                   });
+                  state.cachedJob(job.jobid, job);
                   if ( jspj.marking ) {
                       job.expectedMark = CodeGradX._str2num2decimals(
                           jspj.submission.$.expectedMark);

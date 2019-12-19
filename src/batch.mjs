@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2019-05-22 17:54:02 queinnec"
+// Time-stamp: "2019-12-18 16:37:35 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -45,6 +45,8 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM =
                 pathdir:  js.$.location,
                 finishedjobs: 0
             });
+            state.cachedBatch(batch.batchid, batch);
+            state.debug('sendBatchFile6', batch.batchid);
             return Promise.resolve(batch);
         });
     }
@@ -98,6 +100,7 @@ CodeGradX.Exercise.prototype.sendBatch = function (tgz, filename) {
                 pathdir:  js.$.location,
                 finishedjobs: 0
             });
+            state.cachedBatch(batch.batchid, batch);
             state.debug('sendBatchFile5', batch.batchid);
             return Promise.resolve(batch);
         });
@@ -146,11 +149,11 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
           js = js.fw4ex.multiJobStudentReport;
           batch.totaljobs    = CodeGradX._str2num(js.$.totaljobs);
           batch.finishedjobs = CodeGradX._str2num(js.$.finishedjobs);
-          batch.jobs = {};
+          batch.jobs = Object.create(null);
           //console.log(js);
           function processJob (jsjob) {
               //console.log(jsjob);
-              let job = state.cache.jobs[jsjob.$.jobid];
+              let job = state.cachedJob(jsjob.$.jobid);
               if ( ! job ) {
                   job = new CodeGradX.Job({
                       exercise:  batch.exercise,
@@ -169,9 +172,9 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
                   if ( jsjob.$.problem ) {
                       job.problem = true;
                   }
-                  job.duration = (job.finished.getTime() - 
-                                  job.started.getTime() )/1000; // seconds
-                  state.cache.jobs[job.jobid] = job;
+                  job.duration = CodeGradX.computeDuration(
+                      job.finished, job.started);
+                  state.cachedJob(job.jobid, job);
               }
               batch.jobs[job.label] = job;
               return job;
