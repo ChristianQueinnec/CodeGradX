@@ -29,6 +29,6 @@ describe('CodeGradX 21', function () {
               expect(reason).toBeDefined();
               done();
           });
-  });
+  }, 10*1000);
 
 });

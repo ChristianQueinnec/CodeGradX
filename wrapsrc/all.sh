@@ -1,5 +1,5 @@
 #! /bin/bash
-# Time-stamp: "2019-12-18 18:55:53 queinnec"
+# Time-stamp: "2019-12-20 14:31:34 queinnec"
 
 MODE=${MODE:-production}
 #MODE=development
@@ -29,5 +29,8 @@ else
     } > src/${name}.mjs
     done
 fi
+
+echo "Final wrapped modules:":
+ls -tl src/sax.mjs src/xmlbuilder.mjs src/xml2js.mjs
 
 # end of all.sh

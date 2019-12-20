@@ -1,4 +1,4 @@
-# Time-stamp: "2019-12-18 14:42:16 queinnec"
+# Time-stamp: "2019-12-20 14:33:41 queinnec"
 
 work : nothing 
 clean :: 
@@ -28,7 +28,7 @@ test.within.browser :
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
 	@echo "Browse http://172.22.0.1/CodeGradX/spec/tests.html?random=false"
 
-publish : lint clean
+publish : lint prepare clean
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push
