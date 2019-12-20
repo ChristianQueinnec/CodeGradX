@@ -140,8 +140,9 @@ describe('CodeGradX 79 exercise', function () {
                 exercise2 = exercise;
                 return exercise.getExerciseReport().then(function (e3) {
                     expect(e3).toBe(exercise2);
-                    //console.log(exercise); // DEBUG
+                    console.log(exercise); // DEBUG
                     var job2 = exercise.pseudojobs.perfect;
+                    expect(job2).toBeDefined();
                     return job2.getReport().then(function (job) {
                         expect(job).toBe(job2);
                         expect(job.mark).toBe(100);

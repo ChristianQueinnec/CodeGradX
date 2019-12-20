@@ -28,7 +28,7 @@ describe('CodeGradX 22 bad authentication', function () {
                 expect(reason.reason).toMatch(/e150/);
                 done();
             });
-    });
+    }, 10*1000);
 
     it('missing password', async function (done) {
         var state = await CodeGradX.initialize();
@@ -42,7 +42,7 @@ describe('CodeGradX 22 bad authentication', function () {
                 expect(reason.reason).toMatch(/e151/);
                 done();
             });
-    });
+    }, 10*1000);
 
     it('bad username', async function (done) {
         var state = await CodeGradX.initialize();
@@ -56,7 +56,7 @@ describe('CodeGradX 22 bad authentication', function () {
                 expect(reason.reason).toMatch(/e162/);
                 done();
             });
-    });
+    }, 10*1000);
 
     it('bad password', async function (done) {
         var state = await CodeGradX.initialize();
@@ -71,6 +71,6 @@ describe('CodeGradX 22 bad authentication', function () {
                 expect(reason.reason).toMatch(/e162/);
                 done();
             });
-    });
+    }, 10*1000);
 
 });

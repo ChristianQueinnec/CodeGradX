@@ -82,6 +82,6 @@ describe('CodeGradX 44', function () {
           expect(user.badges.length).toBe(0);
           done();
       }, faildone);
-  }, 10*1000); // 10 seconds
+  }, 15*1000); // 15 seconds
     
 });
