@@ -1,4 +1,4 @@
-# Time-stamp: "2019-12-20 14:33:41 queinnec"
+# Time-stamp: "2019-12-20 14:37:52 queinnec"
 
 work : nothing 
 clean :: 
@@ -35,10 +35,11 @@ publish : lint prepare clean
 	-rm -f CodeGradX.tgz
 	m CodeGradX.tgz
 	npm publish CodeGradX.tgz
-#	cp -pf tmp/CodeGradX/package.json .
-	rm -rf tmp
+	cp -pf tmp/CodeGradX/package.json .
+#	rm -rf tmp
 	npm install -g codegradx@`jq -r .version < package.json`
-	m install
+	rsync -avu CodeGradX.tgz \
+		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
 
 CodeGradX.tgz :
 	-rm -rf tmp
@@ -46,13 +47,12 @@ CodeGradX.tgz :
 	cd tmp/ && \
 	  git clone https://github.com/ChristianQueinnec/CodeGradX.git
 	cd tmp/CodeGradX/ && rm -rf .git*
-	cp -p package.json tmp/CodeGradX/
 	cd tmp/CodeGradX/ && npm version patch
 	tar czf CodeGradX.tgz -C tmp CodeGradX
 	tar tzf CodeGradX.tgz
 
 REMOTE	=	www.paracamplus.com
-install :
+install : 
 	-rm CodeGradX.tgz
 	m CodeGradX.tgz
 	rsync -avu CodeGradX.tgz \
