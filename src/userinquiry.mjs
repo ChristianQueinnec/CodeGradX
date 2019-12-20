@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-18 17:02:50 queinnec"
+// Time-stamp: "2019-12-20 10:32:04 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -50,7 +50,7 @@ CodeGradX.State.prototype.userSelfModify = function (data) {
     }).then(function (response) {
         //console.log(response);
         state.debug('userSelfModify2', response);
-        state.currentUser = new CodeGradX.User(response.entity);
+        const user = state.currentUser = new CodeGradX.User(response.entity);
         state.cachedUser(user.id, user);
         return Promise.resolve(state.currentUser);
     });

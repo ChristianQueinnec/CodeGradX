@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-19 11:29:07 queinnec"
+// Time-stamp: "2019-12-20 10:31:06 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -205,7 +205,7 @@ CodeGradX._str2Date = function (str) {
         //console.log(`Date=${d.toISOString()}`);
         return d;
     }
-    throw new Error("Cannot parse Date " + str3);
+    throw new Error("Cannot parse Date " + str);
 };
 
 // On some browsers the ISO string shows the long name of the time zone:

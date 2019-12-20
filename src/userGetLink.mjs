@@ -1,5 +1,5 @@
 // userGetLink.mjs
-// Time-stamp: "2019-12-18 17:02:37 queinnec"
+// Time-stamp: "2019-12-20 10:31:52 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -29,7 +29,7 @@ CodeGradX.State.prototype.userGetLink = function (email) {
         //console.log(response);
         state.debug('userGetLink2', response);
         // This is a very incomplete user record:
-        state.currentUser = new CodeGradX.User(response.entity);
+        const user = state.currentUser = new CodeGradX.User(response.entity);
         state.cachedUser(user.id, user);
         return Promise.resolve(state.currentUser);
     });
