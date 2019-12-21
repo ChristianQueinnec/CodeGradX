@@ -4,6 +4,16 @@ import CodeGradX from '../codegradx.mjs';
 
 describe('CodeGradX 22 bad authentication', function () {
     
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          otherServers = state.servers;
+          done();
+      });
+  });
+
     function make_faildone (done) {
         return function faildone (reason) {
             var state = CodeGradX.getCurrentState();
@@ -16,6 +26,7 @@ describe('CodeGradX 22 bad authentication', function () {
 
     it('missing username', async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser('', 'xxx')
             .then(function (user) {
@@ -32,6 +43,7 @@ describe('CodeGradX 22 bad authentication', function () {
 
     it('missing password', async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser('schmilblick', '')
             .then(function (user) {
@@ -46,6 +58,7 @@ describe('CodeGradX 22 bad authentication', function () {
 
     it('bad username', async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser('schmilblick', 'nop')
             .then(function (user) {
@@ -60,6 +73,7 @@ describe('CodeGradX 22 bad authentication', function () {
 
     it('bad password', async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser('nobody:0', 'nop')
             .then(function (user) {

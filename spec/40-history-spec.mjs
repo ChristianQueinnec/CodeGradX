@@ -12,9 +12,20 @@ import { parsexml } from '../src/parsexml.mjs';
 
 describe('CodeGradX 40 history', function () {
 
-  it('should be loaded', async function (done) {
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          // get tests.codegradx.org or localhost.js predefined servers:
+          otherServers = state.servers;
+          done();
+      });
+  });
+
+  it('should authenticate', async function (done) {
     expect(CodeGradX).toBeDefined();
-    var state = await CodeGradX.initialize();
+    var state = await CodeGradX.getCurrentState();
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);

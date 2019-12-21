@@ -7,14 +7,31 @@ import CodeGradX from '../codegradx.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX 20', function () {
-  it('should be loaded', function () {
-    expect(CodeGradX).toBeDefined();
+
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          // get tests.codegradx.org or localhost.js predefined servers:
+          otherServers = state.servers;
+          done();
+      });
   });
+
+    it("awake a and e servers", async function (done) {
+        var state = CodeGradX.getCurrentState();
+        await state.checkServers('a');
+        expect(state.servers.a[0].enabled).toBeTruthy();
+        await state.checkServers('e');
+        expect(state.servers.e[0].enabled).toBeTruthy();
+        done();
+    }, 20*1000); // 20 seconds
 
   let firstname, lastname; 
   it('should send authentication request', async function (done) {
     var state = await CodeGradX.initialize(true);
-    //state.servers.x[0].host = 'x5.codegradx.org'; // DEBUG
+    state.servers = otherServers;
     function faildone (reason) {
       state.debug('faildone', reason).show();
       fail(reason);
@@ -61,11 +78,11 @@ describe('CodeGradX 20', function () {
         expect(response.entity.lastname).toBe(state.currentUser.lastname);
         done();
     }).catch(faildone);
-  }, 10*1000); // 10 seconds
+  });
 
   it('again with getAuthenticatedUser', async function (done) {
     var state = await CodeGradX.initialize();
-    //state.servers.x[0].host = 'x5.codegradx.org'; // DEBUG
+    state.servers = otherServers;
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);

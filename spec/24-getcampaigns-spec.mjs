@@ -5,9 +5,15 @@ import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX 24', function () {
 
-    it('should be loaded', function () {
-        expect(CodeGradX).toBeDefined();
-    });
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          otherServers = state.servers;
+          done();
+      });
+  });
     
     function make_faildone (done) {
         return function faildone (reason) {
@@ -21,6 +27,7 @@ describe('CodeGradX 24', function () {
 
     it("really authenticate and check", async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {

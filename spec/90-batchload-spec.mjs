@@ -1,4 +1,6 @@
 // Jasmine test
+// Load servers with two concurrent batches (approx 300 seconds)
+// This script is probably more useful when more than one vmmdr+ms is active.
 
 import CodeGradX from '../codegradx.mjs';
 import authData from './auth1-data.mjs';     // lambda student
@@ -16,8 +18,7 @@ import _9 from '../src/batch.mjs';
 // and also working a, e and x servers:
 import otherServers from './otherServers.mjs';
 
-describe('CodeGradX 79 exercise', function () {
-    //CodeGradX.xml2html.default.markFactor = 100;
+describe('CodeGradX 90 batch load', function () {
 
     function make_faildone (done) {
         return function faildone (reason) {
@@ -50,70 +51,6 @@ describe('CodeGradX 79 exercise', function () {
                 done();
             }, faildone);
     }, 20*1000);
-
-    var campaign1;
-
-    it("gets the 'free' campaign", function (done) {
-        var state = CodeGradX.getCurrentState();
-        var faildone = make_faildone(done);
-        expect(state.currentUser).toBeDefined();
-        //console.log(state.currentUser);
-        state.currentUser.getCampaign('free').then(function (campaign) {
-            expect(campaign).toBeDefined();
-            expect(campaign.name).toBe('free');
-            campaign1 = campaign;
-            done();
-        }, faildone);
-    });
-
-    it("gets the exercises of the 'free' campaign", function (done) {
-        var state = CodeGradX.getCurrentState();
-        var faildone = make_faildone(done);
-        expect(campaign1).toBeDefined();
-        //state.log.show();
-        campaign1.getExercisesSet().then(function (es) {
-            expect(es).toBeDefined();
-            expect(campaign1.exercisesSet).toBe(es);
-            done();
-        }, faildone);
-    }, 10*1000);
-
-    var exercise1;
-
-    it("gets one exercise", function (done) {
-        var state = CodeGradX.getCurrentState();
-        var faildone = make_faildone(done);
-        expect(campaign1).toBeDefined();
-        var exerciseName = "com.paracamplus.li205.function.1";
-        var promise = campaign1.getExercise(exerciseName);
-        promise.then(function (e) {
-            expect(e).toBeDefined();
-            expect(e.name).toBe(exerciseName);
-            e.getDescription().then(function (e2) {
-                expect(e2).toBe(e._description);
-                exercise1 = e;
-                done();
-            }, faildone);
-        }, faildone);
-    });
-
-    var code1 = "int min(int a, int b) { return a; }\n";
-
-    it("sends a string answer to exercise1 and waits for report", 
-        function (done) {
-            var state = CodeGradX.getCurrentState();
-            state.servers = otherServers;
-            var faildone = make_faildone(done);
-            expect(campaign1).toBeDefined();
-            expect(exercise1).toBeDefined();
-            exercise1.sendStringAnswer(code1).then(function (job) {
-                expect(job).toBeDefined();
-                return job.getReport().then(function (job) {
-                    expect(job.mark).toBe(0.6);
-                    done();
-                });
-            }).catch(faildone);
-        }, 50*1000); // 50 seconds
 
     var exerciseTGZFile = "./org.example.fw4ex.grading.check.tgz";
     let exerciseTGZcontent = [];
@@ -190,7 +127,7 @@ describe('CodeGradX 79 exercise', function () {
             }).catch(faildone);
     });
     
-    it("may send a batch", function (done) {
+    it("may send two batches concurrently", function (done) {
         var state = CodeGradX.getCurrentState();
         state.servers = otherServers;
         var faildone = make_faildone(done);
@@ -200,29 +137,33 @@ describe('CodeGradX 79 exercise', function () {
             step: 4,
             retry: 40
         };
-        var job1;
-        exercise2.sendBatch(batchTGZcontent, 'oefgc.tgz')
-            .delay(CodeGradX.Batch.prototype.getReport.default.step*1000)
-            .then(function (batch) {
-                //console.log(batch);
-                batch.getReport(parameters).then(function (batch2) {
-                    //console.log(batch2);
-                    expect(batch2).toBe(batch);
-                    if ( batch.jobs.one ) {
-                        // Hope that this batch report is not the final one!
-                        job1 = batch.jobs.one;
-                    }
-                    batch2.getFinalReport(parameters).then(function (batch3) {
-                        expect(batch3).toBe(batch2);
-                        expect(batch.finishedjobs).toBeGreaterThan(0);
-                        expect(batch.totaljobs).toBe(batch.finishedjobs);
-                        // Check jobsCache:
-                        expect(batch.jobs.one === job1).toBeTruthy();
-                        //state.log.show();
-                        done();
-                    }, faildone);
-                }, faildone);
-            }, faildone);
+        let count = 0;
+        function wrap (promise) {
+            return promise
+                .delay(CodeGradX.Batch.prototype.getReport.default.step*1000)
+                .then(function (batch) {
+                    //console.log(batch);
+                    return batch.getReport(parameters)
+                        .then(function (batch2) {
+                            //console.log(batch2);
+                            expect(batch2).toBe(batch);
+                            return batch2.getFinalReport(parameters);
+                        })
+                        .then(function (batch3) {
+                            expect(batch3).toBe(batch);
+                            expect(batch.finishedjobs).toBeGreaterThan(0);
+                            expect(batch.totaljobs).toBe(batch.finishedjobs);
+                            count++;
+                            if ( count === 2 ) {
+                                done();
+                            }
+                        });
+                });
+        }
+        let bat1 = exercise2.sendBatch(batchTGZcontent, 'oefgc.tgz');
+        let bat2 = exercise2.sendBatch(batchTGZcontent, 'oefgc.tgz');
+        CodeGradX.when.join(wrap(bat1), wrap(bat2))
+            .catch(faildone);
     }, 500*1000); // 500 seconds
 
 });

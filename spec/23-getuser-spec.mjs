@@ -9,6 +9,16 @@ describe('CodeGradX 23', function () {
         expect(CodeGradX).toBeDefined();
     });
     
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          otherServers = state.servers;
+          done();
+      });
+  });
+
     function make_faildone (done) {
         return function faildone (reason) {
             var state = CodeGradX.getCurrentState();
@@ -21,6 +31,7 @@ describe('CodeGradX 23', function () {
 
     it("really authenticate and check", async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {
@@ -36,6 +47,7 @@ describe('CodeGradX 23', function () {
 
     it("really authenticate and re-check", async function (done) {
         var state = await CodeGradX.initialize();
+        state.servers = otherServers;
         var faildone = make_faildone(done);
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {

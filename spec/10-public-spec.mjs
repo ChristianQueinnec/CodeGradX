@@ -14,9 +14,14 @@ import otherServers from './otherServers.mjs';
 
 describe('CodeGradX 10', function () {
 
-  it('should be loaded', function () {
-    expect(CodeGradX).toBeDefined();
-  });
+    it('should be loaded', function (done) {
+        expect(CodeGradX).toBeDefined();
+        CodeGradX.initialize().then((state) => {
+            expect(state.servers).toBeDefined();
+            //otherServers = state.servers;
+            done();
+        });
+    });
 
     it("erase cookie if any", function (done) {
         var state = new CodeGradX.State();

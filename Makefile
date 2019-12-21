@@ -1,4 +1,4 @@
-# Time-stamp: "2019-12-20 14:37:52 queinnec"
+# Time-stamp: "2019-12-21 17:24:08 queinnec"
 
 work : nothing 
 clean :: 
@@ -26,7 +26,7 @@ test.out.of.browser : TOBEFIXED
 test.within.browser :
 	cd spec/ && ln -sf ../node_modules/jasmine-core .
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
-	@echo "Browse http://172.22.0.1/CodeGradX/spec/tests.html?random=false"
+	@echo "Browse http://tests.codegradx.org/CodeGradX/spec/tests.html?random=false"
 
 publish : lint prepare clean
 	git status .
@@ -36,8 +36,8 @@ publish : lint prepare clean
 	m CodeGradX.tgz
 	npm publish CodeGradX.tgz
 	cp -pf tmp/CodeGradX/package.json .
-#	rm -rf tmp
-	npm install -g codegradx@`jq -r .version < package.json`
+	rm -rf tmp
+	sleep 10 ; npm install -g codegradx@`jq -r .version < package.json`
 	rsync -avu CodeGradX.tgz \
 		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
 

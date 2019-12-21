@@ -10,7 +10,7 @@ import _4 from '../src/job.mjs';
 import { xml2html } from '../src/xml2html.mjs';
 import { parsexml } from '../src/parsexml.mjs';
 
-// Some of these tests require s3 and s6 storage servers
+// Some of these tests require s3 and s6 (or tests) storage servers
 // and also working a, e and x servers:
 import otherServers from './otherServers.mjs';
 
@@ -26,9 +26,20 @@ describe('CodeGradX 30 exercise', function () {
       };
   }
 
-  it('should be loaded', async function (done) {
+  let otherServers;
+  it('should be loaded', function (done) {
+      expect(CodeGradX).toBeDefined();
+      CodeGradX.initialize().then((state) => {
+          expect(state.servers).toBeDefined();
+          // get tests.codegradx.org or localhost.js predefined servers:
+          otherServers = state.servers;
+          done();
+      });
+  });
+
+  it('should authenticate', async function (done) {
     expect(CodeGradX).toBeDefined();
-    var state = await CodeGradX.initialize();
+    var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
     state.getAuthenticatedUser(authData.login, authData.password)
     .then(function (user) {
@@ -243,6 +254,6 @@ describe('CodeGradX 30 exercise', function () {
         }, faildone);
       }, faildone);
     }, faildone);
-  }, 55*1000); // 55 seconds
+  }, 100*1000); // 100 seconds
 
 });
