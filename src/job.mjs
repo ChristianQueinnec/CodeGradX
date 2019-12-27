@@ -1,9 +1,32 @@
 // job.js
-// Time-stamp: "2019-12-27 11:31:52 queinnec"
+// Time-stamp: "2019-12-27 15:32:52 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
+
+/** Keep only persistable values and convert then into JSON */
+
+CodeGradX.Job.prototype.jsonize = function () {
+    const job = this;
+    const keys = [
+        'XMLreport',
+        'mark',
+        'totalMark',
+        'archived',
+        'started',
+        'ended',
+        'finished',
+        'exerciseid',
+        'safecookie',
+        'name',
+        'nickname',
+        'totalMark',
+        'HTMLreport',
+        
+    ];
+    return CodeGradX.jsonize(job, keys);
+};
 
 /** Get the marking report of that Job. The marking report will be stored
     in the `XMLreport` and `HTMLreport` properties.

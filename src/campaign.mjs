@@ -1,5 +1,5 @@
 // campaign.mjs
-// Time-stamp: "2019-12-27 12:02:03 queinnec"
+// Time-stamp: "2019-12-27 12:15:27 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -83,7 +83,6 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
                 //console.log(js);
                 const campaign = new CodeGradX.Campaign(js);
                 campaigns[campaign.name] = campaign;
-                state.cachedCampaign(campaign.name, campaign);
             });
             user._all_campaigns = campaigns;
             user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
@@ -103,7 +102,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
         @param {String} name - name of the Campaign to find
         @returns {Promise<Campaign>} yields {Campaign}
 
-    */
+*/
 
 CodeGradX.User.prototype.getCampaign = function (name) {
   const user = this;
@@ -191,7 +190,6 @@ CodeGradX.User.prototype.setCurrentCampaign = function (newcampaign) {
             //console.log(js);
             const campaign = new CodeGradX.Campaign(js);
             campaigns[campaign.name] = campaign;
-            state.cachedCampaign(campaign.name, campaign);
             if ( campaign.name === newcampaign.name ) {
                 state.currentCampaignName = campaign.name;
                 state.currentCampaign = campaign;

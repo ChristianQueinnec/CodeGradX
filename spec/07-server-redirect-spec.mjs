@@ -67,12 +67,14 @@ describe('CodeGradX 07', function () {
         var faildone = make_faildone(done);
         expect(state).toBeDefined();
         expect(Object.keys(state.servers.a).length).toBe(2);
+        delete state.servers.a[0].lastError;
         state.checkServers('a').then(function (descriptions) {
             console.log(state.servers.a);//DEBUG
             state.log.show(); // DEBUG
             expect(descriptions).toBe(state.servers.a);
             expect(descriptions[0].host).toBe('a.codegradx.org');
             //expect(descriptions[0].enabled).toBeTruthy();
+            console.log(descriptions[0].lastError); // DEBUG
             expect(descriptions[0].lastError).not.toBeDefined();
             expect(descriptions[1]).not.toBeDefined();
             //expect(descriptions[1].host).toMatch(/a\d.codegradx.org/);
@@ -87,12 +89,14 @@ describe('CodeGradX 07', function () {
         var faildone = make_faildone(done);
         expect(state).toBeDefined();
         expect(Object.keys(state.servers.e).length).toBe(2);
+        delete state.servers.e[0].lastError;
         state.checkServers('e').then(function (descriptions) {
             console.log(state.servers.e);//DEBUG
             state.log.show(); // DEBUG
             expect(descriptions).toBe(state.servers.e);
             expect(descriptions[0].host).toBe('e.codegradx.org');
             //expect(descriptions[0].enabled).toBeTruthy();
+            console.log(descriptions[0].lastError); // DEBUG
             expect(descriptions[0].lastError).not.toBeDefined();
             expect(descriptions[1]).not.toBeDefined();
             //expect(descriptions[1].host).toMatch(/e\d.codegradx.org/);
@@ -107,6 +111,7 @@ describe('CodeGradX 07', function () {
         var faildone = make_faildone(done);
         expect(state).toBeDefined();
         expect(Object.keys(state.servers.x).length).toBe(3);
+        delete state.servers.x[0].lastError;
         state.checkServers('x').then(function (descriptions) {
             console.log(state.servers.x);//DEBUG
             state.log.show(); // DEBUG

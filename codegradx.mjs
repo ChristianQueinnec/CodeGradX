@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-27 11:19:42 queinnec"
+// Time-stamp: "2019-12-27 16:26:28 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -461,7 +461,7 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
-    // Cache for jobs: useful when processing batches:
+    // Cache for jobs and exercises:
     state.cache = Object.create(null);
     if ( typeof initializer === 'function' ||
          initializer instanceof Function ) {
@@ -484,6 +484,7 @@ CodeGradX.State = function (initializer) {
 */
 
 CodeGradX.mkInlineCacheFor = function (kind) {
+    const JSONprefix = 'JSON:';
     return function (key, thing) {
         const state = this;
         if ( key ) {
@@ -491,9 +492,29 @@ CodeGradX.mkInlineCacheFor = function (kind) {
                 state.cache[kind] = new Map();
             }
             if ( thing ) {
-                return state.cache[kind].set(key, thing);
+                let newthing = thing;
+                if ( typeof thing === 'object' ) {
+                    try {
+                        newthing = JSONprefix + thing.jsonize();
+                    } catch (_) {
+                        try {
+                            newthing = JSONprefix + JSON.stringify(thing);
+                        } catch (exc) {
+                            state.debug('jsonize problem', thing, exc);
+                        }
+                    }
+                } else {
+                    newthing = thing;
+                }
+                return state.cache[kind].set(key, newthing);
             } else {
-                return state.cache[kind].get(key);
+                let newthing = state.cache[kind].get(key);
+                if ( typeof newthing === 'string' &&
+                     newthing.match(`^${JSONprefix}`) ) {
+                    return JSON.parse(newthing.slice(JSONprefix.length));
+                } else {
+                    return newthing;
+                }
             }
         } else {
             if ( state.cache[kind] ) {
@@ -506,19 +527,33 @@ CodeGradX.mkInlineCacheFor = function (kind) {
 
 CodeGradX.mkLocalCacheFor = CodeGradX.mkInlineCacheFor;  // TEMP
 
-CodeGradX.State.prototype.cachedCampaign =
-    CodeGradX.mkInlineCacheFor('campaign');
+CodeGradX.jsonize = function (thing, keys) {
+    const o = {};
+    for (let key of keys) {
+        let value = thing[key];
+        if ( value ) {
+            o[key] = thing[key];
+        }
+    }
+    return JSON.stringify(o);
+};
+
+// Campaigns do not need to be cached, they are already stored in real
+// memory the User object.
+
+// ExercisesSet do not need to be cached, they are already stored in
+// their associated Campaign.
+
+// Exercises are cached under their full name, the cached exercise
+// contains the stem, lang, summary, authorship, etc.
+
 CodeGradX.State.prototype.cachedExercise =
     CodeGradX.mkLocalCacheFor('exercise');
-CodeGradX.State.prototype.cachedExercisesSet =
-    CodeGradX.mkInlineCacheFor('exercisesset');
-CodeGradX.State.prototype.cachedJob = (key, thing) => thing;
-CodeGradX.State.prototype.cachedBatch =
-    CodeGradX.mkInlineCacheFor('batch');
+
+// Jobs are cached only after fetching the report.
+
 CodeGradX.State.prototype.cachedJobReport =
     CodeGradX.mkLocalCacheFor('jobreport');
-CodeGradX.State.prototype.cachedExerciseReport =
-    CodeGradX.mkInlineCacheFor('exercisereport');
 
 /**  This userAgent uses the fetch API available in modern browsers.
 

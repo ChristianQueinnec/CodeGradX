@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2019-12-27 11:00:02 queinnec"
+// Time-stamp: "2019-12-27 16:02:10 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -45,7 +45,6 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM =
                 pathdir:  js.$.location,
                 finishedjobs: 0
             });
-            state.cachedBatch(batch.batchid, batch);
             state.debug('sendBatchFile6', batch.batchid);
             return Promise.resolve(batch);
         });
@@ -100,7 +99,6 @@ CodeGradX.Exercise.prototype.sendBatch = function (tgz, filename) {
                 pathdir:  js.$.location,
                 finishedjobs: 0
             });
-            state.cachedBatch(batch.batchid, batch);
             state.debug('sendBatchFile5', batch.batchid);
             return Promise.resolve(batch);
         });
@@ -153,29 +151,25 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
           //console.log(js);
           function processJob (jsjob) {
               //console.log(jsjob);
-              let job = state.cachedJob(jsjob.$.jobid);
-              if ( ! job ) {
-                  job = new CodeGradX.Job({
-                      exercise:  batch.exercise,
-                      XMLjob:    jsjob,
-                      jobid:     jsjob.$.jobid,
-                      pathdir:   jsjob.$.location,
-                      label:     jsjob.$.label,
-                      problem:   false,
-                      mark:      CodeGradX._str2num2decimals(
-                          jsjob.marking.$.mark),
-                      totalMark: CodeGradX._str2num2decimals(
-                          jsjob.marking.$.totalMark),
-                      started:   CodeGradX._str2Date(jsjob.marking.$.started),
-                      finished:  CodeGradX._str2Date(jsjob.marking.$.finished)
-                  });
-                  if ( jsjob.$.problem ) {
-                      job.problem = true;
-                  }
-                  job.duration = CodeGradX.computeDuration(
-                      job.finished, job.started);
-                  state.cachedJob(job.jobid, job);
+              let job = new CodeGradX.Job({
+                  exercise:  batch.exercise,
+                  XMLjob:    jsjob,
+                  jobid:     jsjob.$.jobid,
+                  pathdir:   jsjob.$.location,
+                  label:     jsjob.$.label,
+                  problem:   false,
+                  mark:      CodeGradX._str2num2decimals(
+                      jsjob.marking.$.mark),
+                  totalMark: CodeGradX._str2num2decimals(
+                      jsjob.marking.$.totalMark),
+                  started:   CodeGradX._str2Date(jsjob.marking.$.started),
+                  finished:  CodeGradX._str2Date(jsjob.marking.$.finished)
+              });
+              if ( jsjob.$.problem ) {
+                  job.problem = true;
               }
+              job.duration = CodeGradX.computeDuration(
+                  job.finished, job.started);
               batch.jobs[job.label] = job;
               return job;
           }

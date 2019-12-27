@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-12-27 11:55:34 queinnec"
+// Time-stamp: "2019-12-27 16:02:24 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -20,43 +20,37 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
     if ( campaign.exercisesSet ) {
         return Promise.resolve(campaign.exercisesSet);
     }
-    let cachedexercisesset = state.cachedExercisesSet(campaign.name);
-    if ( cachedexercisesset ) {
-        state.debug('getExercisesSet from cache', cachedexercisesset);
-        campaign.exercisesSet = cachedexercisesset;
-        return Promise.resolve(campaign.exercisesSet);
-    }
     function processResponse (response) {
         state.debug('getExercisesSet1', response);
         campaign.exercisesSet = new CodeGradX.ExercisesSet(response.entity);
-        state.cachedExercisesSet(campaign.name, campaign.exercisesSet);
         return Promise.resolve(campaign.exercisesSet);
     }
     
-    const p3 = state.sendConcurrently('x', {
+    return state.sendConcurrently('x', {
         path: ('/exercisesset/path/' + campaign.name),
         method: 'GET',
         headers: {
             Accept: "application/json"
         }
-    });
-    return p3.then(processResponse).catch(function (reason) {
-        try {
-            state.debug("getExercisesSet2Error", reason);
-            const request1 = {
-                method: 'GET',
-                path: campaign.home_url + "/exercises.json",
-                headers: {
-                    Accept: "application/json"
-                }
-            };
-            return state.userAgent(request1)
-                .then(processResponse);
-        } catch (e) {
-            // Probably: bad host name!
-            state.debug("getExercisesSet3Error", e);
-        }
-    });
+    })
+        .then(processResponse)
+        .catch(function (reason) {
+            try {
+                state.debug("getExercisesSet2Error", reason);
+                const request1 = {
+                    method: 'GET',
+                    path: campaign.home_url + "/exercises.json",
+                    headers: {
+                        Accept: "application/json"
+                    }
+                };
+                return state.userAgent(request1)
+                    .then(processResponse);
+            } catch (e) {
+                // Probably: bad host name!
+                state.debug("getExercisesSet3Error", e);
+            }
+        });
 };
 
 /** Get a specific Exercise with its name within the tree of
@@ -109,9 +103,12 @@ CodeGradX.Campaign.prototype.getExercises = function (refresh = false) {
     state.debug('getExercises2');
     //console.log(response);
     campaign.exercises = response.entity.exercises.map(function (exercise) {
-        exercise = new CodeGradX.Exercise(exercise);
-        state.cachedExercise(exercise.uuid, exercise);
-        return exercise;
+        let newexercise = state.cachedExercise(exercise.name);
+        if ( newexercise ) {
+            return newexercise;
+        } else {
+            return new CodeGradX.Exercise(exercise);
+        }
     });
     return Promise.resolve(campaign.exercises);
   });
@@ -148,7 +145,6 @@ CodeGradX.Campaign.prototype.getBatches = function (refresh = false) {
     //console.log(response);
     campaign.batches = response.entity.batches.map(function (batch) {
         batch = new CodeGradX.Batch(batch);
-        state.cachedBatch(batch.batchid, batch);
         return batch;
     });
     return Promise.resolve(campaign.batches);

@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-12-27 11:31:39 queinnec"
+// Time-stamp: "2019-12-27 17:44:10 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -8,6 +8,27 @@ export default CodeGradX;
 import xml2js from '../src/xml2js.mjs';
 import { parsexml } from '../src/parsexml.mjs';
 import { xml2html } from '../src/xml2html.mjs';
+
+/** Keep only persistable values and convert then into JSON */
+
+CodeGradX.Exercise.prototype.jsonize = function () {
+    const exercise = this;
+    const keys = [
+        'safecookie',
+        'lang',
+        'XMLcontent',
+        'stem',
+        'equipment',
+        'name',
+        'nickname',
+        'date',
+        'summary',
+        'tags',
+        'authorship',
+        'expectations'
+    ];
+    return CodeGradX.jsonize(exercise, keys);
+};
     
 /** Get the XML descriptor of the Exercise.
     This XML descriptor will enrich the Exercise instance.
@@ -17,11 +38,12 @@ import { xml2html } from '../src/xml2html.mjs';
     Caution: this description is converted from XML to a Javascript
     object with xml2js idiosyncrasies.
 
+      @param {boolean} force - avoid cache if true
       @returns {Promise<ExerciseDescription>} yields {ExerciseDescription}
 
-       */
+*/
 
-CodeGradX.Exercise.prototype.getDescription = async function () {
+CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
     const exercise = this;
     const state = CodeGradX.getCurrentState();
     state.debug('getDescription1', exercise);
@@ -31,11 +53,13 @@ CodeGradX.Exercise.prototype.getDescription = async function () {
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
-    let cachedexercise = state.cachedExercise(exercise.name);
-    if ( cachedexercise ) {
-        state.debug('getDescription from cache', cachedexercise);
-        Object.assign(exercise, cachedexercise);
-        return Promise.resolve(exercise._description);
+    if ( ! force ) {
+        let cachedexercise = state.cachedExercise(exercise.name);
+        if ( cachedexercise ) {
+            state.debug('getDescription from cache', cachedexercise);
+            Object.assign(exercise, cachedexercise);
+            return Promise.resolve(exercise._description);
+        }
     }
     const response = await state.sendESServer('e', {
         path: ('/exercisecontent/' + exercise.safecookie + '/content'),
@@ -320,7 +344,7 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
       if ( exercise._description ) {
           return Promise.reject(new Error("Non suitable exercise"));
       } else {
-          return exercise.getDescription()
+          return exercise.getDescription(true)
           .then(function (/*description*/) {
               return exercise.sendStringAnswer(answer);
           });
@@ -344,7 +368,6 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
         jobid:    js.job.$.jobid,
         pathdir:  js.$.location
       });
-      state.cachedJob(job.jobid, job);
       return Promise.resolve(job);
     });
   }
@@ -352,12 +375,15 @@ CodeGradX.Exercise.prototype.sendStringAnswer = function (answer) {
   const content = answer;
   const headers = {
       "Content-Type": "application/octet-stream",
-      "Content-Disposition": ("inline; filename=" + exercise.inlineFileName),
       "Accept": 'application/json'
   };
-    if ( CodeGradX.isNode() ) {
+  if ( exercise.inlineFileName ) {
+      headers["Content-Disposition"] =
+          "inline; filename=" + exercise.inlineFileName;
+  }
+  if ( CodeGradX.isNode() ) {
         headers["Content-Length"] = content.length;
-    }
+  }
   return state.sendAXServer('a', {
     path: ('/exercise/' + exercise.safecookie + '/job'),
     method: "POST",
@@ -405,7 +431,6 @@ CodeGradX.Exercise.prototype.sendFileFromDOM =
                 jobid:    js.job.$.jobid,
                 pathdir:  js.$.location
             });
-            state.cachedJob(job.jobid, job);
             return Promise.resolve(job);
         });
     }
@@ -511,7 +536,6 @@ CodeGradX.Exercise.prototype.getExerciseReport = function (parameters) {
                       label:     name
                       // partial marks TOBEDONE
                   });
-                  state.cachedJob(job.jobid, job);
                   if ( jspj.marking ) {
                       job.expectedMark = CodeGradX._str2num2decimals(
                           jspj.submission.$.expectedMark);
