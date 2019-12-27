@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-20 10:31:06 queinnec"
+// Time-stamp: "2019-12-27 11:19:42 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -483,7 +483,7 @@ CodeGradX.State = function (initializer) {
     state.cachedJob(uuid, job)  -- insert job into cache
 */
 
-CodeGradX.mkCacheFor = function (kind) {
+CodeGradX.mkInlineCacheFor = function (kind) {
     return function (key, thing) {
         const state = this;
         if ( key ) {
@@ -500,19 +500,25 @@ CodeGradX.mkCacheFor = function (kind) {
                 state.cache[kind].clear();
             }
         }
+        return thing;
     };
 };
 
-CodeGradX.State.prototype.cachedUser = CodeGradX.mkCacheFor('user');
-CodeGradX.State.prototype.cachedCampaign = CodeGradX.mkCacheFor('campaign');
-CodeGradX.State.prototype.cachedExercise = CodeGradX.mkCacheFor('exercise');
+CodeGradX.mkLocalCacheFor = CodeGradX.mkInlineCacheFor;  // TEMP
+
+CodeGradX.State.prototype.cachedCampaign =
+    CodeGradX.mkInlineCacheFor('campaign');
+CodeGradX.State.prototype.cachedExercise =
+    CodeGradX.mkLocalCacheFor('exercise');
 CodeGradX.State.prototype.cachedExercisesSet =
-    CodeGradX.mkCacheFor('exercisesset');
-CodeGradX.State.prototype.cachedJob = CodeGradX.mkCacheFor('job');
-CodeGradX.State.prototype.cachedBatch = CodeGradX.mkCacheFor('batch');
-CodeGradX.State.prototype.cachedJobReport = CodeGradX.mkCacheFor('jobreport');
+    CodeGradX.mkInlineCacheFor('exercisesset');
+CodeGradX.State.prototype.cachedJob = (key, thing) => thing;
+CodeGradX.State.prototype.cachedBatch =
+    CodeGradX.mkInlineCacheFor('batch');
+CodeGradX.State.prototype.cachedJobReport =
+    CodeGradX.mkLocalCacheFor('jobreport');
 CodeGradX.State.prototype.cachedExerciseReport =
-    CodeGradX.mkCacheFor('exercisereport');
+    CodeGradX.mkInlineCacheFor('exercisereport');
 
 /**  This userAgent uses the fetch API available in modern browsers.
 
@@ -767,7 +773,7 @@ CodeGradX.State.prototype.checkServer = function (kind, index) {
   function updateDescription (response) {
       state.debug('updateDescription', description.host, response);
       if ( response.status < 300 ) {
-          description.enabled = (response.status < 300);
+          description.enabled = true;
           return Promise.resolve(response);
       } else if ( response.status === 302 ||
                   response.status === 307 ) {
@@ -1467,7 +1473,7 @@ CodeGradX.Job = function (js) {
     if ( js.jobid && ! js.pathdir ) {
         js.pathdir = '/s' + js.jobid.replace(/-/g, '').replace(/(.)/g, "/$1");
     }
-  Object.assign(this, js);
+    Object.assign(this, js);
 };
 
 CodeGradX.Job.js2job = function (js) {

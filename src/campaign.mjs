@@ -1,9 +1,27 @@
 // campaign.mjs
-// Time-stamp: "2019-12-18 16:39:16 queinnec"
+// Time-stamp: "2019-12-27 12:02:03 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
+
+/** Filter active campaigns. 
+
+    @params {campaigns} - Hashtable<Campaign>
+    @returns Hashtable<Campaign>
+
+*/
+
+function filterActive (campaigns) {
+    const activeCampaigns = {};
+    for ( let key of Object.keys(campaigns) ) {
+        let campaign = campaigns[key];
+        if ( campaign.active ) {
+            activeCampaigns[campaign.name] = campaign;
+        }
+    }
+    return activeCampaigns;
+}
 
 /** Get the campaigns where the current user is enrolled.
 
@@ -18,7 +36,7 @@ export default CodeGradX;
       - only _campaigns is defined (see constructor 'User')
       - none are defined
 
-   In return, the user object is always enriched with 
+   In return, the User object is always enriched with 
    _campaigns and _array_campaigns.
 
    _array_campaigns is the array of all (active or past) campaigns.
@@ -30,16 +48,6 @@ export default CodeGradX;
 
 CodeGradX.User.prototype.getCampaigns = function (now) {
     const user = this;
-    function filterActive (campaigns) {
-        const activeCampaigns = {};
-        for ( let key of Object.keys(campaigns) ) {
-            let campaign = campaigns[key];
-            if ( campaign.active ) {
-                activeCampaigns[campaign.name] = campaign;
-            }
-        }
-        return activeCampaigns;
-    }
     if ( now ) {
         if ( user._campaigns ) {
             // return all current campaigns:
@@ -160,14 +168,40 @@ CodeGradX.User.prototype.getCurrentCampaign.default = {
 
 */
 
-CodeGradX.User.prototype.setCurrentCampaign = function (campaign) {
+CodeGradX.User.prototype.setCurrentCampaign = function (newcampaign) {
+    const user = this;
     const state = CodeGradX.getCurrentState();
-    if ( state.currentCampaign === campaign ) {
+    state.debug(`setCurrentCampaign ${newcampaign.name}`);
+    if ( state.currentCampaign === newcampaign ) {
         return Promise.resolve(state.currentCampaign);
     }
-    state.currentCampaignName = campaign.name;
-    state.currentCampaign = campaign;
-    return Promise.resolve(campaign);
+    state.currentCampaignName = undefined;
+    state.currentCampaign = undefined;
+    return state.sendAXServer('x', {
+        path: `/campaigns/join/${newcampaign.name}`,
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response) {
+        state.debug(`setCurrentCampaign2`, response);
+        const campaigns = {};
+        response.entity.forEach(function (js) {
+            //console.log(js);
+            const campaign = new CodeGradX.Campaign(js);
+            campaigns[campaign.name] = campaign;
+            state.cachedCampaign(campaign.name, campaign);
+            if ( campaign.name === newcampaign.name ) {
+                state.currentCampaignName = campaign.name;
+                state.currentCampaign = campaign;
+            }
+        });
+        user._all_campaigns = campaigns;
+        user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
+        user._campaigns = filterActive(user._all_campaigns);
+        return Promise.resolve(state.currentCampaign);
+    });
 };
 
 // end of campaign.js

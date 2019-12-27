@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2019-12-18 17:09:35 queinnec"
+// Time-stamp: "2019-12-27 11:55:34 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -18,6 +18,12 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
     const campaign = this;
     state.debug('getExercisesSet1', campaign);
     if ( campaign.exercisesSet ) {
+        return Promise.resolve(campaign.exercisesSet);
+    }
+    let cachedexercisesset = state.cachedExercisesSet(campaign.name);
+    if ( cachedexercisesset ) {
+        state.debug('getExercisesSet from cache', cachedexercisesset);
+        campaign.exercisesSet = cachedexercisesset;
         return Promise.resolve(campaign.exercisesSet);
     }
     function processResponse (response) {

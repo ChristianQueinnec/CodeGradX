@@ -76,7 +76,7 @@ describe('CodeGradX 30 exercise', function () {
         }, faildone);
       }, faildone);
     }, faildone);
-  });
+  }, 10*1000);
 
   var campaign2; // the 'insta2-2016oct' past campaign
 
@@ -95,6 +95,7 @@ describe('CodeGradX 30 exercise', function () {
       // the `free` campaign is active:
       //console.log(campaign1.exercisesSet, 'one');//
       state.currentUser.getCampaigns(true).then(function (campaigns2) {
+          //console.log(campaigns2);
           expect(campaigns2.free.name).toBe(campaign1.name);
           expect(Object.getOwnPropertyNames(campaigns2).length)
               .toBeLessThan(Object.getOwnPropertyNames(campaigns).length);

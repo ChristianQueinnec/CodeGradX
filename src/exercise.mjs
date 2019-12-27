@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-12-18 16:59:22 queinnec"
+// Time-stamp: "2019-12-27 11:31:39 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -30,6 +30,12 @@ CodeGradX.Exercise.prototype.getDescription = async function () {
     }
     if ( ! exercise.safecookie ) {
         return Promise.reject("Non deployed exercise " + exercise.name);
+    }
+    let cachedexercise = state.cachedExercise(exercise.name);
+    if ( cachedexercise ) {
+        state.debug('getDescription from cache', cachedexercise);
+        Object.assign(exercise, cachedexercise);
+        return Promise.resolve(exercise._description);
     }
     const response = await state.sendESServer('e', {
         path: ('/exercisecontent/' + exercise.safecookie + '/content'),
@@ -120,6 +126,7 @@ CodeGradX.Exercise.prototype.getDescription = async function () {
         state.debug('getDescription8b', exc);
     }
 
+    state.cachedExercise(exercise.name, exercise);
     return Promise.resolve(exercise._description);
 };
 

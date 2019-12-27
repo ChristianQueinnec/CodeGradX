@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2019-12-18 16:37:35 queinnec"
+// Time-stamp: "2019-12-27 11:00:02 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -187,7 +187,7 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
               }
           }
           return Promise.resolve(batch);
-    }
+      }
       batch.XMLreport = response.entity;
       return CodeGradX.parsexml(response.entity)
           .then(processJS)
