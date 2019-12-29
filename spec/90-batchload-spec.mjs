@@ -103,7 +103,7 @@ describe('CodeGradX 90 batch load', function () {
                     });
                 });
             }).catch(faildone);
-    }, 50*1000); // 50 seconds
+    }, 75*1000); // 75 seconds
 
     const batchTGZfile = './oefgc.tgz';
     let batchTGZcontent = [];
