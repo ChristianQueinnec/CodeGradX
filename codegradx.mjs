@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-29 18:02:01 queinnec"
+// Time-stamp: "2019-12-29 18:05:29 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -189,7 +189,7 @@ CodeGradX._str2num2decimals = function (str) {
 CodeGradX._str2Date = function (str) {
     //console.log(`str0=${str}`);
     str = str.replace(/^(\d{4}-\d{2}-\d{2})([+].*)?$/, '$1T00:00:00$2');
-    console.log(`str01=${str}`);
+    //console.log(`str01=${str}`);
     str = str.replace(/^(\d{4}-\d{2}-\d{2}) (.*)$/, "$1T$2");
     //console.log(`str1=${str}`);
     str = str.replace(/Z$/, "+00:00");
