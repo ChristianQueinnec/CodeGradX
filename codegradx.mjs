@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-29 14:15:02 queinnec"
+// Time-stamp: "2019-12-29 14:20:40 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -510,7 +510,7 @@ CodeGradX.InlineCache.prototype.clear = function () {
 
 CodeGradX.InlineCache.prototype.get = function (key) {
     const cache = this;
-    return cache.get(key, thing);
+    return cache.get(key);
 };
 
 CodeGradX.InlineCache.prototype.set = function (key, thing) {
