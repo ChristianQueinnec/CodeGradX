@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-27 16:26:28 queinnec"
+// Time-stamp: "2019-12-29 14:15:02 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -463,6 +463,8 @@ CodeGradX.State = function (initializer) {
     let state = this;
     // Cache for jobs and exercises:
     state.cache = Object.create(null);
+    state.mkCacheFor('Exercise');
+    state.mkCacheFor('Job');
     if ( typeof initializer === 'function' ||
          initializer instanceof Function ) {
         state = initializer.call(state, state);
@@ -474,58 +476,159 @@ CodeGradX.State = function (initializer) {
     return state;
 };
 
-/** Interface to caches. It may clear, get or set the cache.
-    All these functionalities are gathered in one function so it
-    may be patched to use LocalStorage for instance.
+/** Cache interface. It may clear, get or set the cache. All these
+    functionalities are gathered in one function so it may be patched
+    to use LocalStorage for instance. 
 
-    state.cachedJob()           -- clears the cache
-    state.cachedJob(uuid)       -- returns job with uuid or undefined
-    state.cachedJob(uuid, job)  -- insert job into cache
+    It assumes state.cache.X to be a Cache instance, then
+
+    state.cachedX()           -- clears the cache
+    state.cachedX(key)         -- returns X with key
+    state.cachedX(key, value)  -- insert key=>value into cache
+
 */
 
-CodeGradX.mkInlineCacheFor = function (kind) {
+CodeGradX.Cache = function (kind) {
+    if ( window.localStorage ) {
+        return new CodeGradX.LocalStorageCache(kind);
+    } else {
+        return new CodeGradX.InlineCache();
+    }
+};
+
+/** Inline Cache. Cached values are stored in memory.
+ */
+
+CodeGradX.InlineCache = function () {
+    return new Map();
+};
+
+CodeGradX.InlineCache.prototype.clear = function () {
+    const cache = this;
+    cache.clear();
+};
+
+CodeGradX.InlineCache.prototype.get = function (key) {
+    const cache = this;
+    return cache.get(key, thing);
+};
+
+CodeGradX.InlineCache.prototype.set = function (key, thing) {
+    const cache = this;
+    cache.set(key, thing);
+    return thing;
+};
+
+/** Local Storage Cache. */
+
+CodeGradX.LocalStorageCache = function (kind) {
+    this.kind = kind;
+};
+
+CodeGradX.LocalStorageCache.prototype.clear = function () {
+    const cache = this;
+    const reKind = new RegExp(`^${cache.kind}:`);
+    const keys = [];
+    // Since it is dangerous to iterate on a collection while removing
+    // items from that collection, first collect the keys to remove:
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if ( key.match(reKind) ) {
+            keys.push(key);
+        }
+    }
+    keys.forEach((key) => localStorage.removeItem(key));
+};
+
+CodeGradX.LocalStorageCache.prototype.get = function (key) {
+    const cache = this;
+    key = `${cache.kind}:${key}`;
+    return localStorage.getItem(key);
+};
+
+CodeGradX.LocalStorageCache.prototype.set = function (key, thing) {
+    const cache = this;
+    key = `${cache.kind}:${key}`;
+    try {
+        localStorage.setItem(key, thing);
+    } catch (_) {
+        // Probably a QuotaExceededError
+        // remove oldest keys ???
+        cache.clear();
+    }
+    return thing;
+};
+
+/** Utility function to clear, get or set a Cache instance. Every
+    value is turned into a String (this process is possibly customized
+    with a jsonize method.
+*/
+
+CodeGradX.State.prototype.mkCacheFor = function (kind) {
+    const state = this;
     const JSONprefix = 'JSON:';
-    return function (key, thing) {
+    state.cache[kind] = new CodeGradX.Cache(kind);
+    state[`cached${kind}`] = function (key, thing) {
         const state = this;
         if ( key ) {
-            if ( ! state.cache[kind] ) {
-                state.cache[kind] = new Map();
-            }
             if ( thing ) {
-                let newthing = thing;
-                if ( typeof thing === 'object' ) {
-                    try {
-                        newthing = JSONprefix + thing.jsonize();
-                    } catch (_) {
+                try {
+                    let newthing = thing;
+                    if ( typeof thing === 'object' ) {
                         try {
-                            newthing = JSONprefix + JSON.stringify(thing);
-                        } catch (exc) {
-                            state.debug('jsonize problem', thing, exc);
+                            newthing = JSONprefix + thing.jsonize();
+                        } catch (_) {
+                            try {
+                                newthing = JSONprefix + JSON.stringify(thing);
+                            } catch (exc) {
+                                state.debug('jsonize problem', thing, exc);
+                            }
+                        }
+                    } else {
+                        try {
+                            newthing = JSON.stringify({_: thing});
+                        } catch (_) {
+                            state.debug('jsonize failure', thing);
                         }
                     }
-                } else {
-                    newthing = thing;
+                    return state.cache[kind].set(key, newthing);
+                } catch (_) {
+                    // ignore, thing is not cached!
                 }
-                return state.cache[kind].set(key, newthing);
             } else {
                 let newthing = state.cache[kind].get(key);
-                if ( typeof newthing === 'string' &&
-                     newthing.match(`^${JSONprefix}`) ) {
-                    return JSON.parse(newthing.slice(JSONprefix.length));
+                if ( typeof newthing === 'string' ) {
+                    try {
+                        if ( newthing.match(`^${JSONprefix}`) ) {
+                            return JSON.parse(newthing.slice(JSONprefix.length));
+                        } else {
+                            let result = JSON.parse(newthing);
+                            return result._;
+                        }
+                    } catch (_) {
+                        state.debug(`Cannot decode cached`, newthing);
+                        return undefined;
+                    }
                 } else {
-                    return newthing;
+                    // Should never appear!
+                    state.debug(`Weird cached value`, newthing);
+                    return undefined;
                 }
             }
         } else {
-            if ( state.cache[kind] ) {
-                state.cache[kind].clear();
-            }
+            state.cache[kind].clear();
         }
         return thing;
     };
 };
 
-CodeGradX.mkLocalCacheFor = CodeGradX.mkInlineCacheFor;  // TEMP
+/** Utility function that builds a new stringified Object from thing
+    with the keys.
+    
+    @params Object thing - the object to partially clone
+    @params Array<String> keys - the keys to clone
+    @returns JSONstring
+*/
 
 CodeGradX.jsonize = function (thing, keys) {
     const o = {};
@@ -547,13 +650,7 @@ CodeGradX.jsonize = function (thing, keys) {
 // Exercises are cached under their full name, the cached exercise
 // contains the stem, lang, summary, authorship, etc.
 
-CodeGradX.State.prototype.cachedExercise =
-    CodeGradX.mkLocalCacheFor('exercise');
-
-// Jobs are cached only after fetching the report.
-
-CodeGradX.State.prototype.cachedJobReport =
-    CodeGradX.mkLocalCacheFor('jobreport');
+// Jobs are cached only after fetching the student's report.
 
 /**  This userAgent uses the fetch API available in modern browsers.
 
@@ -739,7 +836,12 @@ CodeGradX.State.prototype.debug = function () {
 
 CodeGradX.State.prototype.gc = function () {
     const state = this;
+    for ( let key of Object.keys(state.cache) ) {
+        state.cache[key].clear();
+    }
     state.cache = Object.create(null);
+    state.mkCacheFor('Exercise');
+    state.mkCacheFor('Job');
 };
 
 /** Update the description of a server in order to determine if that

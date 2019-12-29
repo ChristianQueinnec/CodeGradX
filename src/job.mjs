@@ -1,5 +1,5 @@
 // job.js
-// Time-stamp: "2019-12-27 15:32:52 queinnec"
+// Time-stamp: "2019-12-29 10:37:20 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -43,7 +43,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
     if ( job.XMLreport ) {
         return Promise.resolve(job);
     }
-    let cachedjob = state.cachedJobReport(job.jobid);
+    let cachedjob = state.cachedJob(job.jobid);
     if ( cachedjob ) {
         state.debug('getJobReport from cache', cachedjob);
         Object.assign(job, cachedjob);
@@ -125,7 +125,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
     job.HTMLreport = HTMLreport;
     state.debug('getJobReport5b', 'after xml2html');
     //state.log.show();
-    state.cachedJobReport(job.jobid, job);
+    state.cachedJob(job.jobid, job);
 
     return job;
 };

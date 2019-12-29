@@ -66,7 +66,7 @@ describe('CodeGradX 24', function () {
             }).catch(faildone);
     });
 
-    it("get a campaign (after campaigns)", function (done) {
+    it("get a specific campaign (after campaigns)", function (done) {
         var faildone = make_faildone(done);
         CodeGradX.getCurrentUser()
             .then(function (user) {
@@ -80,5 +80,23 @@ describe('CodeGradX 24', function () {
                     });
             }).catch(faildone);
     });
+
+    it("get a specific campaign (without previous getCampaigns)",
+       async function (done) {
+           var state = await CodeGradX.initialize();
+           state.servers = otherServers;
+           var faildone = make_faildone(done);
+           state.getAuthenticatedUser(authData.login, authData.password)
+               .then(function (user) {
+                   user.getCampaign('free')
+                       .then(function (campaign) {
+                           //console.log(campaigns);
+                           expect(campaign).toBeDefined();
+                           expect(campaign instanceof Object).toBeTruthy();
+                           expect(campaign.name).toBe('free');
+                           done();
+                       });
+               }).catch(faildone);
+       });
 
 });

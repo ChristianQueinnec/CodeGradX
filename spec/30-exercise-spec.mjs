@@ -171,6 +171,26 @@ describe('CodeGradX 30 exercise', function () {
     }, faildone);
   });
 
+    // check cache for exercises.....
+    // The cache should contain exercises with .getDescription()
+    // that is: com.paracamplus.li205.function.1
+    //     and: org.fw4ex.li101.croissante.0
+
+    it("get a cached precise exercise 8", function (done) {
+        var state = CodeGradX.getCurrentState();
+        var faildone = make_faildone(done);
+        var exerciseName = "com.paracamplus.li205.function.1";
+        console.log(state);
+        expect(state.cache.Exercise.get(exerciseName)).toBeDefined();
+        campaign1.getExercise(exerciseName).then(function (exercise) {
+            expect(exercise).toBeDefined();
+            expect(exercise.name).toBe(exerciseName);
+            expect(exercise.safecookie).toBeDefined();
+            expect(exercise.stem).toBeDefined();
+            done();
+        }, faildone);
+    });
+
   // ExercisesSet.exercises[0]:
     // 0 -> org.fw4ex.li101.croissante.0
     // 1 -> org.fw4ex.li101.l2p
@@ -182,7 +202,7 @@ describe('CodeGradX 30 exercise', function () {
     // 7 -> org.fw4ex.ocaml.1
   // ExercisesSet.exercises[1]:
     // 8 -> org.fw4ex.li218.devoir.2010nov.3
-  it("get a precise exercise by its rank", function (done) {
+  it("get a precise exercise by its rank 3", function (done) {
     var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
     var exerciseName = "com.paracamplus.li314.java.3";
@@ -193,7 +213,7 @@ describe('CodeGradX 30 exercise', function () {
     }, faildone);
   });
 
-  it("get a precise exercise by its rank", function (done) {
+  it("get a precise exercise by its rank 4", function (done) {
     var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
     var exerciseName = "com.paracamplus.li362.sh.7";
@@ -204,7 +224,7 @@ describe('CodeGradX 30 exercise', function () {
     }, faildone);
   });
 
-  it("get a precise exercise by its rank", function (done) {
+  it("get a precise exercise by its rank 8", function (done) {
     var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
     var exerciseName = "org.fw4ex.li218.devoir.2010nov.3";
@@ -218,7 +238,7 @@ describe('CodeGradX 30 exercise', function () {
   it("get an absent exercise", function (done) {
     var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
-    var exerciseName = "com.paracamplus.li205.function.1,.XXX";
+    var exerciseName = "com.paracamplus.XXX";
     campaign1.getExercise(exerciseName).then(faildone, function (reason) {
       expect(reason).toBeDefined();
       expect(reason.message).toMatch(/no such exercise/i);
