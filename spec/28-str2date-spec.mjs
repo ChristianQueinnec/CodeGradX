@@ -6,17 +6,17 @@ import CodeGradX from '../src/campaign.mjs';
 describe('CodeGradX 28 str2Date', function () {
 
     it("should have a working str2Date", function (done) {
-        var string1 = "2001-01-01 05:00:00";
+        var string1 = "2031-01-01 05:00:00";
         var date1 = CodeGradX._str2Date(string1);
-        expect(date1.getFullYear()).toBe(2001);
+        expect(date1.getFullYear()).toBe(2031);
 
-        var string1 = "2001-01-01 05:00:00+01";
+        var string1 = "2030-01-01 05:00:00+01";
         var date1 = CodeGradX._str2Date(string1);
-        expect(date1.getFullYear()).toBe(2001);
+        expect(date1.getFullYear()).toBe(2030);
 
-        var string2 = "2032-01-01 04:00:00+01";
+        var string2 = "2029-01-01 04:00:00+01";
         var date2 = CodeGradX._str2Date(string2);
-        expect(date2.getFullYear()).toBe(2032);
+        expect(date2.getFullYear()).toBe(2029);
 
         var string3 = "2028-01-01T00:00:00";
         var date3 = CodeGradX._str2Date(string3);

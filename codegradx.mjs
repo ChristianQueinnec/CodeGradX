@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-29 18:05:29 queinnec"
+// Time-stamp: "2019-12-30 18:28:00 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -963,12 +963,19 @@ CodeGradX.State.prototype.checkServers = function (kind) {
   const state = this;
   state.debug('checkServers', kind);
   const descriptions = state.servers[kind];
-  let promise;
+  // return immediately if there is at least one enabled server:  
+  for ( const key of Object.keys(descriptions) ) {
+      const description = descriptions[key];
+      if ( description.enabled ) {
+          return Promise.resolve(descriptions);
+      }
+  }
+  // Otherwise, check for all possible servers:
   const promises = [];
   for ( let key in descriptions ) {
     if ( /^\d+$/.exec(key) ) {
       key = CodeGradX._str2num(key);
-      promise = state.checkServer(kind, key);
+      let promise = state.checkServer(kind, key);
       promise = when.timeout(promise, CodeGradX.State.maxWait);
       promises.push(promise);
     }
