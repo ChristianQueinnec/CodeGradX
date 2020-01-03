@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2019-12-30 18:28:00 queinnec"
+// Time-stamp: "2020-01-01 18:21:11 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -491,7 +491,7 @@ CodeGradX.State = function (initializer) {
 */
 
 CodeGradX.Cache = function (kind) {
-    if ( window.localStorage ) {
+    if ( typeof window !== 'undefined' && window.localStorage ) {
         return new CodeGradX.LocalStorageCache(kind);
     } else {
         return new CodeGradX.InlineCache();
