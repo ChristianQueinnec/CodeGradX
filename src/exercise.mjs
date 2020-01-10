@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2019-12-27 17:44:10 queinnec"
+// Time-stamp: "2020-01-10 11:08:34 queinnec"
 /* eslint no-control-regex: "off" */
 
 import CodeGradX from '../codegradx.mjs';
@@ -19,6 +19,7 @@ CodeGradX.Exercise.prototype.jsonize = function () {
         'XMLcontent',
         'stem',
         'equipment',
+        'inlineFileName',
         'name',
         'nickname',
         'date',
@@ -143,7 +144,7 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
             } else {
                 //console.log(result.div.expectations);
                 exercise.expectations = result.div.expectations;
-                exercise.inlineFileName = result.div.expectations.file.$.basename;
+                exercise.inlineFileName = exercise.expectations.file.$.basename;
             }
         }
     } catch (exc) {

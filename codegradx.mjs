@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-01 18:21:11 queinnec"
+// Time-stamp: "2020-01-04 22:57:40 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1666,14 +1666,15 @@ CodeGradX.initialize = async function (force=false) {
     if ( force || ! state.initialized ) {
         state = new CodeGradX.State();
         // -1- try the specific host:
-        const hostname = document.location.hostname;
         let js = undefined;
         try {
+            const hostname = document.location.hostname;
             js = await state.getCurrentConfiguration1(hostname);
         } catch (exc) {
             // -2- ask the X server for that specific host:
             state.debug('initialize getcurrentconfiguration1', exc);
             try {
+                const hostname = document.location.hostname;
                 js = await state.getCurrentConfigurationX(hostname);
             } catch (exc) {
                 state.debug('initialize getcurrentconfigurationX', exc);
