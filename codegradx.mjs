@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-04 22:57:40 queinnec"
+// Time-stamp: "2020-01-27 13:06:23 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -467,14 +467,20 @@ CodeGradX.State = function (initializer) {
     state.cache = Object.create(null);
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
-    if ( typeof initializer === 'function' ||
-         initializer instanceof Function ) {
-        state = initializer.call(state, state);
+
+    function customize (state, initializer) {
+        if ( typeof initializer === 'function' ||
+             initializer instanceof Function ) {
+            state = initializer.call(state, state);
+        }
+        return state;
     }
-    // Make the state global
-    CodeGradX.getCurrentState = function () {
+    // Make the state global:
+    CodeGradX.getCurrentState = function (initializer) {
+        state = customize(state, initializer);
         return state;
     };
+    state = customize(state, initializer);
     return state;
 };
 
@@ -660,8 +666,13 @@ CodeGradX.jsonize = function (thing, keys) {
      @returns Promise<response|exception>
 */
 
-CodeGradX.State.prototype.mkUserAgent = function () {
+CodeGradX.State.prototype.mkUserAgent = function (fetch) {
     const state = this;
+    fetch = fetch || state.fetch ||
+        (typeof window !== 'undefined') ? window.fetch :
+        function (path, options) {
+            throw `Cannot fetch ${path}!!!`;
+        };
     async function decodeBody (response) {
         function responseKind (headers) {
             const contentType = headers.get('Content-Type');
@@ -738,7 +749,7 @@ CodeGradX.State.prototype.mkUserAgent = function () {
         }
         state.debug('userAgent2', options);
         try {
-            const response = await window.fetch(options.path, options);
+            const response = await fetch(options.path, options);
             state.debug('userAgent3', options, response);
             if ( response.redirected ) {
                 state.debug('userAgent4 redirect', response);
@@ -1661,15 +1672,16 @@ CodeGradX.Batch = function (js) {
       @return Promise<> yielding <State>
 */
 
-CodeGradX.initialize = async function (force=false) {
+CodeGradX.initialize = async function (force=false, initializer) {
     let state = CodeGradX.getCurrentState();
     if ( force || ! state.initialized ) {
-        state = new CodeGradX.State();
+        state = new CodeGradX.State(initializer);
         // -1- try the specific host:
         let js = undefined;
         try {
             const hostname = document.location.hostname;
-            js = await state.getCurrentConfiguration1(hostname);
+            let configurationName = state.configurationName || hostname;
+            js = await state.getCurrentConfiguration1(configurationName);
         } catch (exc) {
             // -2- ask the X server for that specific host:
             state.debug('initialize getcurrentconfiguration1', exc);
