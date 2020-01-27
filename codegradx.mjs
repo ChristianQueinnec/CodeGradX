@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-27 13:06:23 queinnec"
+// Time-stamp: "2020-01-27 14:57:56 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -670,7 +670,7 @@ CodeGradX.State.prototype.mkUserAgent = function (fetch) {
     const state = this;
     fetch = fetch || state.fetch ||
         (typeof window !== 'undefined') ? window.fetch :
-        function (path, options) {
+        function (path /*, options */) {
             throw `Cannot fetch ${path}!!!`;
         };
     async function decodeBody (response) {
