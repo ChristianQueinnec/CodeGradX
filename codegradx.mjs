@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-27 14:57:56 queinnec"
+// Time-stamp: "2020-01-27 19:11:57 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -370,6 +370,7 @@ CodeGradX.Log.prototype.show = function (items) {
   */
 
 CodeGradX.State = function (initializer) {
+    //console.log('new State ...'); // DEBUG
     this.userAgent = this.mkUserAgent();
     this.log = new CodeGradX.Log();
     // State of servers [this may be changed with .getCurrentConstellation()]
@@ -478,10 +479,26 @@ CodeGradX.State = function (initializer) {
     // Make the state global:
     CodeGradX.getCurrentState = function (initializer) {
         state = customize(state, initializer);
+        //console.log('getcurrentstate overriding', state); // DEBUG
         return state;
     };
     state = customize(state, initializer);
+    //console.log('created new State', state); // DEBUG
     return state;
+};
+
+/** Get the current state or create it if missing.
+    The initializer has type State -> State
+    This function will be replaced when the state is created.
+
+    @param {function} initializer - post-initialization of the state object
+    @returns {State}
+
+*/
+
+CodeGradX.getCurrentState = function (initializer) {
+    //console.log('getcurrentstate basic', state); // DEBUG
+    return new CodeGradX.State(initializer);
 };
 
 /** Cache interface. It may clear, get or set the cache. All these
@@ -668,11 +685,6 @@ CodeGradX.jsonize = function (thing, keys) {
 
 CodeGradX.State.prototype.mkUserAgent = function (fetch) {
     const state = this;
-    fetch = fetch || state.fetch ||
-        (typeof window !== 'undefined') ? window.fetch :
-        function (path /*, options */) {
-            throw `Cannot fetch ${path}!!!`;
-        };
     async function decodeBody (response) {
         function responseKind (headers) {
             const contentType = headers.get('Content-Type');
@@ -690,6 +702,7 @@ CodeGradX.State.prototype.mkUserAgent = function (fetch) {
             return undefined;
         }
         response.entityKind = responseKind(response.headers);
+        //console.log('response.entityKind', response.entityKind); // DEBUG
         if ( response.entityKind &&
              response.entityKind === 'JSON' ) {
             response.entity = await response.json();
@@ -723,6 +736,13 @@ CodeGradX.State.prototype.mkUserAgent = function (fetch) {
     }
     return async function tryRequest (options) {
         state.debug('userAgent1', options);
+        function cannotFetch (path /*, options */) {
+            throw `Cannot fetch ${path}!!!`;
+        }
+        fetch = fetch || state.fetch ||
+            ((typeof window !== 'undefined') ?
+             window.fetch : cannotFetch);
+        state.debug('mkUserAgent fetch is', fetch); //DEBUG
         options.redirect = options.redirect || 'follow';
         options.mode = options.mode || 'cors';
         if ( options.mode === 'no-cors' ) {
@@ -780,6 +800,7 @@ CodeGradX.State.prototype.mkUserAgent = function (fetch) {
                 return Promise.reject(response);
             }
         } catch (exc) {
+            state.debug('userAgent5 PB', exc.message);
             state.debug('userAgent5 PB', JSON.stringify(exc));
             return Promise.reject(exc);
         }
@@ -818,19 +839,6 @@ CodeGradX.State.prototype.adjoinCurrentCookie = function (kind, request) {
         //request.mode = 'no-cors';
     }
     return request;
-};
-
-/** Get the current state or create it if missing.
-    The initializer has type State -> State
-    This function will be replaced when the state is created.
-
-    @param {function} initializer - post-initialization of the state object
-    @returns {State}
-
-*/
-
-CodeGradX.getCurrentState = function (initializer) {
-    return new CodeGradX.State(initializer);
 };
 
 /** Helper function, add a fact to the log held in the current state
@@ -1684,21 +1692,21 @@ CodeGradX.initialize = async function (force=false, initializer) {
             js = await state.getCurrentConfiguration1(configurationName);
         } catch (exc) {
             // -2- ask the X server for that specific host:
-            state.debug('initialize getcurrentconfiguration1', exc);
+            state.debug('initialize PB getcurrentconfiguration1', exc);
             try {
                 const hostname = document.location.hostname;
                 js = await state.getCurrentConfigurationX(hostname);
             } catch (exc) {
-                state.debug('initialize getcurrentconfigurationX', exc);
+                state.debug('initialize PB getcurrentconfigurationX', exc);
             }
         }
         if ( js ) {
             // js should be like "function (CodeGradX) { true; }"
             try {
                 const f = eval(`(${js})`);
-                f(CodeGradX);
+                f(CodeGradX, state);
             } catch (exc) {
-                state.debug('initialize eval configuration', exc);
+                state.debug('initialize PB eval configuration', exc);
             }
         }
         if ( ! state.servers ) {
@@ -1707,10 +1715,11 @@ CodeGradX.initialize = async function (force=false, initializer) {
                 const servers = await state.getCurrentConstellation();
                 state.servers = servers;
             } catch (exc) {
-                state.debug('initialize aesx', exc);
+                state.debug('initialize PB aesx', exc);
                 state.servers = state.defaultservers;
             }
         }
+        delete state.defaultservers;
         state.initialized = true;
     }
     return state;
