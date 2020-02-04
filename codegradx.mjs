@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-27 19:11:57 queinnec"
+// Time-stamp: "2020-01-27 20:00:06 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -800,7 +800,7 @@ CodeGradX.State.prototype.mkUserAgent = function (fetch) {
                 return Promise.reject(response);
             }
         } catch (exc) {
-            state.debug('userAgent5 PB', exc.message);
+            //state.debug('userAgent5 PB', exc.message);
             state.debug('userAgent5 PB', JSON.stringify(exc));
             return Promise.reject(exc);
         }

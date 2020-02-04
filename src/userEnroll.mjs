@@ -1,5 +1,5 @@
 // userEnroll.mjs
-// Time-stamp: "2019-12-27 16:04:06 queinnec"
+// Time-stamp: "2020-02-01 15:31:27 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -25,7 +25,7 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
         },
         entity: {
             email: login,
-            'g-recaptcha-response': captcha
+            'captcha-response': captcha
         }
     }).then(function (response) {
         //console.log(response);
