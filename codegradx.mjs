@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-01-27 20:00:06 queinnec"
+// Time-stamp: "2020-02-29 17:48:32 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1128,7 +1128,8 @@ CodeGradX.State.prototype.sendSequentially = function (kind, options) {
         return function (reason) {
             state.debug('sendSequentially mk_invalidate', reason);
             // With the fetch API, reason is a Response (or Exception):
-            if ( reason instanceof Response &&
+            if ( typeof Response !== 'undefined' &&
+                 reason instanceof Response &&
                  500 <= reason.status ) {
                 state.debug('sendAXserver invalidate', description, reason);
                 //console.log(reason);
