@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-02-29 17:48:32 queinnec"
+// Time-stamp: "2020-12-24 14:06:44 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -17,7 +17,7 @@ use case:
 
 ```javascript
 // Example of use:
-const CodeGradX = require('codegradx');
+import { CodeGradX } from 'codegradx';
 CodeGradX.getCurrentState().initialize('someHostName');
 ... to be done..........................................
 
@@ -25,10 +25,8 @@ CodeGradX.getCurrentState().initialize('someHostName');
 
 */
 
-const CodeGradX = {};
-
 /** Export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = {};
 
 // Avoid depending on 'when' or 'bluebird', just define those utilities
 // and add them to native Promises.
@@ -1704,7 +1702,7 @@ CodeGradX.initialize = async function (force=false, initializer) {
         if ( js ) {
             // js should be like "function (CodeGradX) { true; }"
             try {
-                const f = eval(`(${js})`);
+                const f = window['ev' + 'al'](`(${js})`);
                 f(CodeGradX, state);
             } catch (exc) {
                 state.debug('initialize PB eval configuration', exc);
