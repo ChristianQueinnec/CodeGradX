@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-12-24 14:06:44 queinnec"
+// Time-stamp: "2020-12-24 18:05:36 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -388,15 +388,15 @@ CodeGradX.State = function (initializer) {
             // Description of plausible A servers:
             0: {
                 // a full hostname supersedes the default FQDN:
-                host: 'a5.codegradx.org',
-                enabled: false
-            },
-            1: {
                 host: 'a6.codegradx.org',
                 enabled: false
             },
+            1: {
+                host: 'a10.codegradx.org',
+                enabled: false
+            },
             2: {
-                host: 'a7.codegradx.org',
+                host: 'a9.codegradx.org',
                 enabled: false
             }
         },
@@ -404,15 +404,15 @@ CodeGradX.State = function (initializer) {
             suffix: '/alive',
             protocol: 'https',
             0: {
-                host: 'e5.codegradx.org',
-                enabled: false
-            },
-            1: {
                 host: 'e6.codegradx.org',
                 enabled: false
             },
+            1: {
+                host: 'e10.codegradx.org',
+                enabled: false
+            },
             2: {
-                host: 'e7.codegradx.org',
+                host: 'e9.codegradx.org',
                 enabled: false
             }
         },
@@ -420,15 +420,15 @@ CodeGradX.State = function (initializer) {
             suffix: '/dbalive',
             protocol: 'https',
             0: {
-                host: 'x5.codegradx.org',
-                enabled: false
-            },
-            1: {
                 host: 'x6.codegradx.org',
                 enabled: false
             },
+            1: {
+                host: 'x10.codegradx.org',
+                enabled: false
+            },
             2: {
-                host: 'x7.codegradx.org',
+                host: 'x9.codegradx.org',
                 enabled: false
             }
         },
@@ -440,15 +440,15 @@ CodeGradX.State = function (initializer) {
                 enabled: false
             },
             1: {
-                host: 's5.codegradx.org',
-                enabled: false
-            },
-            2: {
                 host: 's6.codegradx.org',
                 enabled: false
             },
+            2: {
+                host: 's10.codegradx.org',
+                enabled: false
+            },
             3: {
-                host: 's7.codegradx.org',
+                host: 's9.codegradx.org',
                 enabled: false
             }
         }
@@ -1419,6 +1419,65 @@ CodeGradX.State.prototype.userDisconnect = function () {
         state.debug('userDisconnect2', response);
         state.currentUser = undefined;
         return Promise.resolve(undefined);
+    });
+};
+
+/** Ask for a temporary link to be received by email.
+
+    @param {string} email - real login or email address
+    @returns {Promise<User>} yields {User}
+
+*/
+
+CodeGradX.State.prototype.userGetLink = function (email) {
+    const state = this;
+    state.debug('userGetLink1', email);
+    return state.sendAXServer('x', {
+        path: '/fromp/getlink',
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        entity: {
+            email: email
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('userGetLink2', response);
+        // This is a very incomplete user record:
+        state.currentUser = new CodeGradX.User(response.entity);
+        return Promise.resolve(state.currentUser);
+    });
+};
+
+/** Enroll a new user. 
+
+    @param {string} login - email
+    @param {string} captcha - g-captcha-response
+    @returns {Promise<User>} yields {User}
+
+*/
+
+CodeGradX.State.prototype.userEnroll = function (login, captcha) {
+    const state = this;
+    state.debug('userEnroll1', login);
+    return state.sendAXServer('x', {
+        path: '/fromp/enroll',
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        entity: {
+            email: login,
+            'g-recaptcha-response': captcha
+        }
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('userEnroll2', response);
+        state.currentUser = new CodeGradX.User(response.entity);
+        return Promise.resolve(state.currentUser);
     });
 };
 
