@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-12-24 18:05:36 queinnec"
+// Time-stamp: "2020-12-26 18:26:21 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1323,12 +1323,45 @@ CodeGradX.State.prototype.sendRepeatedlyESServer.default = {
   progress: function (/*parameters*/) {}
 };
 
+/** Convert a Response into an ErrorObject.
+
+    An example of an ErrorObject is {
+       kind: "errorAnswer",
+       httpcode: 400,
+       errcode: "e100",
+       reason: "FW4EX e100 bla bla",
+       response
+    }
+    
+    @param {Response} 
+    @return {RejectedPromise<ErrorObject>}
+*/
+
+function catchAnomaly (response) {
+    const state = CodeGradX.getCurrentState();
+    state.debug('Caught anomaly');
+    let result = {
+        kind: 'errorAnswer',
+        httpcode: response.status,
+        reason: '???',
+        response
+    };
+    // entityKind is set by mkUserAgent:
+    if ( response.entityKind === 'JSON' ) {
+        result = Object.assign({}, result, response.entity);
+    }
+    return Promise.reject(result);
+}    
+
 /** Authenticate the user. This will return a Promise leading to
     some User.
 
     @param {string} login - real login or email address
     @param {string} password
-    @returns {Promise<User>} yields {User}
+    @returns {Promise<User>} yields {User} or rejects {ErrorObject}
+
+    Possible error codes:
+    - "FW4EX e162b wrongCombination"
 
     */
 
@@ -1349,26 +1382,27 @@ function (login, password) {
     },
     entity: params
   }).then(function (response) {
-    //console.log(response);
-    state.debug('getAuthenticatedUser2', response);
-    state.currentUser = new CodeGradX.User(response.entity);
-    return Promise.resolve(state.currentUser);
-  }).catch(function (response) {
-      if ( response.entityKind === 'JSON' ) {
-          return Promise.reject(response.entity);
-      } else if ( response.entity ) {
-          return Promise.reject(response.entity);
+      if ( response.ok ) {
+          //console.log(response);
+          state.debug('getAuthenticatedUser2', response);
+          state.currentUser = new CodeGradX.User(response.entity);
+          return Promise.resolve(state.currentUser);
       } else {
-          return Promise.reject(response);
+          throw response;
       }
-  });
+  })
+    .catch(catchAnomaly);
 };
 
 /** Get current user (if defined). This is particularly useful when
     the user is not authenticated via getAuthenticatedUser() (for
     instance, via GoogleOpenId).
 
-    @return {Promise<User>} yields {User}
+    @param {boolean} force - ask server again
+    @return {Promise<User>} yields {User} or undefined
+
+    Possible error codes:
+    - "FW4EX e100 unknown person"
 
 */
 
@@ -1386,11 +1420,15 @@ CodeGradX.getCurrentUser = function (force) {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     }).then(function (response) {
-        //console.log(response);
         state.debug('getWhoAmI2', response);
-        state.currentUser = new CodeGradX.User(response.entity);
-        // NOTA: whoami lists only active campaigns:
-        return Promise.resolve(state.currentUser);
+        if ( response.ok ) {
+            //console.log(response);
+            state.currentUser = new CodeGradX.User(response.entity);
+            // NOTA: whoami lists only active campaigns:
+            return Promise.resolve(state.currentUser);
+        } else {
+            throw response;
+        }
     })
         .catch((reason) => {
             state.debug('getCurrentUser2', reason);
@@ -1400,7 +1438,7 @@ CodeGradX.getCurrentUser = function (force) {
 
 /** Disconnect the user.
 
-    @returns {Promise<>} yields undefined
+    @returns {Promise<>} always yields undefined
 
 */
 
@@ -1425,7 +1463,22 @@ CodeGradX.State.prototype.userDisconnect = function () {
 /** Ask for a temporary link to be received by email.
 
     @param {string} email - real login or email address
-    @returns {Promise<User>} yields {User}
+    @returns {Promise<>} yields {PartialUser} or rejects {ErrorObject}
+
+    Possible error codes:
+    - "e129f4 no such person"
+
+    Attention, the result is only a PartialUser that is,
+    { 
+      "kind":"authenticationAnswer",
+      "token":"TOKEN-reconnect",
+      "expires":"2020-12-26T17:24:11",
+      "uaversion":1,
+      "confirmedua":1,
+      "confirmedemail":1,
+      "logins":["christian.queinnec@gmail.com"],
+      "login":"christian.queinnec@gmail.com"
+    }
 
 */
 
@@ -1445,17 +1498,25 @@ CodeGradX.State.prototype.userGetLink = function (email) {
     }).then(function (response) {
         //console.log(response);
         state.debug('userGetLink2', response);
-        // This is a very incomplete user record:
-        state.currentUser = new CodeGradX.User(response.entity);
-        return Promise.resolve(state.currentUser);
-    });
+        if ( response.ok ) {
+            // This is a very incomplete user record:
+            state.currentUser = new CodeGradX.User(response.entity);
+            return Promise.resolve(state.currentUser);
+        } else {
+            throw response;
+        }
+    })
+        .catch(catchAnomaly);
 };
 
 /** Enroll a new user. 
 
     @param {string} login - email
     @param {string} captcha - g-captcha-response
-    @returns {Promise<User>} yields {User}
+    @returns {Promise<User>} yields {User} or rejects {ErrorObject}
+
+    Possible error codes: 
+    - "FW4EX e157e missing or bad email"
 
 */
 
@@ -1476,9 +1537,14 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
     }).then(function (response) {
         //console.log(response);
         state.debug('userEnroll2', response);
-        state.currentUser = new CodeGradX.User(response.entity);
-        return Promise.resolve(state.currentUser);
-    });
+        if ( response.ok ) {
+            state.currentUser = new CodeGradX.User(response.entity);
+            return Promise.resolve(state.currentUser);
+        } else {
+            throw response;
+        }
+    })
+        .catch(catchAnomaly);
 };
 
 // **************** User *******************************
@@ -1802,7 +1868,7 @@ CodeGradX.State.prototype.getCurrentConstellation = function () {
         return response.entity;
     }).catch(function (exc) {
         state.debug('getCurrentConstellation3', exc);
-        return state;
+        throw exc;
     });
 };
 
