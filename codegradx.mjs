@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-12-26 18:26:21 queinnec"
+// Time-stamp: "2020-12-28 09:55:53 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1440,6 +1440,12 @@ CodeGradX.getCurrentUser = function (force) {
 
     @returns {Promise<>} always yields undefined
 
+    Successful JSON answer should be { 
+        httpcode: 200, 
+        errcode: "e126", 
+        reason: "FW4EX e126 disconnected",
+        kind: "errorAnswer" }
+
 */
 
 CodeGradX.State.prototype.userDisconnect = function () {
@@ -1476,7 +1482,7 @@ CodeGradX.State.prototype.userDisconnect = function () {
       "uaversion":1,
       "confirmedua":1,
       "confirmedemail":1,
-      "logins":["christian.queinnec@gmail.com"],
+      "logins":["christian.queinnec@gmail.com", ...],
       "login":"christian.queinnec@gmail.com"
     }
 
