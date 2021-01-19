@@ -1,4 +1,4 @@
-# Time-stamp: "2019-12-21 17:24:08 queinnec"
+# Time-stamp: "2021-01-19 16:19:25 queinnec"
 
 work : nothing 
 clean :: 
@@ -8,10 +8,16 @@ lint :
 	node_modules/.bin/eslint *.mjs src/[cejpu]*.mjs
 #src/*.mjs
 
-prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js
+prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js prepare.modules
 	-rm -rf wrapsrc/dist/
 	bash wrapsrc/all.sh
 	@echo "New modules are now in src/"
+
+prepare.modules : codegradx.js
+codegradx.js : codegradx.mjs
+	sed < codegradx.mjs > codegradx.js \
+		-e 's@export const@const@;s@// module.exports@module.exports@'
+	diff codegradx.js codegradx.mjs || true
 
 tests : test.with.real.servers
 test.with.real.servers : prepare

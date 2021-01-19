@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2020-12-28 09:55:53 queinnec"
+// Time-stamp: "2021-01-19 16:18:58 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -27,6 +27,7 @@ CodeGradX.getCurrentState().initialize('someHostName');
 
 /** Export the `CodeGradX` object */
 export const CodeGradX = {};
+// module.exports = { CodeGradX };
 
 // Avoid depending on 'when' or 'bluebird', just define those utilities
 // and add them to native Promises.
