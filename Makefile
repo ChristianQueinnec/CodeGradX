@@ -1,11 +1,12 @@
-# Time-stamp: "2021-01-19 16:19:25 queinnec"
+# Time-stamp: "2021-01-19 16:26:33 queinnec"
 
 work : nothing 
 clean :: 
 	-rm *~ src/*~ spec/*~
 
 lint :
-	node_modules/.bin/eslint *.mjs src/[cejpu]*.mjs
+	node_modules/.bin/eslint *.mjs *.js
+#src/[cejpu]*.mjs
 #src/*.mjs
 
 prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js prepare.modules

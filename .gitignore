@@ -5,3 +5,4 @@ spec/*auth*.js
 Archive/
 CodeGradX.tgz
 wrapsrc/dist/
+src/

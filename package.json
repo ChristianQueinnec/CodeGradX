@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.31",
+    "version": "3.0.32",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -8,8 +8,7 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "files": [
-        "index.js",
-        "src/*.js",
+        "codegradx.*js",
         "Makefile",
         "spec/*.js"
     ],
