@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.33",
+    "version": "3.0.34",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -10,8 +10,7 @@
     "files": [
         "codegradx.js",
         "codegradx.mjs",
-        "Makefile",
-        "spec/*.js"
+        "Makefile"
     ],
     "keywords": [
         "CodeGradX",
