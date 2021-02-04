@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-01-19 16:18:58 queinnec"
+// Time-stamp: "2021-02-04 11:29:18 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1552,6 +1552,43 @@ CodeGradX.State.prototype.userEnroll = function (login, captcha) {
         }
     })
         .catch(catchAnomaly);
+};
+
+/** Modify the profile of the current user. Data is an object with
+    fields among the allowedKeys.
+
+    @param {object} data - fields of the profile to be modified
+    @returns {Promise<User>} yields {User}
+
+*/
+
+CodeGradX.State.prototype.userSelfModify = function (data) {
+    const state = this;
+    state.debug('userSelfModify1');
+    const entity = {};
+    const allowedKeys =
+          ['pseudo', 'email', 'lastname', 'firstname', 'password'];
+    for ( let i=0 ; i<allowedKeys.length ; i++ ) {
+        const key = allowedKeys[i];
+        const value = data[key];
+        if ( value ) {
+            entity[key] = value;
+        }
+    }
+    return state.sendAXServer('x', {
+        path: '/fromp/selfmodify',
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        entity: entity
+    }).then(function (response) {
+        //console.log(response);
+        state.debug('userSelfModify2', response);
+        const user = state.currentUser = new CodeGradX.User(response.entity);
+        return Promise.resolve(user);
+    });
 };
 
 // **************** User *******************************
