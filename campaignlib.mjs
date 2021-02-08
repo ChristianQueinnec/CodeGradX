@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2021-02-08 15:12:40 queinnec"
+// Time-stamp: "2021-02-08 17:40:34 queinnec"
 
 import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
@@ -27,7 +27,7 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
     }
     
     return state.sendConcurrently('x', {
-        path: ('/exercisesset/path/' + campaign.name),
+        path: ('/exercisesset/path/' + campaign.exercisesname),
         method: 'GET',
         headers: {
             Accept: "application/json"
