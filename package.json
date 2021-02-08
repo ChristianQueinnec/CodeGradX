@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.35",
+    "version": "3.0.36",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -10,6 +10,8 @@
     "files": [
         "codegradx.js",
         "codegradx.mjs",
+        "campaign.mjs",
+        "campaignlib.mjs",
         "Makefile"
     ],
     "keywords": [
