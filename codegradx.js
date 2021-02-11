@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-11 10:25:06 queinnec"
+// Time-stamp: "2021-02-11 10:26:57 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1978,6 +1978,8 @@ Other possibilities:
 
 Replace xml2js dependency by xml-js!
   exercise.mjs should use parsexml rather than xml2js
+
+So now:
 
   exercise requires parsexml
    parsexml requires xml-js
