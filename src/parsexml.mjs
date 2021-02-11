@@ -1,16 +1,36 @@
 // parsexml.js
-// Time-stamp: "2019-05-20 18:18:42 queinnec"
+// Time-stamp: "2021-02-11 15:07:58 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
-import xml2js from '../src/xml2js.mjs';
+import { CodeGradX } from 'codegradx';
+//import xml2js from 'codegradx/src/xml2js';
+//import xml2js from 'xml2js';
+//const xml2js = require('xml2js');
+//const convert = require('../src/xml2js.js');
+import convert from 'codegradx/src/xml2js';
 
 /** Promisify an XML to Javascript converter.
 
         @param {string} xml - string to parse
         @returns {Promise}
 
-      */
+*/
 
+export function parsexml (xml) {
+    const options = {
+        ignoreComment: true,
+        ignoreInstruction: true,
+        ignoreDoctype: true,
+        ignoreDeclaration: true
+    };
+    try {
+        const result = convert.xml2js(xml, options);
+        return Promise.resolve(result);
+    } catch (exc) {
+        return Promise.reject(exc);
+    }
+}
+
+/* 
 export function parsexml (xml) {
   if ( ! xml ) {
     return Promise.reject("Cannot parse XML " + xml);
@@ -35,6 +55,8 @@ export function parsexml (xml) {
     return Promise.resolve(xresult);
   }
 }
+*/
+
 CodeGradX.parsexml = parsexml;
 
 // end of parsexml.js

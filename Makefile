@@ -1,4 +1,4 @@
-# Time-stamp: "2021-01-19 17:09:26 queinnec"
+# Time-stamp: "2021-02-11 17:22:14 queinnec"
 
 work : nothing 
 clean :: 
@@ -33,7 +33,7 @@ test.out.of.browser : TOBEFIXED
 test.within.browser :
 	cd spec/ && ln -sf ../node_modules/jasmine-core .
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
-	@echo "Browse http://tests.codegradx.org/CodeGradX/spec/tests.html?random=false"
+#	@echo "Browse http://tests.codegradx.org/CodeGradX/spec/tests.html?random=false"
 
 publish : lint prepare clean
 	git status .
@@ -85,5 +85,20 @@ compute.multiple.wrapped.modules : prepare \
 	grep -F '!*** ./node_modules/' < wrapsrc/dist/xml2js.bundle.js |\
 	sed -e 's@![*][*][*] ./@@' -e 's@ [*][*][*]!@@' |\
 	sort -u >/tmp/xml2js.txt
+
+# Modify modules to avoid:
+#   require('stream') which is useless
+#   force xml2js to use that new sax.js
+
+src/sax.mjs : node_modules/sax/lib/sax.js wrapsrc/hack-sax.pl Makefile
+	perl wrapsrc/hack-sax.pl < node_modules/sax/lib/sax.js > src/sax.mjs
+#	sed -e '1s@^;@@' -e 's@require.*stream.*$$@function () {}@' \
+#		< node_modules/sax/lib/sax.js > src/sax.js
+
+src/xml2js.js : node_modules/xml-js/lib/xml2js.js Makefile
+	cp -rp node_modules/xml-js/lib/*.js src/
+	cd src/ && rm -f xml2json.js js*xml.js index.js
+	sed -e 's@require..sax..@require("./sax.js")@' \
+		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
 
 # end of Makefile

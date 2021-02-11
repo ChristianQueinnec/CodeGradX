@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-04 11:29:18 queinnec"
+// Time-stamp: "2021-02-11 10:26:57 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1971,6 +1971,21 @@ CodeGradX.State.prototype.getCurrentConfigurationX = function (hostname) {
     xml2html requires sax
     parsexml requires xml2js
     exercise requires xml2js
+
+Other possibilities:
+   xml2json does not parse CDATA, use node-expat
+   xml-js requires sax
+
+Replace xml2js dependency by xml-js!
+  exercise.mjs should use parsexml rather than xml2js
+
+So now:
+
+  exercise requires parsexml
+   parsexml requires xml-js
+     xml-js requires sax
+   xml2html requires sax
+
 
 */
 

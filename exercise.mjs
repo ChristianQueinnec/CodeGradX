@@ -1,13 +1,13 @@
 // exercise.js
-// Time-stamp: "2020-01-10 11:08:34 queinnec"
+// Time-stamp: "2021-02-11 14:44:33 queinnec"
 /* eslint no-control-regex: "off" */
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
-import xml2js from '../src/xml2js.mjs';
-import { parsexml } from '../src/parsexml.mjs';
-import { xml2html } from '../src/xml2html.mjs';
+export const CodeGradX = cx;
+
+import { parsexml } from 'codegradx/src/parsexml';
+import { xml2html } from 'codegradx/src/xml2html';
 
 /** Keep only persistable values and convert then into JSON */
 
@@ -110,7 +110,7 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
     
     // Extract equipment:
     try {
-        extractEquipment(exercise, exercise._XMLdescription);
+        await extractEquipment(exercise, exercise._XMLdescription);
         state.debug("getDescription6 equipment", exercise.equipment);
     } catch (exc) {
         state.debug('getDescription6b', exc);
@@ -273,7 +273,8 @@ function extractExpectations (exercice, s) {
 
 */
 
-function extractEquipment (exercise, s) {
+async function extractEquipment (exercise, s) {
+    const state = CodeGradX.getCurrentState();
     exercise.equipment = [];
     const equipmentRegExp = new RegExp(
         "^(.|\n)*(<equipment>\\s*(.|\n)*?\\s*</equipment>)(.|\n)*$");
@@ -310,6 +311,14 @@ function extractEquipment (exercise, s) {
         return results;
     }
     if ( content.length > 0 ) {
+        // new version:
+        try {
+            const result = await parsexml(content);
+            exercise.equipment = flatten(result.equipment, '');
+        } catch (exc) {
+            state.debug('extractEquipment2', exc);
+        }
+        /* previous version
         try {
             const parser = new xml2js.Parser({
                 explicitArray: false,
@@ -319,9 +328,8 @@ function extractEquipment (exercise, s) {
                 exercise.equipment = flatten(result.equipment, '');
             });
         } catch (e) {
-            const state = CodeGradX.getCurrentState();
-            state.debug("extractEquipment", e);
-        }
+            state.debug("extractEquipment3", e);
+        } */
     }
     return exercise;
 }
