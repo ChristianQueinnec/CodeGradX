@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.38",
+    "version": "3.0.39",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -17,9 +17,9 @@
         "src/htmlencode.mjs",
         "src/options-helper.js",
         "src/parsexml.mjs",
-        "src/sax.js",
+        "src/sax.mjs",
         "src/xml2html.mjs",
-        "src/xml2js.js",
+        "src/xml2js.mjs",
         "Makefile"
     ],
     "keywords": [

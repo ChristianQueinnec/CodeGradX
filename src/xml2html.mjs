@@ -1,9 +1,9 @@
 // xml2html.mjs
-// Time-stamp: "2021-02-11 17:25:44 queinnec"
+// Time-stamp: "2021-02-11 18:05:49 queinnec"
 
 import { CodeGradX } from 'codegradx';
 import { sax } from 'codegradx/src/sax';
-import { htmlencode } from '../src/htmlencode.mjs';
+import { htmlencode } from 'codegradx/src/htmlencode';
 
 /** Conversion of texts (stems, reports) from XML to HTML.
     This function may be modified to accommodate your own desires.

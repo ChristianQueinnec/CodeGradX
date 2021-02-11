@@ -1,4 +1,4 @@
-# Time-stamp: "2021-02-11 17:22:14 queinnec"
+# Time-stamp: "2021-02-11 17:58:27 queinnec"
 
 work : nothing 
 clean :: 
@@ -95,10 +95,12 @@ src/sax.mjs : node_modules/sax/lib/sax.js wrapsrc/hack-sax.pl Makefile
 #	sed -e '1s@^;@@' -e 's@require.*stream.*$$@function () {}@' \
 #		< node_modules/sax/lib/sax.js > src/sax.js
 
-src/xml2js.js : node_modules/xml-js/lib/xml2js.js Makefile
-	cp -rp node_modules/xml-js/lib/*.js src/
-	cd src/ && rm -f xml2json.js js*xml.js index.js
-	sed -e 's@require..sax..@require("./sax.js")@' \
-		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
+src/xml2js.mjs : node_modules/xml-js/lib/xml2js.js wrapsrc/hack-xml2js.pl Makefile
+	perl wrapsrc/hack-xml2js.pl < node_modules/xml-js/lib/xml2js.js \
+		> src/xml2js.mjs
+#	cp -rp node_modules/xml-js/lib/*.js src/
+#	cd src/ && rm -f xml2json.js js*xml.js index.js
+#	sed -e 's@require..sax..@require("./sax.js")@' \
+#		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
 
 # end of Makefile

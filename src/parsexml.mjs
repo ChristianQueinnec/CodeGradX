@@ -1,12 +1,12 @@
 // parsexml.js
-// Time-stamp: "2021-02-11 15:07:58 queinnec"
+// Time-stamp: "2021-02-11 17:54:47 queinnec"
 
 import { CodeGradX } from 'codegradx';
 //import xml2js from 'codegradx/src/xml2js';
 //import xml2js from 'xml2js';
 //const xml2js = require('xml2js');
 //const convert = require('../src/xml2js.js');
-import convert from 'codegradx/src/xml2js';
+import { convert } from 'codegradx/src/xml2js';
 
 /** Promisify an XML to Javascript converter.
 
