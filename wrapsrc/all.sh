@@ -1,5 +1,5 @@
 #! /bin/bash
-# Time-stamp: "2019-12-20 14:31:34 queinnec"
+# Time-stamp: "2021-02-11 10:26:08 queinnec"
 
 MODE=${MODE:-production}
 #MODE=development
@@ -13,14 +13,14 @@ ls -tl wrapsrc/dist/
 
 if [ "$MODE" = 'development' ]
 then
-    for name in sax xmlbuilder xml2js
+    for name in sax xmlbuilder xml2js xml-js
     do {
         echo "export default "
         cat wrapsrc/dist/${name}.bundle.js
     } > src/${name}.mjs
     done
 else
-    for name in sax xmlbuilder xml2js
+    for name in sax xmlbuilder xml2js xml-js
     do {
         echo "let __r =" ; echo "//" 
         tail --bytes=+2 wrapsrc/dist/${name}.bundle.js | \

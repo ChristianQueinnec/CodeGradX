@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.37",
+    "version": "3.0.38",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -8,10 +8,18 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "files": [
+        "campaignlib.mjs",
+        "campaign.mjs",
         "codegradx.js",
         "codegradx.mjs",
-        "campaign.mjs",
-        "campaignlib.mjs",
+        "exercise.mjs",
+        "src/array-helper.js",
+        "src/htmlencode.mjs",
+        "src/options-helper.js",
+        "src/parsexml.mjs",
+        "src/sax.js",
+        "src/xml2html.mjs",
+        "src/xml2js.js",
         "Makefile"
     ],
     "keywords": [
@@ -34,6 +42,7 @@
         "rest": "=1.3.2",
         "sax": "^1.2.4",
         "serialize-javascript": "^3.1.0",
+        "xml-js": "^1.6.11",
         "xml2js": "^0.4.23"
     },
     "devDependencies": {
