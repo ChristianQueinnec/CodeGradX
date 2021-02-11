@@ -1,4 +1,4 @@
-# Time-stamp: "2021-02-11 18:15:08 queinnec"
+# Time-stamp: "2021-02-11 18:41:24 queinnec"
 
 work : nothing 
 clean :: 
@@ -9,7 +9,7 @@ lint :
 #src/[cejpu]*.mjs
 #src/*.mjs
 
-prepare : src/sax.mjs src/xml2js.mjs prepare.modules
+prepare : src/sax.mjs src/xml2js.mjs src/options-helper.mjs prepare.modules
 
 # Modify modules to avoid:
 #   require('stream') which is useless
@@ -23,6 +23,16 @@ src/sax.mjs : node_modules/sax/lib/sax.js wrapsrc/hack-sax.pl Makefile
 src/xml2js.mjs : node_modules/xml-js/lib/xml2js.js wrapsrc/hack-xml2js.pl Makefile
 	perl wrapsrc/hack-xml2js.pl < node_modules/xml-js/lib/xml2js.js \
 		> src/xml2js.mjs
+#	cp -rp node_modules/xml-js/lib/*.js src/
+#	cd src/ && rm -f xml2json.js js*xml.js index.js
+#	sed -e 's@require..sax..@require("./sax.js")@' \
+#		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
+
+src/options-helper.js : node_modules/xml-js/lib/options-helper.js \
+						wrapsrc/hack-options-helper.pl Makefile
+	perl wrapsrc/hack-options-helper.pl \
+		< node_modules/xml-js/lib/options-helper.js \
+		> src/options-helper.js
 #	cp -rp node_modules/xml-js/lib/*.js src/
 #	cd src/ && rm -f xml2json.js js*xml.js index.js
 #	sed -e 's@require..sax..@require("./sax.js")@' \
