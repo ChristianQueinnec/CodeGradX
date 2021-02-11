@@ -1,4 +1,4 @@
-# Time-stamp: "2021-02-11 17:58:27 queinnec"
+# Time-stamp: "2021-02-11 18:15:08 queinnec"
 
 work : nothing 
 clean :: 
@@ -9,10 +9,24 @@ lint :
 #src/[cejpu]*.mjs
 #src/*.mjs
 
-prepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js prepare.modules
-	-rm -rf wrapsrc/dist/
-	bash wrapsrc/all.sh
-	@echo "New modules are now in src/"
+prepare : src/sax.mjs src/xml2js.mjs prepare.modules
+
+# Modify modules to avoid:
+#   require('stream') which is useless
+#   force xml2js to use that new sax.js
+
+src/sax.mjs : node_modules/sax/lib/sax.js wrapsrc/hack-sax.pl Makefile
+	perl wrapsrc/hack-sax.pl < node_modules/sax/lib/sax.js > src/sax.mjs
+#	sed -e '1s@^;@@' -e 's@require.*stream.*$$@function () {}@' \
+#		< node_modules/sax/lib/sax.js > src/sax.js
+
+src/xml2js.mjs : node_modules/xml-js/lib/xml2js.js wrapsrc/hack-xml2js.pl Makefile
+	perl wrapsrc/hack-xml2js.pl < node_modules/xml-js/lib/xml2js.js \
+		> src/xml2js.mjs
+#	cp -rp node_modules/xml-js/lib/*.js src/
+#	cd src/ && rm -f xml2json.js js*xml.js index.js
+#	sed -e 's@require..sax..@require("./sax.js")@' \
+#		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
 
 prepare.modules : codegradx.js
 codegradx.js : codegradx.mjs
@@ -66,7 +80,14 @@ install :
 		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
 # Caution: inodes may lack!
 
+# ####################### Obsolete
 # ###################### determine modules wrapped more than once
+
+XXprepare : wrapsrc/all.sh wrapsrc/webpack.all.config.js prepare.modules
+	-rm -rf wrapsrc/dist/
+	bash wrapsrc/all.sh
+	@echo "New modules are now in src/"
+
 compute.multiple.wrapped.modules : prepare \
 	/tmp/sax.txt /tmp/xmlbuilder.txt /tmp/xml2js.txt
 	diff -y /tmp/sax.txt /tmp/xml2js.txt
@@ -85,22 +106,5 @@ compute.multiple.wrapped.modules : prepare \
 	grep -F '!*** ./node_modules/' < wrapsrc/dist/xml2js.bundle.js |\
 	sed -e 's@![*][*][*] ./@@' -e 's@ [*][*][*]!@@' |\
 	sort -u >/tmp/xml2js.txt
-
-# Modify modules to avoid:
-#   require('stream') which is useless
-#   force xml2js to use that new sax.js
-
-src/sax.mjs : node_modules/sax/lib/sax.js wrapsrc/hack-sax.pl Makefile
-	perl wrapsrc/hack-sax.pl < node_modules/sax/lib/sax.js > src/sax.mjs
-#	sed -e '1s@^;@@' -e 's@require.*stream.*$$@function () {}@' \
-#		< node_modules/sax/lib/sax.js > src/sax.js
-
-src/xml2js.mjs : node_modules/xml-js/lib/xml2js.js wrapsrc/hack-xml2js.pl Makefile
-	perl wrapsrc/hack-xml2js.pl < node_modules/xml-js/lib/xml2js.js \
-		> src/xml2js.mjs
-#	cp -rp node_modules/xml-js/lib/*.js src/
-#	cd src/ && rm -f xml2json.js js*xml.js index.js
-#	sed -e 's@require..sax..@require("./sax.js")@' \
-#		< node_modules/xml-js/lib/xml2js.js > src/xml2js.js
 
 # end of Makefile
