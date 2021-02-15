@@ -1,6 +1,6 @@
 {
     "name": "codegradx",
-    "version": "3.0.43",
+    "version": "3.0.44",
     "description": "CodeGradX incremental loader",
     "main": "codegradx.js",
     "module": "codegradx.mjs",
@@ -13,6 +13,7 @@
         "codegradx.js",
         "codegradx.mjs",
         "exercise.mjs",
+        "src/job.mjs",
         "src/htmlencode.mjs",
         "src/options-helper.js",
         "src/parsexml.mjs",
