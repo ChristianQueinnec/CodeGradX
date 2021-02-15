@@ -1,5 +1,5 @@
 // job.js
-// Time-stamp: "2021-02-15 15:16:27 queinnec"
+// Time-stamp: "2021-02-15 17:36:07 queinnec"
 
 import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
@@ -26,7 +26,7 @@ CodeGradX.Job.prototype.jsonize = function () {
         'nickname',
         'totalMark',
         'HTMLreport',
-        
+        'originServer'
     ];
     return CodeGradX.jsonize(job, keys);
 };
