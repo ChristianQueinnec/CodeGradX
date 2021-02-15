@@ -1,9 +1,12 @@
 // job.js
-// Time-stamp: "2019-12-29 10:37:20 queinnec"
+// Time-stamp: "2021-02-15 15:16:27 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = cx;
+
+import { parsexml } from 'codegradx/src/parsexml';
+import { xml2html } from 'codegradx/src/xml2html';
 
 /** Keep only persistable values and convert then into JSON */
 
