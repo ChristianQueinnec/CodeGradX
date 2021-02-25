@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2021-02-08 17:40:34 queinnec"
+// Time-stamp: "2021-02-25 11:38:56 queinnec"
 
 import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
@@ -20,9 +20,17 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
     if ( campaign.exercisesSet ) {
         return Promise.resolve(campaign.exercisesSet);
     }
+    let cachedexercisesset = state.cachedExercisesSet(campaign.exercisesname);
+    if ( cachedexercisesset ) {
+        state.debug('getExercisesSet1b from cache', cachedexercisesset);
+        campaign.exercisesSet = new CodeGradX.ExercisesSet(cachedexercisesset);
+        return Promise.resolve(campaign.exercisesSet);
+    }
     function processResponse (response) {
         state.debug('getExercisesSet1', response);
         campaign.exercisesSet = new CodeGradX.ExercisesSet(response.entity);
+        state.cachedExercisesSet(campaign.exercisesname,
+                                 campaign.exercisesSet );
         return Promise.resolve(campaign.exercisesSet);
     }
     
@@ -103,9 +111,9 @@ CodeGradX.Campaign.prototype.getExercises = function (refresh = false) {
     state.debug('getExercises2');
     //console.log(response);
     campaign.exercises = response.entity.exercises.map(function (exercise) {
-        let newexercise = state.cachedExercise(exercise.name);
-        if ( newexercise ) {
-            return newexercise;
+        let cachedexercise = state.cachedExercise(exercise.name);
+        if ( cachedexercise ) {
+            return new CodeGradX.Exercise(cachedexercise);
         } else {
             return new CodeGradX.Exercise(exercise);
         }

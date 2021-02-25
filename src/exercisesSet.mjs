@@ -1,9 +1,16 @@
 // exercisesSet.js
-// Time-stamp: "2019-04-25 17:24:27 queinnec"
+// Time-stamp: "2021-02-24 10:38:16 queinnec"
 
 import CodeGradX from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export default CodeGradX;
+
+/** Keep only persistable values and convert then into JSON */
+
+CodeGradX.ExercisesSet.prototype.jsonize = function () {
+    const exercisesset = this;
+    return JSON.stringify(exercisesset);
+};
 
 /** Find an exercise by its name in an ExercisesSet that is,
     a tree of Exercises.

@@ -1,9 +1,29 @@
 // campaign.mjs
-// Time-stamp: "2021-02-07 18:18:37 queinnec"
+// Time-stamp: "2021-02-24 14:53:46 queinnec"
 
 import { CodeGradX as cx } from './codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = cx;
+
+/** Keep only persistable values and convert then into JSON Do not
+    memorize 'isTeacher'. This is not completely safe since another
+    user might know of an active campaign to which he does not belong.
+*/
+
+CodeGradX.Campaign.prototype.jsonize = function () {
+    const campaign = this;
+    const keys = [
+        'title',
+        'active',
+        'name',
+        'open',
+        'exercisesname',
+        'starttime',
+        'endtime',
+        'home_url'
+    ];
+    return CodeGradX.jsonize(campaign, keys);
+};
 
 /** Filter active campaigns. 
 
@@ -69,6 +89,20 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
     } else {
         const state = CodeGradX.getCurrentState();
         state.debug('getAllCampaigns1');
+        function prepareCampaigns (campaigns) {
+            user._all_campaigns = campaigns;
+            user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
+            user._campaigns = filterActive(user._all_campaigns);
+            // Cache only active campaigns (just as getCurrentUser):
+            for ( const campaign of CodeGradX.hash2array(user._campaigns) ) {
+                state.cachedCampaign(campaign.name, campaign);
+            }
+            if ( now ) {
+                return Promise.resolve(user._campaigns);
+            } else {
+                return Promise.resolve(user._all_campaigns);
+            }
+        }
         return state.sendAXServer('x', {
             path: '/campaigns/',
             method: 'GET',
@@ -84,14 +118,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
                 const campaign = new CodeGradX.Campaign(js);
                 campaigns[campaign.name] = campaign;
             });
-            user._all_campaigns = campaigns;
-            user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
-            user._campaigns = filterActive(user._all_campaigns);
-            if ( now ) {
-                return Promise.resolve(user._campaigns);
-            } else {
-                return Promise.resolve(user._all_campaigns);
-            }
+            return prepareCampaigns(campaigns);
         });
     }
 };
@@ -148,6 +175,7 @@ CodeGradX.State.prototype.getOpenCampaigns = function () {
                 //console.log(js);
                 const campaign = new CodeGradX.Campaign(js);
                 state.openCampaigns[campaign.name] = campaign;
+                state.cachedCampaign(campaign.name, campaign);
             });
             return Promise.resolve(state.openCampaigns);
         });

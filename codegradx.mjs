@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-11 10:26:57 queinnec"
+// Time-stamp: "2021-02-25 18:25:52 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -467,6 +467,8 @@ CodeGradX.State = function (initializer) {
     state.cache = Object.create(null);
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
+    state.mkCacheFor('ExercisesSet');
+    state.mkCacheFor('Campaign');
 
     function customize (state, initializer) {
         if ( typeof initializer === 'function' ||
@@ -624,7 +626,9 @@ CodeGradX.State.prototype.mkCacheFor = function (kind) {
                 if ( typeof newthing === 'string' ) {
                     try {
                         if ( newthing.match(`^${JSONprefix}`) ) {
-                            return JSON.parse(newthing.slice(JSONprefix.length));
+                            const s = newthing.slice(JSONprefix.length);
+                            const o = JSON.parse(s);
+                            return o;
                         } else {
                             let result = JSON.parse(newthing);
                             return result._;
@@ -655,7 +659,7 @@ CodeGradX.State.prototype.mkCacheFor = function (kind) {
 */
 
 CodeGradX.jsonize = function (thing, keys) {
-    const o = {};
+    const o = {'--t': Date.now()};
     for (let key of keys) {
         let value = thing[key];
         if ( value ) {
@@ -862,6 +866,8 @@ CodeGradX.State.prototype.gc = function () {
     state.cache = Object.create(null);
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
+    state.mkCacheFor('ExercisesSet');
+    state.mkCacheFor('Campaign');
 };
 
 /** Update the description of a server in order to determine if that
@@ -1426,15 +1432,17 @@ CodeGradX.getCurrentUser = function (force) {
             //console.log(response);
             state.currentUser = new CodeGradX.User(response.entity);
             // NOTA: whoami lists only active campaigns:
+            for ( const campaign of state.currentUser.campaigns ) {
+                state.cachedCampaign(campaign.name, campaign);
+            }
             return Promise.resolve(state.currentUser);
         } else {
             throw response;
         }
-    })
-        .catch((reason) => {
-            state.debug('getCurrentUser2', reason);
-            return undefined;
-        });
+    }).catch((reason) => {
+        state.debug('getCurrentUser2', reason);
+        return undefined;
+    });
 };
 
 /** Disconnect the user.
