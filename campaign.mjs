@@ -1,5 +1,5 @@
 // campaign.mjs
-// Time-stamp: "2021-02-24 14:53:46 queinnec"
+// Time-stamp: "2021-02-25 18:29:57 queinnec"
 
 import { CodeGradX as cx } from './codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -68,6 +68,21 @@ function filterActive (campaigns) {
 
 CodeGradX.User.prototype.getCampaigns = function (now) {
     const user = this;
+    const state = CodeGradX.getCurrentState();
+    function prepareCampaigns (campaigns) {
+        user._all_campaigns = campaigns;
+        user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
+        user._campaigns = filterActive(user._all_campaigns);
+        // Cache only active campaigns (just as getCurrentUser):
+        for ( const campaign of CodeGradX.hash2array(user._campaigns) ) {
+            state.cachedCampaign(campaign.name, campaign);
+        }
+        if ( now ) {
+            return Promise.resolve(user._campaigns);
+        } else {
+            return Promise.resolve(user._all_campaigns);
+        }
+    }
     if ( now ) {
         if ( user._campaigns ) {
             // return all current campaigns:
@@ -87,22 +102,7 @@ CodeGradX.User.prototype.getCampaigns = function (now) {
             return Promise.resolve(user._all_campaigns);
         }
     } else {
-        const state = CodeGradX.getCurrentState();
         state.debug('getAllCampaigns1');
-        function prepareCampaigns (campaigns) {
-            user._all_campaigns = campaigns;
-            user._array_campaigns = CodeGradX.hash2array(user._all_campaigns);
-            user._campaigns = filterActive(user._all_campaigns);
-            // Cache only active campaigns (just as getCurrentUser):
-            for ( const campaign of CodeGradX.hash2array(user._campaigns) ) {
-                state.cachedCampaign(campaign.name, campaign);
-            }
-            if ( now ) {
-                return Promise.resolve(user._campaigns);
-            } else {
-                return Promise.resolve(user._all_campaigns);
-            }
-        }
         return state.sendAXServer('x', {
             path: '/campaigns/',
             method: 'GET',
