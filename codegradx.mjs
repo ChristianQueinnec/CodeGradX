@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-25 18:25:52 queinnec"
+// Time-stamp: "2021-02-26 15:11:40 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -463,8 +463,9 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
-    // Cache for jobs and exercises:
-    state.cache = Object.create(null);
+    // Cache for Jobs, Exercises, ExercisesSets, Campaigns:
+    state.cacher = CodeGradX.State.prototype.default.cacher ||
+        CodeGradX.NoCache; // default to NoCache
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
     state.mkCacheFor('ExercisesSet');
@@ -487,6 +488,9 @@ CodeGradX.State = function (initializer) {
     //console.log('created new State', state); // DEBUG
     return state;
 };
+CodeGradX.State.prototype.default = {
+    cacher: CodeGradX.NoCache
+};
 
 /** Get the current state or create it if missing.
     The initializer has type State -> State
@@ -508,17 +512,47 @@ CodeGradX.getCurrentState = function (initializer) {
 
     It assumes state.cache.X to be a Cache instance, then
 
-    state.cachedX()           -- clears the cache
+    state.cachedX()            -- clears the cache
     state.cachedX(key)         -- returns X with key
     state.cachedX(key, value)  -- insert key=>value into cache
 
 */
 
-CodeGradX.Cache = function (kind) {
-    if ( typeof window !== 'undefined' && window.localStorage ) {
-        return new CodeGradX.LocalStorageCache(kind);
+CodeGradX.State.prototype.mkCacheFor = function (kind) {
+    const state = this;
+    if ( ! state.caches ) {
+        state.caches = new Object({});
+    }
+    const builder = state.cacher;
+    const cache = new builder(kind);
+    state.caches[kind] = cache;
+    state[`cached${kind}`] = state.caches[kind].handler.bind(cache);
+}
+
+/** No Cache at all. Caching is done by service-worker 
+ */
+
+CodeGradX.NoCache = function () {
+    // constructor!
+}
+CodeGradX.NoCache.prototype.clear = function () {
+    return true;
+}
+CodeGradX.NoCache.prototype.get = function (key) {
+    return undefined;
+}
+CodeGradX.NoCache.prototype.set = function (key, thing) {
+    return thing;
+}
+CodeGradX.NoCache.prototype.handler = function (key, thing) {
+    if ( key ) {
+        if ( thing ) {
+            return this.set(key, thing);
+        } else {
+            return this.get(key);
+        }
     } else {
-        return new CodeGradX.InlineCache();
+        return this.clear();
     }
 };
 
@@ -526,29 +560,37 @@ CodeGradX.Cache = function (kind) {
  */
 
 CodeGradX.InlineCache = function () {
-    return new Map();
+    this._map = new Map();
 };
 
 CodeGradX.InlineCache.prototype.clear = function () {
     const cache = this;
-    cache.clear();
+    return cache._map.clear();
 };
 
 CodeGradX.InlineCache.prototype.get = function (key) {
     const cache = this;
-    return cache.get(key);
+    return cache._map.get(key);
 };
 
 CodeGradX.InlineCache.prototype.set = function (key, thing) {
     const cache = this;
-    cache.set(key, thing);
+    cache._map.set(key, thing);
     return thing;
 };
 
-/** Local Storage Cache. */
+CodeGradX.InlineCache.prototype.handler =
+    CodeGradX.NoCache.prototype.handler;
+
+/** Local Storage Cache. 
+*/
 
 CodeGradX.LocalStorageCache = function (kind) {
-    this.kind = kind;
+    if ( typeof window !== 'undefined' && window.localStorage ) {
+        this.kind = kind;
+    } else {
+        throw `LocalStorage not available!`;
+    }
 };
 
 CodeGradX.LocalStorageCache.prototype.clear = function () {
@@ -590,10 +632,11 @@ CodeGradX.LocalStorageCache.prototype.set = function (key, thing) {
     with a jsonize method.
 */
 
-CodeGradX.State.prototype.mkCacheFor = function (kind) {
-    const state = this;
+CodeGradX.LocalStorageCache.prototype.handler = function (key, thing) {
+    const cache = this;
+    const state = CodeGradX.getCurrentState();
     const JSONprefix = 'JSON:';
-    state.cache[kind] = new CodeGradX.Cache(kind);
+    //state.cache[kind] = new CodeGradX.Cache(kind);
     state[`cached${kind}`] = function (key, thing) {
         const state = this;
         if ( key ) {
@@ -647,7 +690,7 @@ CodeGradX.State.prototype.mkCacheFor = function (kind) {
             state.cache[kind].clear();
         }
         return thing;
-    };
+    }
 };
 
 /** Utility function that builds a new stringified Object from thing
@@ -863,7 +906,7 @@ CodeGradX.State.prototype.gc = function () {
     for ( let key of Object.keys(state.cache) ) {
         state.cache[key].clear();
     }
-    state.cache = Object.create(null);
+    // Keep the same state.cacher!
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
     state.mkCacheFor('ExercisesSet');
