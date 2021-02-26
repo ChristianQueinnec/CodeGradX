@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-26 17:35:55 queinnec"
+// Time-stamp: "2021-02-26 18:26:43 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -28,7 +28,6 @@ CodeGradX.getCurrentState().initialize('someHostName');
 /** Export the `CodeGradX` object */
 const CodeGradX = {};
 module.exports = { CodeGradX };
-import { plugCache } from 'codegradx/cache';
 
 // Avoid depending on 'when' or 'bluebird', just define those utilities
 // and add them to native Promises.
@@ -464,12 +463,6 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
-    // Cache for Jobs, Exercises, ExercisesSets, Campaigns:
-    state.cacher = plugCache(CodeGradX, 'NoCache');
-    state.mkCacheFor('Exercise');
-    state.mkCacheFor('Job');
-    state.mkCacheFor('ExercisesSet');
-    state.mkCacheFor('Campaign');
 
     function customize (state, initializer) {
         if ( typeof initializer === 'function' ||
