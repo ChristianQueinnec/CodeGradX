@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-25 18:25:52 queinnec"
+// Time-stamp: "2021-02-26 17:35:55 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -28,6 +28,7 @@ CodeGradX.getCurrentState().initialize('someHostName');
 /** Export the `CodeGradX` object */
 const CodeGradX = {};
 module.exports = { CodeGradX };
+import { plugCache } from 'codegradx/cache';
 
 // Avoid depending on 'when' or 'bluebird', just define those utilities
 // and add them to native Promises.
@@ -463,8 +464,8 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
-    // Cache for jobs and exercises:
-    state.cache = Object.create(null);
+    // Cache for Jobs, Exercises, ExercisesSets, Campaigns:
+    state.cacher = plugCache(CodeGradX, 'NoCache');
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
     state.mkCacheFor('ExercisesSet');
@@ -500,173 +501,6 @@ CodeGradX.State = function (initializer) {
 CodeGradX.getCurrentState = function (initializer) {
     //console.log('getcurrentstate basic', state); // DEBUG
     return new CodeGradX.State(initializer);
-};
-
-/** Cache interface. It may clear, get or set the cache. All these
-    functionalities are gathered in one function so it may be patched
-    to use LocalStorage for instance. 
-
-    It assumes state.cache.X to be a Cache instance, then
-
-    state.cachedX()           -- clears the cache
-    state.cachedX(key)         -- returns X with key
-    state.cachedX(key, value)  -- insert key=>value into cache
-
-*/
-
-CodeGradX.Cache = function (kind) {
-    if ( typeof window !== 'undefined' && window.localStorage ) {
-        return new CodeGradX.LocalStorageCache(kind);
-    } else {
-        return new CodeGradX.InlineCache();
-    }
-};
-
-/** Inline Cache. Cached values are stored in memory.
- */
-
-CodeGradX.InlineCache = function () {
-    return new Map();
-};
-
-CodeGradX.InlineCache.prototype.clear = function () {
-    const cache = this;
-    cache.clear();
-};
-
-CodeGradX.InlineCache.prototype.get = function (key) {
-    const cache = this;
-    return cache.get(key);
-};
-
-CodeGradX.InlineCache.prototype.set = function (key, thing) {
-    const cache = this;
-    cache.set(key, thing);
-    return thing;
-};
-
-/** Local Storage Cache. */
-
-CodeGradX.LocalStorageCache = function (kind) {
-    this.kind = kind;
-};
-
-CodeGradX.LocalStorageCache.prototype.clear = function () {
-    const cache = this;
-    const reKind = new RegExp(`^${cache.kind}:`);
-    const keys = [];
-    // Since it is dangerous to iterate on a collection while removing
-    // items from that collection, first collect the keys to remove:
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if ( key.match(reKind) ) {
-            keys.push(key);
-        }
-    }
-    keys.forEach((key) => localStorage.removeItem(key));
-};
-
-CodeGradX.LocalStorageCache.prototype.get = function (key) {
-    const cache = this;
-    key = `${cache.kind}:${key}`;
-    return localStorage.getItem(key);
-};
-
-CodeGradX.LocalStorageCache.prototype.set = function (key, thing) {
-    const cache = this;
-    key = `${cache.kind}:${key}`;
-    try {
-        localStorage.setItem(key, thing);
-    } catch (_) {
-        // Probably a QuotaExceededError
-        // remove oldest keys ???
-        cache.clear();
-    }
-    return thing;
-};
-
-/** Utility function to clear, get or set a Cache instance. Every
-    value is turned into a String (this process is possibly customized
-    with a jsonize method.
-*/
-
-CodeGradX.State.prototype.mkCacheFor = function (kind) {
-    const state = this;
-    const JSONprefix = 'JSON:';
-    state.cache[kind] = new CodeGradX.Cache(kind);
-    state[`cached${kind}`] = function (key, thing) {
-        const state = this;
-        if ( key ) {
-            if ( thing ) {
-                try {
-                    let newthing = thing;
-                    if ( typeof thing === 'object' ) {
-                        try {
-                            newthing = JSONprefix + thing.jsonize();
-                        } catch (_) {
-                            try {
-                                newthing = JSONprefix + JSON.stringify(thing);
-                            } catch (exc) {
-                                state.debug('jsonize problem', thing, exc);
-                            }
-                        }
-                    } else {
-                        try {
-                            newthing = JSON.stringify({_: thing});
-                        } catch (_) {
-                            state.debug('jsonize failure', thing);
-                        }
-                    }
-                    return state.cache[kind].set(key, newthing);
-                } catch (_) {
-                    // ignore, thing is not cached!
-                }
-            } else {
-                let newthing = state.cache[kind].get(key);
-                if ( typeof newthing === 'string' ) {
-                    try {
-                        if ( newthing.match(`^${JSONprefix}`) ) {
-                            const s = newthing.slice(JSONprefix.length);
-                            const o = JSON.parse(s);
-                            return o;
-                        } else {
-                            let result = JSON.parse(newthing);
-                            return result._;
-                        }
-                    } catch (_) {
-                        state.debug(`Cannot decode cached`, newthing);
-                        return undefined;
-                    }
-                } else {
-                    // Should never appear!
-                    state.debug(`Weird cached value`, newthing);
-                    return undefined;
-                }
-            }
-        } else {
-            state.cache[kind].clear();
-        }
-        return thing;
-    };
-};
-
-/** Utility function that builds a new stringified Object from thing
-    with the keys.
-    
-    @params Object thing - the object to partially clone
-    @params Array<String> keys - the keys to clone
-    @returns JSONstring
-*/
-
-CodeGradX.jsonize = function (thing, keys) {
-    const o = {'--t': Date.now()};
-    for (let key of keys) {
-        let value = thing[key];
-        if ( value ) {
-            o[key] = thing[key];
-        }
-    }
-    return JSON.stringify(o);
 };
 
 // Campaigns do not need to be cached, they are already stored in real
@@ -863,7 +697,7 @@ CodeGradX.State.prototype.gc = function () {
     for ( let key of Object.keys(state.cache) ) {
         state.cache[key].clear();
     }
-    state.cache = Object.create(null);
+    // Keep the same state.cacher!
     state.mkCacheFor('Exercise');
     state.mkCacheFor('Job');
     state.mkCacheFor('ExercisesSet');
@@ -1432,9 +1266,13 @@ CodeGradX.getCurrentUser = function (force) {
             //console.log(response);
             state.currentUser = new CodeGradX.User(response.entity);
             // NOTA: whoami lists only active campaigns:
-            for ( const campaign of state.currentUser.campaigns ) {
+            const newcampaigns = [];
+            for ( let campaign of state.currentUser.campaigns ) {
+                campaign = new CodeGradX.Campaign(campaign);
+                newcampaigns.push(campaign);
                 state.cachedCampaign(campaign.name, campaign);
             }
+            state.currentUser.campaigns = newcampaigns;
             return Promise.resolve(state.currentUser);
         } else {
             throw response;
