@@ -1,40 +1,7 @@
 // CodeGradX Caching 
-// Time-stamp: "2021-02-26 16:38:55 queinnec"
+// Time-stamp: "2021-02-27 09:51:48 queinnec"
 
 export function plugCache (CodeGradX, type) {
-
-    /** Cache interface. It may clear, get or set the cache. All these
-        functionalities are gathered in one method of State named cachedX.
-        
-        state.cachedX()            -- clears the cache
-        state.cachedX(key)         -- returns X with key
-        state.cachedX(key, value)  -- insert key=>value into cache
-
-    */
-
-    CodeGradX.State.prototype.mkCacheFor = function (kind) {
-        const state = this;
-        if ( ! state.caches ) {
-            state.caches = new Object({});
-        }
-        const builder = state.cacher;
-        const cache = new builder(kind);
-        state.caches[kind] = cache;
-        state[`cached${kind}`] = cache.handler.bind(cache);
-    };
-
-    function searchInCache (key, thing) {
-        const cache = this;
-        if ( key ) {
-            if ( thing ) {
-                return cache.set(key, thing);
-            } else {
-                return cache.get(key);
-            }
-        } else {
-            return cache.clear();
-        }
-    }
 
     /** Utility function that builds a new stringified Object from thing
         with the keys.
@@ -56,23 +23,8 @@ export function plugCache (CodeGradX, type) {
     };
 
     if ( type === 'NoCache' ) {
-        /** No Cache at all. Caching is done by service-worker */
-
-        CodeGradX.NoCache = function () {
-            // constructor!
-        };
-        CodeGradX.NoCache.prototype.clear = function () {
-            return true;
-        };
-        CodeGradX.NoCache.prototype.get = function (key) {
-            /*eslint no-unused-vars: ["error", { "args": "none" }]*/
-            return undefined;
-        };
-        CodeGradX.NoCache.prototype.set = function (key, thing) {
-            /*eslint no-unused-vars: ["error", { "args": "none" }]*/
-            return thing;
-        };
-        CodeGradX.NoCache.prototype.handler = searchInCache;
+        /** No Cache at all. Caching is done by service-worker.
+            Definition of NoCache appears in codegradx.mjs */
         return CodeGradX.NoCache;
     }
 
@@ -99,7 +51,8 @@ export function plugCache (CodeGradX, type) {
             return thing;
         };
 
-        CodeGradX.InlineCache.prototype.handler = searchInCache;
+        CodeGradX.InlineCache.prototype.handler =
+            CodeGradX.NoCache.prototype.handler;
         return CodeGradX.InlineCache;
     }
 
@@ -204,7 +157,8 @@ export function plugCache (CodeGradX, type) {
             with a jsonize method.
         */
 
-        CodeGradX.LocalStorageCache.prototype.handler = searchInCache;
+        CodeGradX.LocalStorageCache.prototype.handler = 
+            CodeGradX.NoCache.prototype.handler;
         return CodeGradX.LocalStorageCache;
     }
 

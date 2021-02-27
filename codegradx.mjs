@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-26 18:26:43 queinnec"
+// Time-stamp: "2021-02-27 09:53:02 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -351,6 +351,41 @@ CodeGradX.Log.prototype.show = function (items) {
     return this;
 };
 
+// **************** Cache ****************************************
+/** Default cache: */
+
+CodeGradX.NoCache = function () {
+    // constructor!
+};
+
+CodeGradX.NoCache.prototype.clear = function () {
+    return true;
+};
+
+CodeGradX.NoCache.prototype.get = function (key) {
+    /*eslint no-unused-vars: ["error", { "args": "none" }]*/
+    return undefined;
+};
+
+CodeGradX.NoCache.prototype.set = function (key, thing) {
+    /*eslint no-unused-vars: ["error", { "args": "none" }]*/
+    return thing;
+};
+
+CodeGradX.NoCache.prototype.handler = 
+    function searchInCache (key, thing) {
+        const cache = this;
+        if ( key ) {
+            if ( thing ) {
+                return cache.set(key, thing);
+            } else {
+                return cache.get(key);
+            }
+        } else {
+            return cache.clear();
+        }
+    };
+
 // **************** Global state *********************************
 
 /** The global state records the instantaneous state of the various
@@ -463,6 +498,7 @@ CodeGradX.State = function (initializer) {
     this.currentExercise = null;
     // Post-initialization
     let state = this;
+    state.cacher = CodeGradX.NoCache;
 
     function customize (state, initializer) {
         if ( typeof initializer === 'function' ||
@@ -496,16 +532,25 @@ CodeGradX.getCurrentState = function (initializer) {
     return new CodeGradX.State(initializer);
 };
 
-// Campaigns do not need to be cached, they are already stored in real
-// memory the User object.
+/** Cache interface. It may clear, get or set the cache. All these
+    functionalities are gathered in one method of State named cachedX.
+        
+    state.cachedX()            -- clears the cache
+    state.cachedX(key)         -- returns X with key
+    state.cachedX(key, value)  -- insert key=>value into cache
+    
+*/
 
-// ExercisesSet do not need to be cached, they are already stored in
-// their associated Campaign.
-
-// Exercises are cached under their full name, the cached exercise
-// contains the stem, lang, summary, authorship, etc.
-
-// Jobs are cached only after fetching the student's report.
+CodeGradX.State.prototype.mkCacheFor = function (kind) {
+    const state = this;
+    if ( ! state.caches ) {
+        state.caches = new Object({});
+    }
+    const builder = state.cacher;
+    const cache = new builder(kind);
+    state.caches[kind] = cache;
+    state[`cached${kind}`] = cache.handler.bind(cache);
+};
 
 /**  This userAgent uses the fetch API available in modern browsers.
 
