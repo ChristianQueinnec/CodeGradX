@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-02-27 09:53:02 queinnec"
+// Time-stamp: "2021-03-08 16:37:17 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1594,12 +1594,8 @@ CodeGradX.Campaign = function (json) {
     */
 
 CodeGradX.Exercise = function (js) {
-    function normalizeUUID (uuid) {
-        const uuidRegexp = /^(.{8})(.{4})(.{4})(.{4})(.{12})$/;
-        return uuid.replace(/-/g, '').replace(uuidRegexp, "$1-$2-$3-$4-$5");
-    }
     if ( js.uuid && ! js.exerciseid ) {
-        js.exerciseid = normalizeUUID(js.uuid);
+        js.exerciseid = CodeGradX.normalizeUUID(js.uuid);
     }
     if ( js.uuid && ! js.location ) {
         js.location = '/e' + js.uuid.replace(/-/g, '').replace(/(.)/g, "/$1");
@@ -1609,6 +1605,13 @@ CodeGradX.Exercise = function (js) {
 
 CodeGradX.Exercise.js2exercise = function (js) {
     return new CodeGradX.Exercise(js);
+};
+
+/* return an UUID with dashes. */
+
+CodeGradX.normalizeUUID = function (uuid) {
+    const uuidRegexp = /^(.{8})(.{4})(.{4})(.{4})(.{12})$/;
+    return uuid.replace(/-/g, '').replace(uuidRegexp, "$1-$2-$3-$4-$5");
 };
 
 // **************** ExercisesSet ***************************
@@ -1678,12 +1681,8 @@ CodeGradX.ExercisesSet = function (json) {
 */
 
 CodeGradX.Job = function (js) {
-    function normalizeUUID (uuid) {
-        const uuidRegexp = /^(.{8})(.{4})(.{4})(.{4})(.{12})$/;
-        return uuid.replace(/-/g, '').replace(uuidRegexp, "$1-$2-$3-$4-$5");
-    }
     if ( js.uuid && ! js.jobid ) {
-        js.jobid = normalizeUUID(js.uuid);
+        js.jobid = CodeGradX.normalizeUUID(js.uuid);
     }
     js.mark = CodeGradX._str2num2decimals(js.mark);
     js.totalMark = CodeGradX._str2num2decimals(js.totalMark);
