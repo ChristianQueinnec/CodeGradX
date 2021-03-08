@@ -1,9 +1,9 @@
 // userlib.mjs
-// Time-stamp: "2019-04-25 18:36:43 queinnec"
+// Time-stamp: "2021-03-07 17:55:11 queinnec"
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX as _cx } from 'codegradx/campaign';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = _cx;
 
 /** Fetch all the jobs submitted by the user (independently of the
     current campaign).
@@ -32,7 +32,7 @@ CodeGradX.User.prototype.getAllJobs = function () {
 
 /** Fetch all exercises submitted by the user (independently of the
     current campaign) but only the exercices created after the
-    starttime of the current campaign.
+    starttime of the current campaign if a current campaign exists.
 
         @returns {Promise<Exercises>} yields {Array[Exercise]}
 
@@ -47,8 +47,10 @@ CodeGradX.User.prototype.getAllExercises = function () {
             return user.getCurrentCampaign();
         }).then(function (campaign) {
             let url = `/exercises/person/${user.personid}`;
-            let d = campaign.starttime.toISOString().replace(/T.*$/, '');
-            url += `?after=${encodeURI(d)}`;
+            if ( campaign ) {
+                let d = campaign.starttime.toISOString().replace(/T.*$/, '');
+                url += `?after=${encodeURI(d)}`;
+            }
             return state.sendAXServer('x', {
                 path: url,
                 method: 'GET',

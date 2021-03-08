@@ -1,9 +1,10 @@
 // userlib.mjs
-// Time-stamp: "2019-12-27 14:03:19 queinnec"
+// Time-stamp: "2021-03-07 17:33:34 queinnec"
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX as _cx } from 'codegradx/campaign';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = _cx;
+import { parsexml } from 'codegradx/src/parsexml';
 
 /** submit a new Exercise and return it as soon as submitted successfully.
     This variant sends the content of a DOM form.
@@ -13,7 +14,7 @@ export default CodeGradX;
 
     */
 
-CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form) {
+CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form, filename) {
   const user = this;
   const state = CodeGradX.getCurrentState();
   state.debug('submitNewExerciseFromDOM1', user);
@@ -35,7 +36,7 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form) {
       });
   }
   const fd = new FormData(form);
-  const basefilename = FW4EX.currentFileName
+  const basefilename = (filename || FW4EX.currentFileName)
       .replace(new RegExp("^.*/"), '');
   const headers = {
       // Useless since we post a FormData:
