@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-03-08 16:37:17 queinnec"
+// Time-stamp: "2021-03-10 09:36:51 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -216,7 +216,8 @@ CodeGradX.Date2str = function (date) {
             date = date.toISOString();
         }
         date = date.replace(/[.].*Z?$/, '')
-            .replace('T', ' ');
+            .replace('T', ' ')
+            .replace(/Z$/, '');
         return date + 'Z';
     }
     return date;
