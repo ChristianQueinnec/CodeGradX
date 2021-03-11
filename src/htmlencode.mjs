@@ -1,5 +1,5 @@
 // htmlencode.mjs
-// Time-stamp: "2019-05-21 14:38:52 queinnec"
+// Time-stamp: "2021-03-10 18:40:22 queinnec"
 
 const special = {
     "'": "&apos;",
@@ -9,7 +9,7 @@ const special = {
     '&': "&amp;"
 };
 
-export function htmlencode (text) {
+export function htmlencode (text='') {
     let htmltext = '';
     const letters = text.split('');
     for ( let i=0 ; i<letters.length ; i++ ) {
