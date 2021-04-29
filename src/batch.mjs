@@ -1,9 +1,10 @@
 // batch.mjs
-// Time-stamp: "2019-12-27 16:02:10 queinnec"
+// Time-stamp: "2021-04-28 18:15:33 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = cx;
+import { parsexml } from 'codegradx/src/parsexml';
 
 /** Send a batch of files that is, multiple answers to be marked
     against an Exercise. That file is selected with an input:file
@@ -145,8 +146,16 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
           //console.log(js);
           state.debug('getBatchReport3', js);
           js = js.fw4ex.multiJobStudentReport;
+          batch.batchid = js.batchid;
+          batch.pathdir = js.pathdir;
           batch.totaljobs    = CodeGradX._str2num(js.$.totaljobs);
           batch.finishedjobs = CodeGradX._str2num(js.$.finishedjobs);
+          batch.archived = CodeGradX._str2Date(js.$.archived);
+          batch.exercise = js.exercise;
+          batch.exercise.uuid = js.exercise.$.exerciseid;
+          batch.exercise.exerciseid = js.exercise.$.exerciseid;
+          batch.exercise.totalMark = js.exercise.$.totalMark;
+          delete batch.exercise.$;
           batch.jobs = Object.create(null);
           //console.log(js);
           function processJob (jsjob) {

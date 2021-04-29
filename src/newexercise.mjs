@@ -1,5 +1,5 @@
 // userlib.mjs
-// Time-stamp: "2021-03-07 17:33:34 queinnec"
+// Time-stamp: "2021-04-27 20:27:03 queinnec"
 
 import { CodeGradX as _cx } from 'codegradx/campaign';
 /** Re-export the `CodeGradX` object */
