@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2021-04-29 10:30:22 queinnec"
+// Time-stamp: "2021-04-29 16:06:19 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -147,6 +147,7 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
           state.debug('getBatchReport3', js);
           js = js.fw4ex.multiJobStudentReport;
           batch.batchid = js.$.batchid;
+          batch.label   = js.$.label;
           batch.pathdir = js.$.pathdir;
           batch.totaljobs    = CodeGradX._str2num(js.$.totaljobs);
           batch.finishedjobs = CodeGradX._str2num(js.$.finishedjobs);
