@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2021-04-29 09:04:12 queinnec"
+// Time-stamp: "2021-04-29 10:30:22 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -174,7 +174,7 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
                   started:   CodeGradX._str2Date(jsjob.marking.$.started),
                   finished:  CodeGradX._str2Date(jsjob.marking.$.finished)
               });
-              if ( jsjob.$.problem ) {
+              if ( jsjob.$.problem && jsjob.$.problem !== '0' ) {
                   job.problem = true;
               }
               job.duration = CodeGradX.computeDuration(
@@ -262,6 +262,7 @@ CodeGradX.Batch.prototype.getFinalReport = function (parameters) {
 CodeGradX.Batch.prototype.getReportURL = function () {
     const batch = this;
     if ( ! batch.pathdir ) {
+        batch.batchid = CodeGradX.normalizeUUID(batch.batchid);
         batch.pathdir = '/b' +
             batch.batchid.replace(/-/g, '').replace(/(.)/g, "/$1");
     }
