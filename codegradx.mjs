@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-03-10 09:36:51 queinnec"
+// Time-stamp: "2021-05-18 15:21:30 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -473,19 +473,23 @@ CodeGradX.State = function (initializer) {
             suffix: '/index.txt',
             protocol: 'https',
             0: {
-                host: 's3.codegradx.org',
-                enabled: false
-            },
-            1: {
                 host: 's6.codegradx.org',
                 enabled: false
             },
-            2: {
+            1: {
                 host: 's10.codegradx.org',
                 enabled: false
             },
-            3: {
+            2: {
                 host: 's9.codegradx.org',
+                enabled: false
+            },
+            3: {
+                host: 's3.codegradx.org',
+                enabled: false
+            },
+            4: {
+                host: 's2gra.codegradx.org',
                 enabled: false
             }
         }
