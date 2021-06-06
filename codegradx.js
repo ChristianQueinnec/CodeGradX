@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-05-18 15:21:30 queinnec"
+// Time-stamp: "2021-06-05 18:54:00 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1658,6 +1658,8 @@ CodeGradX.ExercisesSet = function (json) {
     } else {
       if ( json.name && json.nickname ) {
           return new CodeGradX.Exercise(json);
+      } else if ( typeof json === 'string' ) {
+          return json;
       } else {
           throw new Error("Not an exercise " + JSON.stringify(json));
       }
