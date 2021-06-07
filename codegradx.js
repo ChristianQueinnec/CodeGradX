@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-06-05 18:54:00 queinnec"
+// Time-stamp: "2021-06-06 16:43:06 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -355,7 +355,7 @@ CodeGradX.Log.prototype.show = function (items) {
 // **************** Cache ****************************************
 /** Default cache: */
 
-CodeGradX.NoCache = function () {
+CodeGradX.NoCache = function NoCache () {
     // constructor!
 };
 
@@ -386,6 +386,10 @@ CodeGradX.NoCache.prototype.handler =
             return cache.clear();
         }
     };
+
+CodeGradX.NoCache.prototype.keys = function () {
+    return [];
+};
 
 // **************** Global state *********************************
 
