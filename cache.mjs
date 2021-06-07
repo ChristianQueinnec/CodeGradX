@@ -1,7 +1,8 @@
 // CodeGradX Caching 
-// Time-stamp: "2021-02-27 09:51:48 queinnec"
+// Time-stamp: "2021-06-07 15:14:37 queinnec"
 
-export function plugCache (CodeGradX, type) {
+export function plugCache (CodeGradX, type, state) {
+    state.cacherType = type;
 
     /** Utility function that builds a new stringified Object from thing
         with the keys.
@@ -31,7 +32,7 @@ export function plugCache (CodeGradX, type) {
     if ( type === 'InlineCache' ) {
         /** Inline Cache. Cached values are stored in memory.  */
 
-        CodeGradX.InlineCache = function () {
+        CodeGradX.InlineCache = function InlineCache () {
             this._map = new Map();
         };
 
@@ -51,6 +52,22 @@ export function plugCache (CodeGradX, type) {
             return thing;
         };
 
+        CodeGradX.InlineCache.prototype.keys = function () {
+            const cache = this;
+            const keys = [];
+            for ( const key of cache._map.keys() ) {
+                keys.push(key);
+            }
+            return keys;
+        };
+
+        /* 
+           This function is the same for all types of caches:
+
+           handler() = clear()
+           handler(key) = get(key)
+           handler(key, thing) = set(key, thing)
+         */
         CodeGradX.InlineCache.prototype.handler =
             CodeGradX.NoCache.prototype.handler;
         return CodeGradX.InlineCache;
@@ -59,7 +76,7 @@ export function plugCache (CodeGradX, type) {
     if ( type === 'LocalStorageCache' ) {
         /** Local Storage Cache. */
 
-        CodeGradX.LocalStorageCache = function (kind) {
+        CodeGradX.LocalStorageCache = function LocalStorageCache (kind) {
             if ( typeof window !== 'undefined' && window.localStorage ) {
                 this.kind = kind;
             } else {
@@ -150,6 +167,18 @@ export function plugCache (CodeGradX, type) {
             }
             
             return thing;
+        };
+
+        CodeGradX.LocalStorageCache.prototype.keys = function () {
+            const cache = this;
+            const keys = [];
+            for ( let i=0 ; i<localStorage.length ; i++ ) {
+                const key = localStorage.key(i);
+                if ( key.startsWith(cache.kind) ) {
+                    keys.push(key.replace(/^[^:]+:/, ''));
+                }
+            }
+            return keys;
         };
 
         /** Utility function to clear, get or set a Cache instance. Every
