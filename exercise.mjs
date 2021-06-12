@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2021-06-12 16:48:02 queinnec"
+// Time-stamp: "2021-06-12 17:27:36 queinnec"
 /* eslint no-control-regex: "off" */
 
 import { CodeGradX as cx } from 'codegradx';
@@ -153,7 +153,11 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
         state.debug('getDescription8b', exc);
     }
 
-    state.cachedExercise(exercise.exerciseid, exercise);
+    if ( exercise.exerciseid ) {
+        // When reloading an /exercise/SAFECOOKIE page, the UUID of
+        // the exercise is not available.
+        state.cachedExercise(exercise.exerciseid, exercise);
+    }
     return Promise.resolve(exercise._description);
 };
 
