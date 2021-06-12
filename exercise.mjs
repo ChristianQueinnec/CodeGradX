@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2021-03-01 17:18:00 queinnec"
+// Time-stamp: "2021-06-12 16:48:02 queinnec"
 /* eslint no-control-regex: "off" */
 
 import { CodeGradX as cx } from 'codegradx';
@@ -55,8 +55,8 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
         return Promise.reject("Non deployed exercise " + exercise.name);
     }
     if ( ! force ) {
-        if ( exercise.name ) {
-            let cachedexercise = state.cachedExercise(exercise.name);
+        if ( exercise.exerciseid ) {
+            let cachedexercise = state.cachedExercise(exercise.exerciseid);
             if ( cachedexercise ) {
                 state.debug('getDescription from cache', cachedexercise);
                 Object.assign(exercise, cachedexercise);
@@ -153,7 +153,7 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
         state.debug('getDescription8b', exc);
     }
 
-    state.cachedExercise(exercise.name, exercise);
+    state.cachedExercise(exercise.exerciseid, exercise);
     return Promise.resolve(exercise._description);
 };
 
