@@ -1,7 +1,7 @@
 // batch.mjs
-// Time-stamp: "2021-04-29 16:06:19 queinnec"
+// Time-stamp: "2021-06-12 16:09:30 queinnec"
 
-import { CodeGradX as cx } from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = cx;
 import { parsexml } from 'codegradx/src/parsexml';

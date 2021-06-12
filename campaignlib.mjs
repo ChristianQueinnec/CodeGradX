@@ -1,7 +1,7 @@
 // campaignlib.mjs
-// Time-stamp: "2021-06-02 15:06:15 queinnec"
+// Time-stamp: "2021-06-12 15:58:13 queinnec"
 
-import { CodeGradX as cx } from 'codegradx';
+import { CodeGradX as cx } from 'codegradx/src/exercisesSet';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = cx;
 

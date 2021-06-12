@@ -1,5 +1,7 @@
 // CodeGradX Caching 
-// Time-stamp: "2021-06-07 15:14:37 queinnec"
+// Time-stamp: "2021-06-12 16:27:15 queinnec"
+
+import { CodeGradX } from 'codegradx';
 
 export function plugCache (CodeGradX, type, state) {
     state.cacherType = type;
@@ -33,6 +35,7 @@ export function plugCache (CodeGradX, type, state) {
         /** Inline Cache. Cached values are stored in memory.  */
 
         CodeGradX.InlineCache = function InlineCache () {
+            this.type = type;
             this._map = new Map();
         };
 
@@ -79,8 +82,11 @@ export function plugCache (CodeGradX, type, state) {
         CodeGradX.LocalStorageCache = function LocalStorageCache (kind) {
             if ( typeof window !== 'undefined' && window.localStorage ) {
                 this.kind = kind;
+                this.type = type;
             } else {
-                throw `LocalStorage not available!`;
+                //throw `LocalStorage not available!`;
+                state.cacherType = 'InlineCache';
+                return new CodeGradX[state.cacherType]();
             }
         };
 
@@ -174,7 +180,7 @@ export function plugCache (CodeGradX, type, state) {
             const keys = [];
             for ( let i=0 ; i<localStorage.length ; i++ ) {
                 const key = localStorage.key(i);
-                if ( key.startsWith(cache.kind) ) {
+                if ( key.startsWith(`${cache.kind}:`) ) {
                     keys.push(key.replace(/^[^:]+:/, ''));
                 }
             }

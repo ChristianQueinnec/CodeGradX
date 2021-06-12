@@ -1,9 +1,9 @@
 // userEnroll.mjs
-// Time-stamp: "2020-02-01 15:31:27 queinnec"
+// Time-stamp: "2021-06-12 16:10:32 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = cx;
 
 /** Enroll a new user. 
 

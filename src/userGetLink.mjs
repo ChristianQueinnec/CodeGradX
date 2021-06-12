@@ -1,9 +1,9 @@
 // userGetLink.mjs
-// Time-stamp: "2019-12-27 16:04:16 queinnec"
+// Time-stamp: "2021-06-12 16:10:59 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = cx;
 
 /** Ask for a temporary link to be received by email.
 

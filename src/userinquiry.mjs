@@ -1,9 +1,9 @@
 // CodeGradX
-// Time-stamp: "2019-12-27 16:04:28 queinnec"
+// Time-stamp: "2021-06-12 16:11:23 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX as cx } from 'codegradx';
 /** Re-export the `CodeGradX` object */
-export default CodeGradX;
+export const CodeGradX = cx;
 
 /** Determine the original site.
 
