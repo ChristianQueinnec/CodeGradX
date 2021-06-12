@@ -1,7 +1,8 @@
 // CodeGradX Caching 
-// Time-stamp: "2021-06-12 16:27:15 queinnec"
+// Time-stamp: "2021-06-12 16:33:31 queinnec"
 
-import { CodeGradX } from 'codegradx';
+import { CodeGradX as cx } from 'codegradx';
+export const CodeGradX = cx;
 
 export function plugCache (CodeGradX, type, state) {
     state.cacherType = type;
