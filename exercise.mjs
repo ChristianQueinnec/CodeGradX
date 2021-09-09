@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2021-06-12 17:27:36 queinnec"
+// Time-stamp: "2021-06-15 14:40:00 queinnec"
 /* eslint no-control-regex: "off" */
 
 import { CodeGradX as cx } from 'codegradx';
@@ -153,6 +153,13 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
         state.debug('getDescription8b', exc);
     }
 
+    if ( ! exercise.exerciseid ) {
+        // On Firefox, most headers are not available!
+        const uuid = response.headers.get('X-exerciseUUID');
+        if ( uuid ) {
+            exercise.exerciseid = uuid
+        }
+    }
     if ( exercise.exerciseid ) {
         // When reloading an /exercise/SAFECOOKIE page, the UUID of
         // the exercise is not available.

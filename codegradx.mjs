@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-06-06 16:43:06 queinnec"
+// Time-stamp: "2021-09-09 18:27:12 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -1301,7 +1301,7 @@ CodeGradX.getCurrentUser = function (force) {
     }
     state.debug('getCurrentUser1');
     return state.sendAXServer('x', {
-        path: '/fromp/whoami',
+        path: '/fromp/safewhoami',
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -1311,16 +1311,20 @@ CodeGradX.getCurrentUser = function (force) {
         state.debug('getWhoAmI2', response);
         if ( response.ok ) {
             //console.log(response);
-            state.currentUser = new CodeGradX.User(response.entity);
-            // NOTA: whoami lists only active campaigns:
-            const newcampaigns = [];
-            for ( let campaign of state.currentUser.campaigns ) {
-                campaign = new CodeGradX.Campaign(campaign);
-                newcampaigns.push(campaign);
-                state.cachedCampaign(campaign.name, campaign);
+            if ( response.status === 200 ) {
+                state.currentUser = new CodeGradX.User(response.entity);
+                // NOTA: whoami lists only active campaigns:
+                const newcampaigns = [];
+                for ( let campaign of state.currentUser.campaigns ) {
+                    campaign = new CodeGradX.Campaign(campaign);
+                    newcampaigns.push(campaign);
+                    state.cachedCampaign(campaign.name, campaign);
+                }
+                state.currentUser.campaigns = newcampaigns;
+                return Promise.resolve(state.currentUser);
+            } else {
+                return undefined;
             }
-            state.currentUser.campaigns = newcampaigns;
-            return Promise.resolve(state.currentUser);
         } else {
             throw response;
         }
@@ -1763,7 +1767,7 @@ CodeGradX.initialize = async function (force=false, initializer) {
             }
         }
         if ( js ) {
-            // js should be like "function (CodeGradX) { true; }"
+            // js should be like "function (CodeGradX, state) { true; }"
             try {
                 const f = window['ev' + 'al'](`(${js})`);
                 f(CodeGradX, state);
