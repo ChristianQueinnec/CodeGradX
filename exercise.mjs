@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2021-06-15 14:40:00 queinnec"
+// Time-stamp: "2021-09-09 18:37:15 queinnec"
 /* eslint no-control-regex: "off" */
 
 import { CodeGradX as cx } from 'codegradx';
@@ -157,7 +157,7 @@ CodeGradX.Exercise.prototype.getDescription = async function (force = false) {
         // On Firefox, most headers are not available!
         const uuid = response.headers.get('X-exerciseUUID');
         if ( uuid ) {
-            exercise.exerciseid = uuid
+            exercise.exerciseid = uuid;
         }
     }
     if ( exercise.exerciseid ) {
