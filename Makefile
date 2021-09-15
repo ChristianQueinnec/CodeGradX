@@ -1,4 +1,4 @@
-# Time-stamp: "2021-09-15 18:22:26 queinnec"
+# Time-stamp: "2021-09-15 18:25:24 queinnec"
 
 work : nothing 
 clean :: 
@@ -10,7 +10,7 @@ lint :
 #src/[cejpu]*.mjs
 #src/*.mjs
 
-prepare : src/sax.mjs src/xml2js.mjs src/options-helper.js prepare.modules
+prepare : src/sax.mjs src/xml2js.mjs src/options-helper.mjs prepare.modules
 
 # Modify modules to avoid:
 #   require('stream') which is useless
