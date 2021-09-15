@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-09-09 18:27:12 queinnec"
+// Time-stamp: "2021-09-15 14:29:30 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -550,15 +550,15 @@ CodeGradX.getCurrentState = function (initializer) {
     
 */
 
-CodeGradX.State.prototype.mkCacheFor = function (kind) {
+CodeGradX.State.prototype.mkCacheFor = function (cacheName) {
     const state = this;
     if ( ! state.caches ) {
         state.caches = new Object({});
     }
     const builder = state.cacher;
-    const cache = new builder(kind);
-    state.caches[kind] = cache;
-    state[`cached${kind}`] = cache.handler.bind(cache);
+    const cache = new builder(cacheName);
+    state.caches[cacheName] = cache;
+    state[`cached${cacheName}`] = cache.handler.bind(cache);
 };
 
 /**  This userAgent uses the fetch API available in modern browsers.
@@ -741,8 +741,8 @@ CodeGradX.State.prototype.debug = function () {
 
 CodeGradX.State.prototype.gc = function () {
     const state = this;
-    for ( let key of Object.keys(state.cache) ) {
-        state.cache[key].clear();
+    for ( let key of Object.keys(state.caches) ) {
+        state.caches[key].clear();
     }
     // Keep the same state.cacher!
     state.mkCacheFor('Exercise');
@@ -1105,7 +1105,7 @@ CodeGradX.State.prototype.sendConcurrently = function (kind, options) {
                 return result;
             }
             if ( reason instanceof Response &&
-                 reason.status < 400 &&
+                 //reason.status < 400 &&
                  500 <= reason.status ) {
                 state.debug('sendConcurrently seeError', see(reason));
                 // Don't consider the absence of a report to be a
@@ -1308,24 +1308,29 @@ CodeGradX.getCurrentUser = function (force) {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     }).then(function (response) {
-        state.debug('getWhoAmI2', response);
+        state.debug('getWhoAmI2', response, response.status);
         if ( response.ok ) {
             //console.log(response);
             if ( response.status === 200 ) {
+                state.debug('getWhoAmI2a');
                 state.currentUser = new CodeGradX.User(response.entity);
                 // NOTA: whoami lists only active campaigns:
                 const newcampaigns = [];
+                state.debug('getWhoAmI2b');
                 for ( let campaign of state.currentUser.campaigns ) {
                     campaign = new CodeGradX.Campaign(campaign);
                     newcampaigns.push(campaign);
                     state.cachedCampaign(campaign.name, campaign);
                 }
+                state.debug('getWhoAmI2c');
                 state.currentUser.campaigns = newcampaigns;
                 return Promise.resolve(state.currentUser);
             } else {
-                return undefined;
+                state.debug('getCurrentUser3');
+                throw response;
             }
         } else {
+            state.debug('getCurrentUser4', response);
             throw response;
         }
     }).catch((reason) => {
