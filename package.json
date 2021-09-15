@@ -47,10 +47,10 @@
         "xml-js": "^1.6.11"
     },
     "devDependencies": {
-        "eslint": "^5.16.0",
-        "jasmine": "^3.5.0",
-        "webpack": "^4.41.4",
-        "webpack-cli": "^3.3.10"
+        "eslint": "^7.32.0",
+        "jasmine": "3.5.0",
+        "webpack": "^5.52.1",
+        "webpack-cli": "^4.8.0"
     },
     "repository": {
         "type": "git",

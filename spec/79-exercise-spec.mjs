@@ -206,7 +206,6 @@ describe('CodeGradX 79 exercise', function () {
             step: 4,
             retry: 40
         };
-        var job1;
         exercise2.sendBatch(batchTGZcontent, 'oefgc.tgz')
             .delay(CodeGradX.Batch.prototype.getReport.default.step*1000)
             .then(function (batch) {
@@ -214,18 +213,11 @@ describe('CodeGradX 79 exercise', function () {
                 batch.getReport(parameters).then(function (batch2) {
                     console.log('batch 1st report', {batch2});
                     expect(batch2).toBe(batch);
-                    expect(batch2.finishedjobs > 0).toBeTruthy();
-                    if ( batch.jobs.one ) {
-                        // Hope that this batch report is not the final one!
-                        job1 = batch.jobs.one;
-                    }
                     batch2.getFinalReport(parameters).then(function (batch3) {
                         console.log('batch final report', {batch3});
                         expect(batch3).toBe(batch2);
                         expect(batch.finishedjobs).toBeGreaterThan(0);
                         expect(batch.totaljobs).toBe(batch.finishedjobs);
-                        // Check jobsCache:
-                        expect(batch.jobs.one === job1).toBeTruthy();
                         //state.log.show();
                         done();
                     }, faildone);
