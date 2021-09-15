@@ -1,10 +1,11 @@
 // batch.mjs
-// Time-stamp: "2021-06-12 16:09:30 queinnec"
+// Time-stamp: "2021-09-14 18:03:25 queinnec"
 
-import { CodeGradX as cx } from 'codegradx';
+import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = cx;
-import { parsexml } from 'codegradx/src/parsexml';
+export default CodeGradX;
+import { parsexml } from './parsexml.mjs';
 
 /** Send a batch of files that is, multiple answers to be marked
     against an Exercise. That file is selected with an input:file

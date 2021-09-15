@@ -1,9 +1,10 @@
 // exercisesSet.js
-// Time-stamp: "2021-06-12 16:20:05 queinnec"
+// Time-stamp: "2021-09-14 18:03:03 queinnec"
 
-import { CodeGradX as cx } from 'codegradx';
+import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = cx;
+export default CodeGradX;
 
 /** Keep only persistable values and convert then into JSON */
 

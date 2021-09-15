@@ -1,9 +1,10 @@
 // userlib.mjs
-// Time-stamp: "2021-03-07 17:55:11 queinnec"
+// Time-stamp: "2021-09-14 18:05:09 queinnec"
 
-import { CodeGradX as _cx } from 'codegradx/campaign';
+import { CodeGradX as _cx } from './campaign.mjs';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = _cx;
+export default CodeGradX;
 
 /** Fetch all the jobs submitted by the user (independently of the
     current campaign).

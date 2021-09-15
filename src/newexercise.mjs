@@ -1,10 +1,12 @@
 // userlib.mjs
-// Time-stamp: "2021-04-27 20:27:03 queinnec"
+// Time-stamp: "2021-09-14 18:04:21 queinnec"
 
-import { CodeGradX as _cx } from 'codegradx/campaign';
+import { CodeGradX as _cx } from './campaign.mjs';
 /** Re-export the `CodeGradX` object */
 export const CodeGradX = _cx;
-import { parsexml } from 'codegradx/src/parsexml';
+export default CodeGradX;
+
+import { parsexml } from './parsexml.mjs';
 
 /** submit a new Exercise and return it as soon as submitted successfully.
     This variant sends the content of a DOM form.
