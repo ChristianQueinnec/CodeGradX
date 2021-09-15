@@ -1,10 +1,11 @@
-# Time-stamp: "2021-09-15 17:22:13 queinnec"
+# Time-stamp: "2021-09-15 18:22:26 queinnec"
 
 work : nothing 
 clean :: 
 	-rm *~ src/*~ spec/*~
 
 lint :
+	-node_modules/.bin/eslint src/?*.mjs
 	node_modules/.bin/eslint *.mjs *.js
 #src/[cejpu]*.mjs
 #src/*.mjs

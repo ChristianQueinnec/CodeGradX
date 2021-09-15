@@ -1,5 +1,5 @@
 // job.js
-// Time-stamp: "2021-09-14 18:04:16 queinnec"
+// Time-stamp: "2021-09-15 17:52:15 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -96,7 +96,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
     }
     marking = marking.replace(/>/, "/>");
     //console.log(marking);
-    let js = await CodeGradX.parsexml(marking);
+    let js = await parsexml(marking);
     job.mark = CodeGradX._str2num2decimals(js.marking.$.mark);
     job.totalMark = CodeGradX._str2num2decimals(js.marking.$.totalMark);
     job.archived  = CodeGradX._str2Date(js.marking.$.archived);
@@ -113,7 +113,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
         return Promise.reject(response);
     }
     //console.log(exercise);
-    js = await CodeGradX.parsexml(exercise);
+    js = await parsexml(exercise);
     Object.assign(job, js.exercise.$);
     //state.log.show();
     
@@ -125,7 +125,7 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
         return Promise.reject(response);
     }
     state.debug('getJobReport5a', 'before xml2html');
-    const HTMLreport = await CodeGradX.xml2html(content);
+    const HTMLreport = await xml2html(content);
     job.HTMLreport = HTMLreport;
     state.debug('getJobReport5b', 'after xml2html');
     //state.log.show();

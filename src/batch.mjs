@@ -1,5 +1,5 @@
 // batch.mjs
-// Time-stamp: "2021-09-14 18:03:25 queinnec"
+// Time-stamp: "2021-09-15 17:51:25 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -32,7 +32,7 @@ CodeGradX.Exercise.prototype.sendBatchFromDOM =
     function processResponse (response) {
         //console.log(response);
         state.debug('sendBatchFile2', response);
-        return CodeGradX.parsexml(response.entity).then(function (js) {
+        return parsexml(response.entity).then(function (js) {
             //console.log(js);
             state.debug('sendBatchFile3', js);
             js = js.fw4ex.multiJobSubmittedReport;
@@ -86,7 +86,7 @@ CodeGradX.Exercise.prototype.sendBatch = function (tgz, filename) {
     function processResponse (response) {
         //console.log(response);
         state.debug('sendBatchFile3', response);
-        return CodeGradX.parsexml(response.entity).then(function (js) {
+        return parsexml(response.entity).then(function (js) {
             //console.log(js);
             state.debug('sendBatchFile4', js);
             js = js.fw4ex.multiJobSubmittedReport;
@@ -194,7 +194,7 @@ CodeGradX.Batch.prototype.getReport = function (parameters) {
           return Promise.resolve(batch);
       }
       batch.XMLreport = response.entity;
-      return CodeGradX.parsexml(response.entity)
+      return parsexml(response.entity)
           .then(processJS)
           .catch(function (reason) {
               /* eslint "no-console": 0 */

@@ -1,5 +1,5 @@
 // CodeGradX Caching 
-// Time-stamp: "2021-09-15 14:22:58 queinnec"
+// Time-stamp: "2021-09-15 17:51:40 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 export const CodeGradX = cx;
@@ -193,6 +193,6 @@ CodeGradX.LocalStorageCache.prototype.handler =
 CodeGradX.State.prototype.plugCache = function (type) {
     const state = this;
     state.cacher = CodeGradX[type];
-}
+};
 
 // end of cache.mjs

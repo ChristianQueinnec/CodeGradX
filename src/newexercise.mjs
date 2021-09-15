@@ -1,5 +1,5 @@
 // userlib.mjs
-// Time-stamp: "2021-09-14 18:04:21 queinnec"
+// Time-stamp: "2021-09-15 18:21:47 queinnec"
 
 import { CodeGradX as _cx } from './campaign.mjs';
 /** Re-export the `CodeGradX` object */
@@ -23,7 +23,7 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form, filename) {
   function processResponse (response) {
       //console.log(response);
       state.debug('submitNewExerciseFromDOM3', response);
-      return CodeGradX.parsexml(response.entity).then(function (js) {
+      return parsexml(response.entity).then(function (js) {
         //console.log(js);
         state.debug('submitNewExerciseFromDOM4', js);
         js = js.fw4ex.exerciseSubmittedReport;
@@ -38,8 +38,11 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form, filename) {
       });
   }
   const fd = new FormData(form);
-  const basefilename = (filename || FW4EX.currentFileName)
-      .replace(new RegExp("^.*/"), '');
+  // backward compatibility:
+  if ( ! filename && typeof FW4EX !== 'undefined' ) {
+      filename = FW4EX.currentFileName;
+  }
+  const basefilename = filename.replace(new RegExp("^.*/"), '');
   const headers = {
       // Useless since we post a FormData:
       //"Content-Type": "multipart/form-data",
@@ -70,7 +73,7 @@ CodeGradX.User.prototype.submitNewExercise = function (tgz, filename) {
   function processResponse (response) {
       //console.log(response);
       state.debug('submitNewExercise3', response);
-      return CodeGradX.parsexml(response.entity).then(function (js) {
+      return parsexml(response.entity).then(function (js) {
         //console.log(js);
         state.debug('submitNewExercise4', js);
         js = js.fw4ex.exerciseSubmittedReport;
