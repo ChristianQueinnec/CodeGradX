@@ -1,7 +1,7 @@
 // Jasmine tests for servers availability related methods.
 // Here we test various kinds of unavailability with a fake UserAgent.
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 import make_fakeUserAgent from './mkFakeUserAgent.mjs';
 
 describe('CodeGradX 05', function () {

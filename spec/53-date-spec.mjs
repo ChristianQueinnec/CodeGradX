@@ -1,11 +1,11 @@
 // Jasmine test to check parsing of dates (Safari Date.parse does not
 // work as in Chrome).
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
 describe('CodeGradX 53 date', function () {
 
-    it('should be loaded', async function (done) {
+    it('should be loaded', function (done) {
         expect(CodeGradX).toBeDefined();
         done();
     });

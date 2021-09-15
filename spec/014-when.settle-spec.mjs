@@ -1,6 +1,6 @@
 // Tests of when.any, when.settle, when.timeout
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 const when = CodeGradX.when;
 
 function delayedSuccess (delay, value) {

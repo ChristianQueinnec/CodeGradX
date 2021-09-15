@@ -3,7 +3,7 @@
 // Don't copy code from this, this is not the regular usage of the library.
 // This file was more used as a test and experiment code.
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX 20', function () {
@@ -19,23 +19,23 @@ describe('CodeGradX 20', function () {
       });
   });
 
-    it("awake a and e servers", async function (done) {
+    it("awake a and e servers", async function () {
         var state = CodeGradX.getCurrentState();
         await state.checkServers('a');
         expect(state.servers.a[0].enabled).toBeTruthy();
         await state.checkServers('e');
         expect(state.servers.e[0].enabled).toBeTruthy();
-        done();
+        //done();
     }, 20*1000); // 20 seconds
 
   let firstname, lastname; 
-  it('should send authentication request', async function (done) {
+  it('should send authentication request', async function () {
     var state = await CodeGradX.initialize(true);
     state.servers = otherServers;
     function faildone (reason) {
       state.debug('faildone', reason).show();
       fail(reason);
-      done();
+      //done();
     }
     state.sendAXServer('x', {
       path: '/direct/check',
@@ -76,17 +76,17 @@ describe('CodeGradX 20', function () {
         /////expect(response.raw.request._header).toMatch(/\r\nCookie: u=U/);
         expect(response.entity.kind).toBe('authenticationAnswer');
         expect(response.entity.lastname).toBe(state.currentUser.lastname);
-        done();
+        //done();
     }).catch(faildone);
   });
 
-  it('again with getAuthenticatedUser', async function (done) {
+  it('again with getAuthenticatedUser', async function () {
     var state = await CodeGradX.initialize();
     state.servers = otherServers;
     function faildone (reason) {
       state.debug(reason).show();
       fail(reason);
-      done();
+      //done();
     }
     state.getAuthenticatedUser(authData.login, authData.password)
     .then(function (user) {
@@ -99,7 +99,7 @@ describe('CodeGradX 20', function () {
       expect(state.currentCookie).toBeDefined();
       expect(state.currentCookie).toMatch(/^U.{50,}/);
       console.log(state);
-      done();
+      //done();
     }).catch(faildone);
   });
 

@@ -1,6 +1,6 @@
 // Jasmine tests for public interactions
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX 21', function () {
@@ -24,18 +24,20 @@ describe('CodeGradX 21', function () {
         };
     }
 
-  it("cannot authenticate with wrong password", async function (done) {
-      var state = await CodeGradX.initialize();
-      state.servers = otherServers;
+  it("cannot authenticate with wrong password", function (done) {
       var faildone = make_faildone(done);
-      state.getAuthenticatedUser('nobody:0', 'totallyWrong').then(
-          function (user) {
-              console.log(user);
-              faildone();
-          }, function (reason) {
-              expect(reason).toBeDefined();
-              done();
-          });
+      (async function () {
+          var state = await CodeGradX.initialize();
+          state.servers = otherServers;
+          state.getAuthenticatedUser('nobody:0', 'totallyWrong').then(
+              function (user) {
+                  console.log(user);
+                  faildone();
+              }, function (reason) {
+                  expect(reason).toBeDefined();
+                  done();
+              });
+      })();
   }, 10*1000);
 
 });

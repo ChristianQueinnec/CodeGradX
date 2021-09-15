@@ -1,7 +1,7 @@
 // Jasmine tests for servers availability related methods.
 // Here we test redirection from generic a, e, x servers
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
 describe('CodeGradX 07', function () {
     it('should be loaded', function () {

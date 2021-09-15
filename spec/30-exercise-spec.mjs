@@ -1,7 +1,7 @@
 // Jasmine test to discover exercises
 // requires file ./auth-data.json with login and password (not under git!)
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX } from '../src/campaign.mjs';
 import authData from './auth1-data.mjs';     // lambda student
 import _1 from '../src/campaignlib.mjs';
 import _2 from '../src/exercise.mjs';
@@ -9,6 +9,7 @@ import _3 from '../src/exercisesSet.mjs';
 import _4 from '../src/job.mjs';
 import { xml2html } from '../src/xml2html.mjs';
 import { parsexml } from '../src/parsexml.mjs';
+import _7 from '../src/cache.mjs';
 
 // Some of these tests require s3 and s6 (or tests) storage servers
 // and also working a, e and x servers:
@@ -37,10 +38,10 @@ describe('CodeGradX 30 exercise', function () {
       });
   });
 
-  it('should authenticate', async function (done) {
+  it('should authenticate', function (done) {
+    var faildone = make_faildone(done);
     expect(CodeGradX).toBeDefined();
     var state = CodeGradX.getCurrentState();
-    var faildone = make_faildone(done);
     state.getAuthenticatedUser(authData.login, authData.password)
     .then(function (user) {
       expect(user).toBeDefined();
@@ -52,30 +53,35 @@ describe('CodeGradX 30 exercise', function () {
   var campaign1;  // the 'free' current campaign
 
   it("should get campaign 'free'", function (done) {
-    var state = CodeGradX.getCurrentState();
-    var faildone = make_faildone(done);
-    expect(state.currentUser instanceof CodeGradX.User).toBeTruthy();
-    state.currentUser.getCampaign('free').then(function (campaign) {
-      expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
-      expect(campaign.name).toBe('free');
-      campaign1 = campaign;
-      //console.log(campaign); //
-      expect(campaign.starttime instanceof Date).toBeTruthy();
-      expect(campaign.endtime instanceof Date).toBeTruthy();
-      expect(campaign.starttime.getFullYear()).toBeLessThan(2008);
-      expect(campaign.endtime.getFullYear()).toBeGreaterThan(2028);
-      //console.log(campaign);
-      expect(campaign.exercisesSet).toBeUndefined();
-      campaign.getExercisesSet().then(function (es) {
-        //console.log(es);
-        expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
-        expect(es).toBe(campaign.exercisesSet);
-        campaign.getExercisesSet().then(function (es2) {
-            expect(es2).toBe(es);
-            done();
-        }, faildone);
+      var state = CodeGradX.getCurrentState();
+      state.plugCache('InlineCache');
+      state.mkCacheFor('Campaign');
+      state.mkCacheFor('Exercise');
+      state.mkCacheFor('ExercisesSet');
+      state.mkCacheFor('Job');
+      var faildone = make_faildone(done);
+      expect(state.currentUser instanceof CodeGradX.User).toBeTruthy();
+      state.currentUser.getCampaign('free').then(function (campaign) {
+          expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+          expect(campaign.name).toBe('free');
+          campaign1 = campaign;
+          //console.log(campaign); //
+          expect(campaign.starttime instanceof Date).toBeTruthy();
+          expect(campaign.endtime instanceof Date).toBeTruthy();
+          expect(campaign.starttime.getFullYear()).toBeLessThan(2008);
+          expect(campaign.endtime.getFullYear()).toBeGreaterThan(2028);
+          //console.log(campaign);
+          expect(campaign.exercisesSet).toBeUndefined();
+          campaign.getExercisesSet().then(function (es) {
+              //console.log(es);
+              expect(es instanceof CodeGradX.ExercisesSet).toBeTruthy();
+              expect(es).toBe(campaign.exercisesSet);
+              campaign.getExercisesSet().then(function (es2) {
+                  expect(es2).toBe(es);
+                  done();
+              }, faildone);
+          }, faildone);
       }, faildone);
-    }, faildone);
   }, 10*1000);
 
   var campaign2; // the 'insta2-2016oct' past campaign
@@ -180,8 +186,9 @@ describe('CodeGradX 30 exercise', function () {
         var state = CodeGradX.getCurrentState();
         var faildone = make_faildone(done);
         var exerciseName = "com.paracamplus.li205.function.1";
+        var exerciseUUID = "11111111-1111-1111-2221-000001000001";
         console.log(state);
-        expect(state.cache.Exercise.get(exerciseName)).toBeDefined();
+        expect(state.caches.Exercise.get(exerciseUUID)).toBeDefined();
         campaign1.getExercise(exerciseName).then(function (exercise) {
             expect(exercise).toBeDefined();
             expect(exercise.name).toBe(exerciseName);
@@ -192,9 +199,9 @@ describe('CodeGradX 30 exercise', function () {
     });
 
   // ExercisesSet.exercises[0]:
-    // 0 -> org.fw4ex.li101.croissante.0
+    // 0 -> org.fw4ex.li101.croissante.0 "11111111-1111-1111-2232-000000130002"
     // 1 -> org.fw4ex.li101.l2p
-    // 2 -> com.paracamplus.li205.function.1
+    // 2 -> com.paracamplus.li205.function.1 "11111111-1111-1111-2221-000001000001"
     // 3 -> com.paracamplus.li314.java.3
     // 4 -> com.paracamplus.li362.sh.7
     // 5 -> com.paracamplus.li362.tr.4
@@ -227,7 +234,7 @@ describe('CodeGradX 30 exercise', function () {
   it("get a precise exercise by its rank 8", function (done) {
     var state = CodeGradX.getCurrentState();
     var faildone = make_faildone(done);
-    var exerciseName = "org.fw4ex.li218.devoir.2010nov.3";
+    var exerciseName = "org.fw4ex.python3.max3.0";
     campaign1.getExercise(8).then(function (exercise) {
       expect(exercise).toBeDefined();
       expect(exercise.name).toBe(exerciseName);

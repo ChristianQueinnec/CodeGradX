@@ -1,8 +1,8 @@
 // Jasmine tests for public interactions
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
-import sax from '../src/sax.mjs';
+import { sax } from '../src/sax.mjs';
 
 describe('sax', function () {
 

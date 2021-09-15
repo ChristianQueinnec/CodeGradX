@@ -1,8 +1,7 @@
 // Jasmine tests for public interactions
 
-import CodeGradX from '../codegradx.mjs';
-
-import xml2js from '../src/xml2js.mjs';
+import { CodeGradX } from '../codegradx.mjs';
+import { parsexml } from '../src/parsexml.mjs';
 
 /** This tests uses the xml2js.ParseString function.
     The xml2js file requires sax and xmlbuilder.
@@ -21,6 +20,11 @@ describe('CodeGradX 10', function () {
             //otherServers = state.servers;
             done();
         });
+    });
+
+    it('should be present', function () {
+        expect(parsexml).toBeDefined();
+        expect(typeof parsexml).toBe('function');
     });
 
     it("erase cookie if any", function (done) {
@@ -139,7 +143,7 @@ describe('CodeGradX 10', function () {
     }, faildone);
   });
 
-  it("should get a public job report", function (done) {
+  it("should get a public job report (from s3)", function (done) {
     var state = new CodeGradX.State();
     state.log.clear();
     state.servers = otherServers;
@@ -152,20 +156,19 @@ describe('CodeGradX 10', function () {
     promise1.then(function (descriptions) {
       return state.sendESServer('s', {
         path: "/s/D/B/F/6/0/8/9/8/8/A/0/2/1/1/E/5/8/D/7/4/A/9/8/8/7/0/A/0/6/C/9/0/DBF60898-8A02-11E5-8D74-A98870A06C90.xml"
-      }).then(function (response) {
-        console.log(response);
+      });
+    }).then(async function (response) {
+        //console.log(response);
         //console.log(response.headers);
         expect(response.status).toBe(200);
-        xml2js.parseString(response.entity, function (err, result) {
-          if ( err ) {
-            faildone(err);
-          } else {
-            console.log(result);
+        try {
+            const result = await parsexml(response.entity);
+            //console.log(result);
             expect(result.fw4ex.jobStudentReport).toBeDefined();
             done();
-          }
-        });
-      });
+        } catch (err) {
+            faildone(err);
+        }
     }).catch(faildone);
   }, 10*1000);
 
@@ -178,20 +181,19 @@ describe('CodeGradX 10', function () {
     }
     state.sendESServer('s', {
       path: '/s/D/8/F/A/1/C/4/E/8/7/E/7/1/1/D/D/B/7/3/8/2/E/2/7/1/B/8/B/9/4/E/0/D8FA1C4E-87E7-11DD-B738-2E271B8B94E0.xml'
-    }).then(function (response) {
+    }).then(async function (response) {
       //console.log(response);
       //console.log(response.headers);
       expect(response.status).toBe(200);
-      xml2js.parseString(response.entity, function (err, result) {
-        if ( err ) {
-          fail(err);
-        } else {
-          //console.log(result);
-          expect(result.fw4ex.jobStudentReport).toBeDefined();
+        try {
+            const result = await parsexml(response.entity);
+            console.log(result);
+            expect(result.fw4ex.jobStudentReport).toBeDefined();
+            done();
+        } catch ( err ) {
+            fail(err);
         }
-      });
-      done();
-    }, faildone);
+    }).catch(faildone);
   });
 
   it("should get a public job report repeatedly", function (done) {
@@ -206,20 +208,19 @@ describe('CodeGradX 10', function () {
       attempts: 5
     }, {
       path: '/s/D/8/F/A/1/C/4/E/8/7/E/7/1/1/D/D/B/7/3/8/2/E/2/7/1/B/8/B/9/4/E/0/D8FA1C4E-87E7-11DD-B738-2E271B8B94E0.xml'
-    }).then(function (response) {
-      //console.log(response);
-      //console.log(response.headers);
-      expect(response.status).toBe(200);
-      xml2js.parseString(response.entity, function (err, result) {
-        if ( err ) {
-          fail(err);
-        } else {
-          //console.log(result);
-          expect(result.fw4ex.jobStudentReport).toBeDefined();
+    }).then(async function (response) {
+        //console.log(response);
+        //console.log(response.headers);
+        expect(response.status).toBe(200);
+        try {
+            const result = await parsexml(response.entity);
+            //console.log(result);
+            expect(result.fw4ex.jobStudentReport).toBeDefined();
+            done();
+        } catch ( err ) {
+            fail(err);
         }
-      });
-      done();
-    }, faildone);
+    }).catch(faildone);
   });
-
+    
 });

@@ -1,5 +1,5 @@
 // exercise.js
-// Time-stamp: "2021-09-14 18:01:43 queinnec"
+// Time-stamp: "2021-09-15 14:39:07 queinnec"
 /* eslint no-control-regex: "off" */
 
 import { CodeGradX as cx } from '../codegradx.mjs';
@@ -325,25 +325,12 @@ async function extractEquipment (exercise, s) {
         return results;
     }
     if ( content.length > 0 ) {
-        // new version:
         try {
             const result = await parsexml(content);
             exercise.equipment = flatten(result.equipment, '');
         } catch (exc) {
             state.debug('extractEquipment2', exc);
         }
-        /* previous version
-        try {
-            const parser = new xml2js.Parser({
-                explicitArray: false,
-                trim: true
-            });
-            parser.parseString(content, function (err, result) {
-                exercise.equipment = flatten(result.equipment, '');
-            });
-        } catch (e) {
-            state.debug("extractEquipment3", e);
-        } */
     }
     return exercise;
 }

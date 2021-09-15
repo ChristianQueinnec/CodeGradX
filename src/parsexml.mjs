@@ -1,5 +1,5 @@
 // parsexml.js
-// Time-stamp: "2021-09-14 15:03:26 queinnec"
+// Time-stamp: "2021-09-15 14:39:27 queinnec"
 
 import { CodeGradX } from '../codegradx.mjs';
 //import xml2js from 'codegradx/src/xml2js';
@@ -65,33 +65,6 @@ function convert_ (o) {
         return o;
     }
 }
-
-/* 
-export function parsexml (xml) {
-  if ( ! xml ) {
-    return Promise.reject("Cannot parse XML " + xml);
-  }
-  const parser = new xml2js.Parser({
-    explicitArray: false,
-    trim: true
-  });
-  let xerr, xresult;
-  try {
-    parser.parseString(xml, function (err, result) {
-      xerr = err;
-      xresult = result;
-    });
-  } catch (e) {
-    // for a TypeError: Cannot read property 'toString' of undefined
-    return Promise.reject(e);
-  }
-  if ( xerr ) {
-    return Promise.reject(xerr);
-  } else {
-    return Promise.resolve(xresult);
-  }
-}
-*/
 
 CodeGradX.parsexml = parsexml;
 

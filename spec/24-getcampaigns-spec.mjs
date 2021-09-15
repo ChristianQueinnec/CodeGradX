@@ -1,6 +1,7 @@
 // Jasmine test. load a sub library
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX } from '../src/campaign.mjs';
+
 import authData from './auth1-data.mjs';     // lambda student
 
 describe('CodeGradX 24', function () {
@@ -25,20 +26,23 @@ describe('CodeGradX 24', function () {
         };
     }
 
-    it("really authenticate and check", async function (done) {
-        var state = await CodeGradX.initialize();
-        state.servers = otherServers;
+    it("really authenticate and check", function (done) {
         var faildone = make_faildone(done);
-        state.getAuthenticatedUser(authData.login, authData.password)
-            .then(function (user) {
-                expect(user).toBeDefined();
-                expect(user).toBe(state.currentUser);
-                CodeGradX.getCurrentUser()
-                .then(function (user2) {
-                    expect(user2).toBe(user);
-                    done();
-                }).catch(faildone);
-            }, faildone);
+        CodeGradX.initialize().then((state) => {
+            state.servers = otherServers;
+            state.plugCache('InlineCache');
+            state.mkCacheFor('Campaign');
+            state.getAuthenticatedUser(authData.login, authData.password)
+                .then(function (user) {
+                    expect(user).toBeDefined();
+                    expect(user).toBe(state.currentUser);
+                    CodeGradX.getCurrentUser()
+                        .then(function (user2) {
+                            expect(user2).toBe(user);
+                            done();
+                        }).catch(faildone);
+                }, faildone);
+        });
     });
 
     function hash2array (o) {
@@ -82,21 +86,22 @@ describe('CodeGradX 24', function () {
     });
 
     it("get a specific campaign (without previous getCampaigns)",
-       async function (done) {
-           var state = await CodeGradX.initialize();
-           state.servers = otherServers;
+       function (done) {
            var faildone = make_faildone(done);
-           state.getAuthenticatedUser(authData.login, authData.password)
-               .then(function (user) {
-                   user.getCampaign('free')
-                       .then(function (campaign) {
-                           //console.log(campaigns);
-                           expect(campaign).toBeDefined();
-                           expect(campaign instanceof Object).toBeTruthy();
-                           expect(campaign.name).toBe('free');
-                           done();
-                       });
-               }).catch(faildone);
+           CodeGradX.initialize().then((state) => {
+               state.servers = otherServers;
+               state.getAuthenticatedUser(authData.login, authData.password)
+                   .then(function (user) {
+                       user.getCampaign('free')
+                           .then(function (campaign) {
+                               //console.log(campaigns);
+                               expect(campaign).toBeDefined();
+                               expect(campaign instanceof Object).toBeTruthy();
+                               expect(campaign.name).toBe('free');
+                               done();
+                           });
+                   }).catch(faildone);
+           });
        });
 
 });

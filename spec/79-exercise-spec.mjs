@@ -1,6 +1,7 @@
 // Jasmine test
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../src/cache.mjs';
+
 import authData from './auth1-data.mjs';     // lambda student
 import _1 from '../src/campaignlib.mjs';
 import _2 from '../src/exercise.mjs';
@@ -36,14 +37,19 @@ describe('CodeGradX 79 exercise', function () {
             expect(state.servers).toBeDefined();
             // get tests.codegradx.org or localhost.js predefined servers:
             otherServers = state.servers;
+            state.plugCache('InlineCache');
+            state.mkCacheFor('Campaign');
+            state.mkCacheFor('Exercise');
+            state.mkCacheFor('ExercisesSet');
+            state.mkCacheFor('Job');
             done();
         });
     });
 
-    it('authenticates user', async function (done) {
-        expect(CodeGradX).toBeDefined();
-        var state = await CodeGradX.getCurrentState();
+    it('authenticates user', function (done) {
         var faildone = make_faildone(done);
+        expect(CodeGradX).toBeDefined();
+        const state = CodeGradX.getCurrentState();
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {
                 expect(user).toBeDefined();
@@ -204,15 +210,17 @@ describe('CodeGradX 79 exercise', function () {
         exercise2.sendBatch(batchTGZcontent, 'oefgc.tgz')
             .delay(CodeGradX.Batch.prototype.getReport.default.step*1000)
             .then(function (batch) {
-                //console.log(batch);
+                console.log('batch sent!', {batch});
                 batch.getReport(parameters).then(function (batch2) {
-                    //console.log(batch2);
+                    console.log('batch 1st report', {batch2});
                     expect(batch2).toBe(batch);
+                    expect(batch2.finishedjobs > 0).toBeTruthy();
                     if ( batch.jobs.one ) {
                         // Hope that this batch report is not the final one!
                         job1 = batch.jobs.one;
                     }
                     batch2.getFinalReport(parameters).then(function (batch3) {
+                        console.log('batch final report', {batch3});
                         expect(batch3).toBe(batch2);
                         expect(batch.finishedjobs).toBeGreaterThan(0);
                         expect(batch.totaljobs).toBe(batch.finishedjobs);

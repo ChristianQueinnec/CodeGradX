@@ -2,7 +2,8 @@
 // Load servers with two concurrent batches (approx 300 seconds)
 // This script is probably more useful when more than one vmmdr+ms is active.
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
+
 import authData from './auth1-data.mjs';     // lambda student
 import _1 from '../src/campaignlib.mjs';
 import _2 from '../src/exercise.mjs';
@@ -37,14 +38,19 @@ describe('CodeGradX 90 batch load', function () {
             expect(state.servers).toBeDefined();
             // get tests.codegradx.org or localhost.js predefined servers:
             otherServers = state.servers;
+            state.plugCache('InlineCache');
+            state.mkCacheFor('Campaign');
+            state.mkCacheFor('Exercise');
+            state.mkCacheFor('ExercisesSet');
+            state.mkCacheFor('Job');
             done();
         });
     });
 
-    it('authenticates user', async function (done) {
-        expect(CodeGradX).toBeDefined();
-        var state = await CodeGradX.getCurrentState();
+    it('authenticates user', function (done) {
         var faildone = make_faildone(done);
+        expect(CodeGradX).toBeDefined();
+        var state = CodeGradX.getCurrentState();
         state.getAuthenticatedUser(authData.login, authData.password)
             .then(function (user) {
                 expect(user).toBeDefined();
@@ -153,7 +159,9 @@ describe('CodeGradX 90 batch load', function () {
                             expect(batch3).toBe(batch);
                             expect(batch.finishedjobs).toBeGreaterThan(0);
                             expect(batch.totaljobs).toBe(batch.finishedjobs);
-                            count++;
+                            if ( batch.totaljobs === batch.finishedjobs) {
+                                count++;
+                            }
                             if ( count === 2 ) {
                                 done();
                             }

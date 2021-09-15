@@ -1,6 +1,6 @@
 // Jasmine tests for public interactions
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
 import xmlbuilder from '../src/xmlbuilder.mjs';
 

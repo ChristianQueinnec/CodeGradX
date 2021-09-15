@@ -1,6 +1,6 @@
 // Jasmine tests for servers availability related methods.
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
 // Some of these tests require at least two servers:
 import otherServers from './otherServers.mjs';

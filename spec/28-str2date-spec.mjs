@@ -1,7 +1,7 @@
 // Jasmine test for str2Date
 
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX } from '../src/campaign.mjs';
 
 describe('CodeGradX 28 str2Date', function () {
 

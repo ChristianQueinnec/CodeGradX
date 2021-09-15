@@ -1,6 +1,6 @@
 // 
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 
 /** make_fakeUserAgent creates HttpResponses (with only a status code)
     as told by `history`. Once used, items in history are removed.

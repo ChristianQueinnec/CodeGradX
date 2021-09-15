@@ -1,7 +1,7 @@
 // Jasmine test to check xml to html conversion
-// Time-stamp: "2019-05-20 18:33:46 queinnec"
+// Time-stamp: "2021-09-10 18:36:20 queinnec"
 
-import CodeGradX from '../codegradx.mjs';
+import { CodeGradX } from '../codegradx.mjs';
 import { xml2html } from '../src/xml2html.mjs';
 
 describe('CodeGradX xml2html', function () {

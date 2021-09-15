@@ -1,7 +1,8 @@
 // Jasmine test to check progress
 // requires file ./auth-data.json with login and password (not under git!)
 
-import CodeGradX from '../src/campaign.mjs';
+import { CodeGradX } from '../src/campaign.mjs';
+
 import authData from './auth1-data.mjs';     // lambda student
 import _1 from '../src/campaignlib.mjs';
 import _2 from '../src/exercise.mjs';
@@ -24,20 +25,25 @@ describe('CodeGradX 44', function () {
       });
   });
 
-  it('should authenticate', async function (done) {
-    expect(CodeGradX).toBeDefined();
-    var state = await CodeGradX.getCurrentState();
-    function faildone (reason) {
-      state.debug(reason).show();
-      fail(reason);
-      done();
-    }
-    state.getAuthenticatedUser(authData.login, authData.password)
-    .then(function (user) {
-      expect(user).toBeDefined();
-      expect(user).toBe(state.currentUser);
-      done();
-    }, faildone);
+  it('should authenticate', function (done) {
+      expect(CodeGradX).toBeDefined();
+      function faildone (reason) {
+          state.debug(reason).show();
+          fail(reason);
+          done();
+      }
+      var state = CodeGradX.getCurrentState();
+      state.plugCache('InlineCache');
+      state.mkCacheFor('Campaign');
+      state.mkCacheFor('Exercise');
+      state.mkCacheFor('ExercisesSet');
+      state.mkCacheFor('Job');
+      state.getAuthenticatedUser(authData.login, authData.password)
+          .then(function (user) {
+              expect(user).toBeDefined();
+              expect(user).toBe(state.currentUser);
+              done();
+          }, faildone);
   });
 
   var campaign0;
