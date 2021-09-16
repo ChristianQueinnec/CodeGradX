@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-09-15 14:29:30 queinnec"
+// Time-stamp: "2021-09-16 09:07:28 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -508,6 +508,10 @@ CodeGradX.State = function (initializer) {
     // Post-initialization
     let state = this;
     state.cacher = CodeGradX.NoCache;
+    state.mkCacheFor('Campaign');
+    state.mkCacheFor('Exercise');
+    state.mkCacheFor('ExercisesSet');
+    state.mkCacheFor('Job');
 
     function customize (state, initializer) {
         if ( typeof initializer === 'function' ||
