@@ -29,7 +29,6 @@ describe('080 cache', function () {
 
     it("seeing innards", function () {
         const state = new CodeGradX.State();
-        expect(state.caches).not.toBeDefined();
         state.plugCache('InlineCache');
         state.mkCacheFor('Stuff');
         state.cachedStuff('a', 22);

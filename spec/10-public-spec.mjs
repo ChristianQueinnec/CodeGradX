@@ -187,7 +187,7 @@ describe('CodeGradX 10', function () {
       expect(response.status).toBe(200);
         try {
             const result = await parsexml(response.entity);
-            console.log(result);
+            //console.log(result);
             expect(result.fw4ex.jobStudentReport).toBeDefined();
             done();
         } catch ( err ) {
