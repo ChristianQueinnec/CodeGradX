@@ -14,8 +14,8 @@ describe('080 cache', function () {
         state.mkCacheFor('Stuff');
         state.cachedStuff('a', 11);
         state.cachedStuff('b', 12);
-        console.log(state.caches); // DEBUG
-        console.log(state.cachedStuff('a')); // DEBUG
+        //console.log(state.caches); // DEBUG
+        //console.log(state.cachedStuff('a')); // DEBUG
         expect(state.cachedStuff('a')).toBe(11);
         expect(state.cachedStuff('b')).toBe(12);
         // modify cache:
