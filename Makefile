@@ -1,4 +1,4 @@
-# Time-stamp: "2021-09-15 18:25:24 queinnec"
+# Time-stamp: "2021-09-18 18:05:52 queinnec"
 
 work : nothing 
 clean :: 
@@ -59,6 +59,9 @@ test.within.browser :
 	cd spec/ && ln -sf ../node_modules/jasmine-core .
 	@echo "Browse http://localhost/CodeGradX/spec/tests.html?random=false"
 #	@echo "Browse http://tests.codegradx.org/CodeGradX/spec/tests.html?random=false"
+
+test.with.separate.browser :
+	docker-compose run --rm paracamplus/brave
 
 publish : lint prepare clean
 	git status .
