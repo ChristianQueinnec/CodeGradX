@@ -1,5 +1,5 @@
 // CodeGradX
-// Time-stamp: "2021-09-16 09:07:28 queinnec"
+// Time-stamp: "2021-10-22 15:20:43 queinnec"
 
 /** Javascript module to interact with the CodeGradX infrastructure.
 
@@ -715,7 +715,7 @@ CodeGradX.State.prototype.adjoinCurrentCookie = function (kind, request) {
         //}
         // Cookie is a forbidden header name:
         if ( CodeGradX.isNode() ) {
-            request.headers.Cookie = state.currentCookie;
+            request.headers.Cookie = `u=${state.currentCookie}`;
         } else {
             if ( ! document.cookie.indexOf(state.currentCookie) ) {
                 document.cookie = state.currentCookie + ";path='/';";
@@ -1231,7 +1231,7 @@ CodeGradX.State.prototype.sendRepeatedlyESServer.default = {
 
 function catchAnomaly (response) {
     const state = CodeGradX.getCurrentState();
-    state.debug('Caught anomaly');
+    state.debug('Caught anomaly', response);
     let result = {
         kind: 'errorAnswer',
         httpcode: response.status,
