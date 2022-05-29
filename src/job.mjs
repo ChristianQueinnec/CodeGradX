@@ -1,5 +1,5 @@
 // job.js
-// Time-stamp: "2021-09-15 17:52:15 queinnec"
+// Time-stamp: "2022-05-29 23:08:27 queinnec"
 
 import { CodeGradX as cx } from '../codegradx.mjs';
 /** Re-export the `CodeGradX` object */
@@ -125,6 +125,9 @@ CodeGradX.Job.prototype.getReport = async function (parameters = {}) {
         return Promise.reject(response);
     }
     state.debug('getJobReport5a', 'before xml2html');
+    if ( parameters && parameters.markFactor ) {
+        CodeGradX.xml2html.default.markFactor = parameters.markFactor;
+    }
     const HTMLreport = await xml2html(content);
     job.HTMLreport = HTMLreport;
     state.debug('getJobReport5b', 'after xml2html');
