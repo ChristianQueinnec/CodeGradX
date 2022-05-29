@@ -271,12 +271,43 @@ describe('CodeGradX 30 exercise', function () {
       expect(job instanceof CodeGradX.Job).toBeTruthy();
       expect(job.jobid).toBeDefined();
       job.getReport().then(function (j) {
-        //console.log(report);
         expect(j).toBeDefined();
         expect(j).toBe(job);
+        //console.log(j);//DEBUG
+        expect(j.finished).toBeDefined();
+        expect(j.exerciseid).toBeDefined();
+        expect(j.mark).toBe(1);
+        expect(j.HTMLreport).toBeDefined();
+        expect(j.HTMLreport).toMatch(/value="0.2".*?>20/);
+        //console.log(j.HTMLreport);//DEBUG
+        job.getReport().then(function (j2) {
+            expect(j2).toBe(j);
+            done();
+        }, faildone);
+      }, faildone);
+    }, faildone);
+  }, 100*1000); // 100 seconds
+
+  it("may send another answer with markFactor=1", function (done) {
+    var state = CodeGradX.getCurrentState();
+    state.servers = otherServers;
+    var faildone = make_faildone(done);
+    expect(exercise2).toBeDefined();
+    //console.log(exercise2);
+    exercise2.sendStringAnswer(code1).then(function (job) {
+      expect(job).toBeDefined();
+      //console.log(job);
+      expect(job instanceof CodeGradX.Job).toBeTruthy();
+      expect(job.jobid).toBeDefined();
+        job.getReport({markFactor: 1}).then(function (j) {
+        expect(j).toBeDefined();
+        expect(j).toBe(job);
+        //console.log(j);//DEBUG
         expect(j.finished).toBeDefined();
         expect(j.exerciseid).toBeDefined();
         expect(j.HTMLreport).toBeDefined();
+        expect(j.HTMLreport).toMatch(/value="0.2".*?>0.2/);
+        //console.log(j.HTMLreport);//DEBUG
         job.getReport().then(function (j2) {
             expect(j2).toBe(j);
             done();
