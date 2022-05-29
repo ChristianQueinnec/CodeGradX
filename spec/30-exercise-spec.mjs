@@ -54,6 +54,7 @@ describe('CodeGradX 30 exercise', function () {
 
   it("should get campaign 'free'", function (done) {
       var state = CodeGradX.getCurrentState();
+      state.servers = otherServers;
       state.plugCache('InlineCache');
       state.mkCacheFor('Campaign');
       state.mkCacheFor('Exercise');
@@ -283,5 +284,24 @@ describe('CodeGradX 30 exercise', function () {
       }, faildone);
     }, faildone);
   }, 100*1000); // 100 seconds
+
+  it('may access a campaign without exercisesSet', function (done) {
+      var state = CodeGradX.getCurrentState();
+      state.servers = otherServers;
+      var faildone = make_faildone(done);
+      expect(state.currentUser instanceof CodeGradX.User).toBeTruthy();
+      //console.log(state.currentUser);//DEBUG
+      state.currentUser.getCampaigns().then(function (campaigns) {
+          console.log(campaigns);//DEBUG//////////////////
+          expect(campaigns.jfp13).toBeDefined();
+          expect(campaigns.jfp13.name).toBe('jfp13');
+          campaigns.jfp13.getExercisesSet()
+              .then(exercisesSet => {
+                  console.log(exercisesSet);//DEBUG
+                  expect(exercisesSet).toEqual([]);
+                  done();
+              }).catch(faildone);
+      }).catch(faildone);
+  });
 
 });

@@ -1,5 +1,5 @@
 // campaignlib.mjs
-// Time-stamp: "2021-09-14 18:03:46 queinnec"
+// Time-stamp: "2022-05-29 14:31:27 queinnec"
 
 import { CodeGradX as cx } from './exercisesSet.mjs';
 /** Re-export the `CodeGradX` object */
@@ -54,7 +54,11 @@ CodeGradX.Campaign.prototype.getExercisesSet = function () {
                     }
                 };
                 return state.userAgent(request1)
-                    .then(processResponse);
+                    .then(processResponse)
+                    .catch(function (reason) {
+                        state.debug("getExercisesSet4Error", reason);
+                        return Promise.resolve([]);
+                    });
             } catch (e) {
                 // Probably: bad host name!
                 state.debug("getExercisesSet3Error", e);
