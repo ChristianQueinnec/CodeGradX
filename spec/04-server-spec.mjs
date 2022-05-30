@@ -75,7 +75,7 @@ describe('CodeGradX 04', function () {
       expect(state.servers.a[17].lastError).toBeTruthy();
       done();
     });
-  });
+  }, 10*1000);
 
   it('should check all servers A', function (done) {
     function faildone (reason) {

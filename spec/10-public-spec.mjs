@@ -49,11 +49,11 @@ describe('CodeGradX 10', function () {
                 expect(response.entity.reason).toMatch(/e126 disconnected/);
                 done();
             }).catch(faildone);
-    });
+    }, 10*1000);
 
   it('should send failing authentication request', function (done) {
     var state = new CodeGradX.State();
-      state.servers = otherServers;
+    state.servers = otherServers;
     function faildone (reason) {
       state.log.show();
       fail(reason);
@@ -88,27 +88,28 @@ describe('CodeGradX 10', function () {
 
   it('should get public list of exercises', function (done) {
     var state = new CodeGradX.State();
-      state.servers = otherServers;
+    state.servers = otherServers;
     function faildone (reason) {
       fail(reason);
       done();
     }
     var promise1 = state.checkServers('e');
     promise1.then(function (descriptions) {
+      //console.log({descriptions});//DEBUG
       var promise2 = state.sendESServer('e', {
         path: '/path/insta2',
         headers: {
           'Accept': 'application/json'
         }
       }).then(function (response) {
-        //console.log(response);
+        console.log({response});
         expect(response.status).toBe(200);
         var es = new CodeGradX.ExercisesSet(response.entity);
         expect(es).toBeDefined();
-        //console.log(es);
+        console.log({es});
         expect(es.title).not.toBeDefined();
         expect(es.exercises.length).toBeGreaterThan(1);
-        //console.log(es.exercises[0]);
+        console.log(es.exercises[0]);
         expect(es.exercises[0].title).toBe('Javascript');
         expect(es.exercises[0].exercises[0].nickname).toBe('min3');
         done();
