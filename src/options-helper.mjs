@@ -4,7 +4,8 @@ export const helper = {
 
   copyOptions: function (options) {
     var key, copy = {};
-    for (key in options) {
+      for (key in options) {
+          // eslint-disable-next-line no-prototype-builtins
       if (options.hasOwnProperty(key)) {
         copy[key] = options[key];
       }

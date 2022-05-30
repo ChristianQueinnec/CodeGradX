@@ -1,5 +1,5 @@
 // userlib.mjs
-// Time-stamp: "2021-09-16 09:03:04 queinnec"
+// Time-stamp: "2022-05-30 09:12:17 queinnec"
 
 import { CodeGradX as _cx } from './campaign.mjs';
 /** Re-export the `CodeGradX` object */
@@ -40,6 +40,7 @@ CodeGradX.User.prototype.submitNewExerciseFromDOM = function (form, filename) {
   const fd = new FormData(form);
   // backward compatibility:
   if ( ! filename && typeof FW4EX !== 'undefined' ) {
+      // eslint-disable-next-line no-undef
       filename = FW4EX.currentFileName;
   }
   const basefilename = filename.replace(new RegExp("^.*/"), '');

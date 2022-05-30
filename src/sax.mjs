@@ -94,6 +94,7 @@ export const sax = {};
   if (!Object.keys) {
     Object.keys = function (o) {
       var a = []
+      // eslint-disable-next-line no-prototype-builtins
       for (var i in o) if (o.hasOwnProperty(i)) a.push(i)
       return a
     }
@@ -212,6 +213,7 @@ export const sax = {};
           if (!h) {
             me.removeAllListeners(ev)
             me._parser['on' + ev] = h
+            // eslint-disable-next-line no-setter-return
             return h
           }
           me.on(ev, h)
@@ -281,9 +283,11 @@ export const sax = {};
   // is left as an exercise for the reader.
   var nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/
 
+  // eslint-disable-next-line no-misleading-character-class
   var nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/
 
   var entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/
+  // eslint-disable-next-line no-misleading-character-class
   var entityBody = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/
 
   function isWhitespace (c) {
@@ -715,6 +719,7 @@ export const sax = {};
     }
 
     if (parser.attribList.indexOf(parser.attribName) !== -1 ||
+      // eslint-disable-next-line no-prototype-builtins
       parser.tag.attributes.hasOwnProperty(parser.attribName)) {
       parser.attribName = parser.attribValue = ''
       return
@@ -982,6 +987,7 @@ export const sax = {};
     }
     var i = 0
     var c = ''
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       c = charAt(chunk, i++)
       parser.c = c

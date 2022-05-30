@@ -282,7 +282,7 @@ function onComment(comment) {
   addField('comment', comment);
 }
 
-function onEndElement(name) {
+function onEndElement() {
   var parentElement = currentElement[options.parentKey];
   if (!options.addParent) {
     delete currentElement[options.parentKey];
